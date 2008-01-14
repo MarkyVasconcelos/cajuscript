@@ -98,6 +98,8 @@ Imports or include file:
 }}}
 
 Comments supported:
-*--*
-*//*
-*\*
+{{{
+-- Comment...
+// Comment...
+\ Comment...
+}}}
