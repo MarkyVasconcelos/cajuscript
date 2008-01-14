@@ -96,3 +96,8 @@ Imports or include file:
      // Include file
      $"script.cj"
 }}}
+
+Comments supported:
+*--*
+*//*
+*\*
