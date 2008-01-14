@@ -3,31 +3,31 @@
 = Sintax =
 
 {{{
-     _\ Imports_
-     *$*java.lang
+     \ // Imports_
+     $java.lang
      
-     _\ Defining a new variable_
+     \ // Defining a new variable
      x = 0
      
-     _\ LOOP_
-     x < 10 & x >= 0 *@*
+     \ // LOOP
+     x < 10 & x >= 0 @
         System.out.println(x)
         x = x + 1
-     *@*
+     @
      
-     _\ IF_
-     x < 10 | x > 0 *?*
+     \ // IF
+     x < 10 | x > 0 ?
          System.out.println("X is less than 10!")
-     *?* x > 10 & x = 10 *?*
+     ? x > 10 & x = 10 ?
          System.out.println("X is greater than 10!")
-     *??*
+     ??
          System.out.println("X = "+ x)
-     *?*
+     ?
      
-     _\ FUNCTION_
-     _\ Allowed:_
-     _\ addWithX v1, v2 # ... #_
-     _\ addWithX(v1 v2) # ... #_
+     \ // FUNCTION_
+     \ // Allowed:_
+     \ // addWithX v1, v2 # ... #_
+     \ // addWithX(v1 v2) # ... #_
      addWithX(v1, v2) *#*
          \ "~" is the return
          ~ x + v1 + v2
