@@ -29,7 +29,7 @@
      // addWithX v1, v2 # ... #
      // addWithX(v1 v2) # ... #
      addWithX(v1, v2) #
-         \\ "~" is the return
+         // "~" is the return
          ~ x + v1 + v2
      #
      
@@ -40,29 +40,29 @@
 
 Null value:
 {{{
-     \\ $ is the null value
+     // $ is the null value
      x = $
 }}}     
 
 Arithmetic Operators:
 {{{
-     \\ + Addition
+     // + Addition
      x = 0 + 1
      x += 1
      
-     \\ - Subtraction
+     // - Subtraction
      x = 0 - 1
      x -= 1
      
-     \\ * Multiplication
+     // * Multiplication
      x = 0 * 1
      x *= 1
      
-     \\ / Division
+     // / Division
      x = 0 / 1
      x /= 1
      
-     \\ % Modulus
+     // % Modulus
      x = 0 % 1
      x %= 1
 }}}
