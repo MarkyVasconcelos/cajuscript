@@ -113,7 +113,7 @@
      (x >= y)
 }}}
 
-===Comments supported:===
+===Comments allowed:===
 {{{
      -- Comment...
 
