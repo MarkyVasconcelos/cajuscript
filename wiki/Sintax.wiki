@@ -1,0 +1,97 @@
+#summary One-sentence summary of this page.
+
+= Sintax =
+
+     _\ Imports_
+     *$*java.lang
+     
+     _\ Defining a new variable_
+     x = 0
+     
+     _\ LOOP_
+     x < 10 & x >= 0 *@*
+        System.out.println(x)
+        x = x + 1
+     *@*
+     
+     _\ IF_
+     x < 10 | x > 0 *?*
+         System.out.println("X is less than 10!")
+     *?* x > 10 & x = 10 *?*
+         System.out.println("X is greater than 10!")
+     *??*
+         System.out.println("X = "+ x)
+     *?*
+     
+     _\ FUNCTION_
+     _\ Allowed:_
+     _\ addWithX v1, v2 # ... #_
+     _\ addWithX(v1 v2) # ... #_
+     addWithX(v1, v2) *#*
+         \ "~" is the return
+         ~ x + v1 + v2
+     *#*
+     
+     x = addWithX(1, 2)
+     
+     System.out.println("X = "+ x)
+     
+
+Null value:
+
+     \ $ is the null value
+     x = $
+     
+
+Arithmetic Operators:
+
+     \ + Addition
+     x = 0 + 1
+     x += 1
+     
+     \ - Subtraction
+     x = 0 - 1
+     x -= 1
+     
+     \ * Multiplication
+     x = 0 * 1
+     x *= 1
+     
+     \ / Division
+     x = 0 / 1
+     x /= 1
+     
+     \ % Modulus
+     x = 0 % 1
+     x %= 1
+     
+
+Comparison Operators:
+
+     \ = Equal to
+     (x = y)
+     
+     \ ! Not equal to
+     (x ! y)
+     
+     \ < Less Than
+     (x < y)
+     
+     \ > Greater Than
+     (x > y)
+     
+     \ < Less Than or Equal To
+     (x <= y)
+     
+     \ > Greater Than or Equal To
+     (x >= y)
+     
+
+Imports or include file:
+
+     \ Import
+     $java.lang
+     
+     \ Include file
+     $"script.cj"
+     
