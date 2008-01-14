@@ -1,6 +1,6 @@
-#Language sintax
+#summary Language sintax
 
-== Sintax ==
+= Sintax =
 
 {{{
      // Imports_
@@ -38,13 +38,13 @@
      System.out.println("X = "+ x)
 }}}
 
-Null value:
+===Null value:===
 {{{
      // $ is the null value
      x = $
 }}}     
 
-Arithmetic Operators:
+===Arithmetic Operators:===
 {{{
      // + Addition
      x = 0 + 1
@@ -67,7 +67,7 @@ Arithmetic Operators:
      x %= 1
 }}}
 
-Comparison Operators:
+===Comparison Operators:===
 {{{
      // = Equal to
      (x = y)
@@ -88,7 +88,7 @@ Comparison Operators:
      (x >= y)
 }}}
 
-Imports or include file:
+===Imports or include file:===
 {{{
      // Import
      $java.lang
@@ -97,7 +97,7 @@ Imports or include file:
      $"script.cj"
 }}}
 
-Comments supported:
+===Comments supported:===
 {{{
      -- Comment...
 
