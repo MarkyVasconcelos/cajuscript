@@ -66,3 +66,5 @@ Always with parenthesis and commas, use commas to separate parameters:
     funcName2(1, 2)
     funcName2(x, y)
 }}}
+
+===Sample:===
