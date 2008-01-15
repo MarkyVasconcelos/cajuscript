@@ -43,6 +43,7 @@ Char (case-insensitive):
 Boolean (case-insensitive):
 {{{
     array.create("boolean", LEN)
+    array.create("bool", LEN)
     array.create("b", LEN)
 }}}
 
