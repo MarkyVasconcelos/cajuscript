@@ -76,5 +76,5 @@ Always with parenthesis and commas, use commas to separate parameters:
     x = addWithX(1, 2)
 }}}
 
-===Observations===
+===Observations:===
 _*All variables are global, variables defined into an function can be used on outer and in another function.*_
