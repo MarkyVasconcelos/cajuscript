@@ -1,0 +1,91 @@
+#summary All about arrays
+
+= Array =
+
+
+===Creating:===
+{{{
+    myArray = array.create("TYPE", LENGTH)
+}}}
+
+===Types allowed:===
+
+Int (case-insensitive):
+{{{
+    array.create("int", LEN)
+    array.create("i", LEN)
+}}}
+
+Long (case-insensitive):
+{{{
+    array.create("long", LEN)
+    array.create("l", LEN)
+}}}
+
+Float (case-insensitive):
+{{{
+    array.create("float", LEN)
+    array.create("f", LEN)
+}}}
+
+Double (case-insensitive):
+{{{
+    array.create("double", LEN)
+    array.create("d", LEN)
+}}}
+
+Char (case-insensitive):
+{{{
+    array.create("char", LEN)
+    array.create("c", LEN)
+}}}
+
+Boolean (case-insensitive):
+{{{
+    array.create("boolean", LEN)
+    array.create("b", LEN)
+}}}
+
+Byte (case-insensitive):
+{{{
+    array.create("byte", LEN)
+    array.create("bt", LEN)
+}}}
+
+String (case-insensitive):
+{{{
+    array.create("string", LEN)
+    array.create("s", LEN)
+}}}
+
+Any class (case-sensitive):
+{{{
+    array.create("java.lang.Object", LEN)
+}}}
+
+===Set and get values from an array:===
+{{{
+STRING_ARRAY = array.create("s", 1)
+// SET
+array.set(STRING_ARRAY, 0, "Zero")
+// GET
+strZero = array.get(STRING_ARRAY, 0)
+}}}
+
+===Interaction:===
+{{{
+// Create
+strArray = array.create("java.lang.String", 2)
+
+// Setting
+array.set(strArray, 0, "String 0")
+array.set(strArray, 1, "String 1")
+
+// Interaction
+x = 0
+x < array.size("s", 2) @
+   // Getting
+   System.out.println(array.get(strArray, x))
+   x = x + 1
+@
+}}}
