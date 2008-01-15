@@ -1,8 +1,8 @@
 #summary Casting objects
 
-=== Cast ===
+= Cast =
 
-To do casts:
+===To do casts:===
 {{{
     newObject = caju.cast(OBJECT, "TYPE")
 }}}
