@@ -1,6 +1,6 @@
 #summary Casting objects
 
-= Cast =
+=== Cast ===
 
 To do casts:
 {{{
