@@ -12,56 +12,56 @@
 
 Int (case-insensitive):
 {{{
-    array.create("int", LEN)
-    array.create("i", LEN)
+    array.create("int", len)
+    array.create("i", len)
 }}}
 
 Long (case-insensitive):
 {{{
-    array.create("long", LEN)
-    array.create("l", LEN)
+    array.create("long", len)
+    array.create("l", len)
 }}}
 
 Float (case-insensitive):
 {{{
-    array.create("float", LEN)
-    array.create("f", LEN)
+    array.create("float", len)
+    array.create("f", len)
 }}}
 
 Double (case-insensitive):
 {{{
-    array.create("double", LEN)
-    array.create("d", LEN)
+    array.create("double", len)
+    array.create("d", len)
 }}}
 
 Char (case-insensitive):
 {{{
-    array.create("char", LEN)
-    array.create("c", LEN)
+    array.create("char", len)
+    array.create("c", len)
 }}}
 
 Boolean (case-insensitive):
 {{{
-    array.create("boolean", LEN)
-    array.create("bool", LEN)
-    array.create("b", LEN)
+    array.create("boolean", len)
+    array.create("bool", len)
+    array.create("b", len)
 }}}
 
 Byte (case-insensitive):
 {{{
-    array.create("byte", LEN)
-    array.create("bt", LEN)
+    array.create("byte", len)
+    array.create("bt", len)
 }}}
 
 String (case-insensitive):
 {{{
-    array.create("string", LEN)
-    array.create("s", LEN)
+    array.create("string", len)
+    array.create("s", len)
 }}}
 
 Any class (case-sensitive):
 {{{
-    array.create("java.lang.Object", LEN)
+    array.create("java.lang.Object", len)
 }}}
 
 ===Set and get values from an array:===
