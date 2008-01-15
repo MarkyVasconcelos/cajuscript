@@ -10,7 +10,7 @@
      $"script.cj"
 }}}
 
-===Variables===
+===Variables:===
 {{{
      // Defining a new variable
      x = 0
@@ -23,7 +23,7 @@
      System.out.println(x.toString())
 }}}
 
-===IFs===
+===IFs:===
 {{{
      // IF
      x = 10
@@ -38,7 +38,7 @@
      ?
 }}}
 
-===LOOPs===
+===LOOPs:===
 {{{
      // LOOP
      x = 0
@@ -48,7 +48,7 @@
      @
 }}}
 
-===FUNCTIONs===
+===FUNCTIONs:===
 {{{
      // FUNCTION
      // Allowed:
