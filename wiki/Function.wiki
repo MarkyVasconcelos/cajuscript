@@ -1,0 +1,68 @@
+#summary Declaring funcions and using.
+
+= Function =
+
+Is allowed four aways to defining functions:
+
+First way:
+{{{
+    funcName(param1, param2) #
+        ...
+    #
+}}}
+
+Second way:
+{{{
+    funcName(param1 param2) #
+        ...
+    #
+}}}
+
+Third way:
+{{{
+    funcName param1, param2 #
+        ...
+    #
+}}}
+
+Forth way:
+{{{
+    funcName param1 param2 #
+        ...
+    #
+}}}
+
+Case not have parameters:
+{{{
+    funcName() #
+        ...
+    #
+
+    // OR
+
+    funcName #
+        ...
+    #
+}}}
+
+===Return:===
+
+The return sign is "~".
+{{{
+    funcName #
+        ~ 1
+    #
+}}}
+
+===Calls:===
+
+Always with parenthesis and commas:
+{{{
+    // Without parameters
+    funcName()
+
+    // With parameters
+    funcName1(1)
+    funcName2(1, 2)
+    funcName2(x, y)
+}}}
