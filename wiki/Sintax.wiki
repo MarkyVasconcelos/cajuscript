@@ -1,4 +1,4 @@
-#summary Language sintax
+#summary Overview on language sintax
 
 = Sintax =
 
