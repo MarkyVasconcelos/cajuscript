@@ -77,4 +77,4 @@ Always with parenthesis and commas, use commas to separate parameters:
 }}}
 
 ===Observations===
-All variables are global, variables defined into an function can be used on outer and in another function.
+*All variables are global, variables defined into an function can be used on outer and in another function.*
