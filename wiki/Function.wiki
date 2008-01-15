@@ -47,7 +47,7 @@ Case not have parameters:
 
 ===Return:===
 
-The return sign is "~".
+The sign of return is "~".
 {{{
     funcName #
         ~ 1
@@ -56,7 +56,7 @@ The return sign is "~".
 
 ===Calls:===
 
-Always with parenthesis and commas:
+Always with parenthesis and commas, use commas to separate parameters:
 {{{
     // Without parameters
     funcName()
