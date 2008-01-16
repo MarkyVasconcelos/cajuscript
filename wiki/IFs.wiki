@@ -1,4 +1,4 @@
-#sumary Block of Condition
+#summary Block of Condition
 
 =If=
 
