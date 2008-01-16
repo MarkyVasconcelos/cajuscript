@@ -2,7 +2,7 @@
 
 =If=
 
-Use "?" to embrace the code refering at "if".
+Use *?* to embrace the code refering at "if".
 {{{
     x < 10 ?
         java.lang.System.out.println("X is less than 10!")
@@ -11,7 +11,7 @@ Use "?" to embrace the code refering at "if".
 
 ===Else===
 
-"??" is the "else".
+*??* is the "else".
 {{{
     x < 10 ?
         java.lang.System.out.println("X is less than 10!")
@@ -23,7 +23,7 @@ Use "?" to embrace the code refering at "if".
 
 ===Else If===
 
-"? CONDITION ?" for "else if".
+*?* _CONDITION_ *?* for "else if".
 {{{
     x < 10 & x > 0 ?
         System.out.println("X is less than 10!")
@@ -38,7 +38,7 @@ Use "?" to embrace the code refering at "if".
 
 ===Or===
 
-"|" used for the sign "or".
+*|* used for the sign "or".
 {{{
     x = 10 | x = 0 ?
         System.out.println("X is 10 or 0!")
@@ -47,7 +47,7 @@ Use "?" to embrace the code refering at "if".
 
 ===And===
 
-"&" used for the sign "and".
+*&* used for the sign "and".
 {{{
     x > 0 & x < 10 ?
         System.out.println("X is greater than 0 and less than 10!")
