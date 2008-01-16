@@ -1,0 +1,86 @@
+
+=If=
+
+"C ?" embrace the code refering to bock code of "if".
+{{{
+    x < 10 ?
+        java.lang.System.out.println("X is less than 10!")
+    ??
+        java.lang.System.out.println("X is greater than 10!")
+    ?
+}}}
+
+===Else===
+
+"??" for "else".
+{{{
+    x < 10 ?
+        java.lang.System.out.println("X is less than 10!")
+    ??
+        java.lang.System.out.println("X is greater than 10!")
+    ?
+}}}
+
+
+===Else If===
+
+"? C ?" for "else if".
+{{{
+    x < 10 & x > 0 ?
+        System.out.println("X is less than 10!")
+    ? x > 10 ?
+        System.out.println("X is greater than 10!")
+    ? x = 10 ?
+        System.out.println("X is 10!")
+    ??
+        System.out.println("X is less than 1!")
+    ?
+}}}
+
+===Or===
+
+"|" used for "or" sign.
+{{{
+    x = 10 | x = 0 ?
+        System.out.println("X is 10 or 0!")
+    ?
+}}}
+
+===And===
+
+"&" used for "and" sign.
+{{{
+    x > 0 & x < 10 ?
+        System.out.println("X is greater than 0 and less than 10!")
+    ?
+}}}
+
+===Groups===
+Parenthesis to determine group of conditions.
+{{{
+    (x > 0 & x < 10) | (x > 10 & x < 20) ?
+        System.out.println("X is an value between 1 and 19 but not 10!")
+    ?
+}}}
+
+===Comparison operators===
+
+{{{
+    // = Equal to
+    (x = y)
+
+    // ! Not equal to
+    (x ! y)
+
+    // < Less Than
+    (x < y)
+
+    // > Greater Than
+    (x > y)
+
+    // < Less Than or Equal To
+    (x <= y)
+
+    // > Greater Than or Equal To
+    (x >= y)
+}}}
