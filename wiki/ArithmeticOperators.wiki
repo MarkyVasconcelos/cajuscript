@@ -1,6 +1,8 @@
-#summary Arithmetic Operators
+#summary All arithmetic operators allowed.
 
 =Arithmetic Operators=
+
+All arithmetic operators allowed.
 
 ===Addition===
 {{{
