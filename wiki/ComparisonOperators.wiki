@@ -1,4 +1,5 @@
 #summary All comparison operators allowed.
+#labels Tutorial
 
 ===Comparison operators===
 
