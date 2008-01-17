@@ -1,0 +1,8 @@
+#summary Programing in line.
+#labels Tutorial
+
+= In Line =
+
+CajuScript supports programing in single line with ";" separator.
+
+*Sample:*
