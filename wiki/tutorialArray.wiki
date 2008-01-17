@@ -74,7 +74,7 @@ Any class (case-sensitive):
     strZero = array.get(STRING_ARRAY, 0)
 }}}
 
-===Lenght===
+===Lenght:===
 {{{
     len = array.size(myArray)
 }}}
