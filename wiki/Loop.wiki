@@ -6,11 +6,18 @@ Is like "While" and "For" in others languages. In CajuScript only "While". But a
 
 ===While===
 {{{
-    x = 0
-        x < 10 & x >= 0 @
-        System.out.println(x)
-        x += 1
+    fileinput = java.io.FileInputStream("file.txt")
+    content = ""
+    loop = 1
+    loop = 1 @
+        byte = fileinput.read()
+        byte = -1 ?
+            loop = 2
+        ??
+            content += caju.cast(byte, "c")
+        ?
     @
+    java.lang.System.out.println(content)
 }}}
 
 ===For===
@@ -21,4 +28,3 @@ Is like "While" and "For" in others languages. In CajuScript only "While". But a
         x += 1
     @
 }}}
-
