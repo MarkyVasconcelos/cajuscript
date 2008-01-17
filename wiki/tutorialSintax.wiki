@@ -3,7 +3,7 @@
 
 = Sintax =
 
-===[tutorialSintax Imports and include file]:===
+===[tutorialImportAndInclude Imports and include file]:===
 {{{
      // Import
      $java.lang
