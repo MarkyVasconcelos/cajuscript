@@ -1,4 +1,5 @@
 #summary All arithmetic operators allowed.
+#labels Tutorial
 
 =Arithmetic Operators=
 
