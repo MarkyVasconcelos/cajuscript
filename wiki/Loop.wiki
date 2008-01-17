@@ -1,5 +1,5 @@
 #summary Repetition block
-#labels while,for
+#labels Tutorial
 
 =Loop=
 
