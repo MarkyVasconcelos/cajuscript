@@ -12,8 +12,8 @@ This sample show two ways to read an file. First read is byte at byte. Second is
 *fileread.cj*:
 {{{
     $java.lang
-    $"filereadall.cj"
     $"filereadbyte.cj"
+    $"filereadall.cj"
 
     System.out.println()
     System.out.println("====================")
