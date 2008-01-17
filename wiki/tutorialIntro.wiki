@@ -12,12 +12,12 @@ In CajuScript was implemented many ways to do easy the programming in Java.
 All basics resources of programing like:
 
   * Variables
-  * Arrays
-  * If
-  * Loops
-  * Functions
-  * Includes and Imports
-  * Casts
+  * [tutorialArray Arrays]
+  * [tutorialIf If]
+  * [tutorialLoop Loop]
+  * [tutorialFunction Function
+  * [tutorialImportAndInclude Imports and Includes
+  * [tutorialCast Cast]
 
 
 Easy to use Java. Sample:
