@@ -24,16 +24,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
 /**
- * The core of the CajuScript language.
+ * The core of the <code>CajuScript</code> language.
  * <p>Sample:</p>
  * <p><blockquote><pre>
  * try {
  *     CajuScript caju = new CajuScript();
- *     String javaHello = "Java told for the Caju: Hello!";
+ *     String javaHello = "Java: Hello!";
  *     caju.set("javaHello", javaHello);
  *     String script = "$java.lang;";
  *     script += "System.out.println(javaHello);";
- *     script += "cajuHello = \"Caju told for the Java: Hi!\";";
+ *     script += "cajuHello = \"Caju: Hi!\";";
  *     caju.eval(script);
  *     System.out.println(caju.get("cajuHello"));
  * } catch (Exception e) {
@@ -49,7 +49,7 @@ import java.util.ArrayList;
  *     e.printStackTrace();
  * }
  * </pre></blockquote></p>
- * <p>CajuScript syntax:</p>
+ * <p><code>CajuScript</code> syntax:</p>
  * <p><blockquote><pre>
  * \ Imports
  * $java.lang
@@ -144,6 +144,18 @@ import java.util.ArrayList;
  */
 public class CajuScript {
     /**
+     * Name.
+     */
+    public static final String NAME = "CajuScript";
+    /**
+     * Version.
+     */
+    public static final String VERSION = "0.1";
+    /**
+     * Language version.
+     */
+    public static final String LANGUAGE_VERSION = "0.1";
+    /**
      * Line Limiter.
      */
     public static final String LINE_LIMITER = "\n";
@@ -224,30 +236,55 @@ public class CajuScript {
             String staticStringValue = "";
             String contentCondition = "";
             String previousLine = "";
-            boolean isString = false;
+            boolean isString1 = false;
+            boolean isString2 = false;
             boolean isCondition = false;
             int lineNumberBackup = getLine();
             for (String _line : lines) {
                 lineContent = _line;
                 line = _line;
-                if (isString) {
+                if (isString1 || isString2) {
                     throw CajuScriptException.create(this, "Sintax error", getLine(), previousLine);
                 }
                 lineNumber++;
-                if (line.trim().startsWith("\\")) {
-                    scriptBuffer.append(line + LINE_LIMITER);
+                String lineComment = line.trim();
+                if (lineComment.startsWith("\\") || lineComment.startsWith("--") || lineComment.startsWith("//")) {
+                    scriptBuffer.append(LINE_LIMITER);
                     continue;
                 }
                 char[] chars = line.toCharArray();
                 previousLine = line;
-                isString = false;
+                isString1 = false;
+                isString2 = false;
                 char cO = (char)-1;
                 for (char c : chars) {
                     switch (c) {
+                    case '\'':
+                        if (cO != '\\' && !isString2) {
+                            if (isString1) {
+                                isString1 = false;
+                                vars.put(staticStringKey, new Value(this, "'" + staticStringValue + "'"));
+                                if (isCondition) {
+                                    contentCondition += staticStringKey;
+                                } else {
+                                    scriptBuffer.append(staticStringKey);
+                                }
+                                staticStringKey = "";
+                                staticStringValue = "";
+                            } else {
+                                isString1 = true;
+                                staticStringKey = CAJU_VARS_STATIC_STRING + vars.size();
+                            }
+                        } else if (isString2 || cO == '\\') {
+                            staticStringValue += c;
+                        } else {
+                            scriptBuffer.append(c);
+                        }
+                        break;
                     case '"':
-                        if (cO != '\\') {
-                            if (isString) {
-                                isString = false;
+                        if (cO != '\\' && !isString1) {
+                            if (isString2) {
+                                isString2 = false;
                                 vars.put(staticStringKey, new Value(this, "\"" + staticStringValue + "\""));
                                 if (isCondition) {
                                     contentCondition += staticStringKey;
@@ -257,9 +294,11 @@ public class CajuScript {
                                 staticStringKey = "";
                                 staticStringValue = "";
                             } else {
-                                isString = true;
+                                isString2 = true;
                                 staticStringKey = CAJU_VARS_STATIC_STRING + vars.size();
                             }
+                        } else if (isString1 || cO == '\\') {
+                            staticStringValue += c;
                         } else {
                             scriptBuffer.append(c);
                         }
@@ -274,7 +313,7 @@ public class CajuScript {
                         }
                         break;
                     default:
-                        if (isString) {
+                        if (isString1 || isString2) {
                             staticStringValue += c;
                         } else if (isCondition) {
                             if (c == ';') {
@@ -288,7 +327,7 @@ public class CajuScript {
                         //    script += LINE_LIMITER;
                         } else {
                             scriptBuffer.append(c);
-                            if (!isString && (c == '?' || c == '@' || c == '#')) {
+                            if (!isString1 && !isString2 && (c == '?' || c == '@' || c == '#')) {
                                 scriptBuffer.append(SUBLINE_LIMITER);
                             }
                         }
@@ -310,12 +349,6 @@ public class CajuScript {
                 lineNumber++;
                 lineContent = lines[y];
                 lines[y] = lines[y].trim();
-                int commnetIndex = lines[y].indexOf("\\");
-                if (commnetIndex == 0) {
-                    continue;
-                } else if (commnetIndex > -1) {
-                    lines[y] = lines[y].substring(0, commnetIndex);
-                }
                 String[] subLines = lines[y].split("\\"+ SUBLINE_LIMITER);
                 for (int x = 0; x < subLines.length; x++) {
                     line = subLines[x].trim();
@@ -323,7 +356,7 @@ public class CajuScript {
                         if (line.length() == 1) {
                             return new Value(this);
                         } else {
-                            return new Value(this, line.substring(1));
+                            return new Value(this, evalValue(line.substring(1)));
                         }
                     } else if (line.endsWith("?")) {
                         StringBuffer scriptIFCondition = new StringBuffer(line.substring(0, line.length() - 1));
@@ -337,13 +370,6 @@ public class CajuScript {
                         if (ifLineEnd[1] == 0) {
                             for (int z = y + 1; z < lines.length; z++) {
                                 ifLineNumber++;
-                                commnetIndex = lines[y].indexOf("\\");
-                                if (commnetIndex == 0) {
-                                    scriptIF.append(lines[z] + LINE_LIMITER);
-                                    continue;
-                                } else if (commnetIndex > -1) {
-                                    lines[z] = lines[z].substring(0, commnetIndex);
-                                }
                                 subLines = lines[z].split("\\;");
                                 ifLineEnd = loadIfLine(ifs, ifLineNumber, subLines, -1, scriptIFCondition, scriptIF, ifLineEnd[1]);
                                 scriptIF.append(LINE_LIMITER);
@@ -377,13 +403,6 @@ public class CajuScript {
                         if (loopLineEnd[1] == 0) {
                             for (int z = y + 1; z < lines.length; z++) {
                                 loopLineNumber++;
-                                commnetIndex = lines[y].indexOf("\\");
-                                if (commnetIndex == 0) {
-                                    scriptLOOP.append(lines[z] + LINE_LIMITER);
-                                    continue;
-                                } else if (commnetIndex > -1) {
-                                    lines[z] = lines[z].substring(0, commnetIndex);
-                                }
                                 subLines = lines[z].split("\\;");
                                 loopLineEnd = loadLoopLine(subLines, -1, scriptLOOP, loopLineEnd[1]);
                                 scriptLOOP.append(LINE_LIMITER);
@@ -412,13 +431,6 @@ public class CajuScript {
                         if (funcLineEnd == -1) {
                             for (int z = y + 1; z < lines.length; z++) {
                                 loopLineNumber++;
-                                commnetIndex = lines[y].indexOf("\\");
-                                if (commnetIndex == 0) {
-                                    scriptFunc.append(lines[z] + LINE_LIMITER);
-                                    continue;
-                                } else if (commnetIndex > -1) {
-                                    lines[z] = lines[z].substring(0, commnetIndex);
-                                }
                                 subLines = lines[z].split("\\;");
                                 funcLineEnd = loadFuncLine(subLines, -1, scriptFunc);
                                 scriptFunc.append(LINE_LIMITER);
@@ -614,8 +626,8 @@ public class CajuScript {
                 int max = Math.max(cs1, Math.max(cs2, Math.max(cs3, Math.max(cs4, Math.max(cs5, cs6)))));
                 if (max > -1) {
                     int len = max == cs3 || max == cs4 ? 2 : 1;
-                    Value value1 = new Value(this, script.substring(0, max));
-                    Value value2 = new Value(this, script.substring(max + len));
+                    Value value1 = new Value(this, evalValue(script.substring(0, max)));
+                    Value value2 = new Value(this, evalValue(script.substring(max + len)));
                     if ((cs1 > -1 || cs2 > -1) && (value1.getValue() == null || value2.getValue() == null)) {
                         if (cs1 > -1 && value1.getValue() == value2.getValue()) {
                             return true;
@@ -644,7 +656,7 @@ public class CajuScript {
                         }
                     }
                 } else {
-                    Value value = new Value(this, script);
+                    Value value = new Value(this, evalValue(script));
                     return ((Boolean)cast(value.getValue(), "b")).booleanValue();
                 }
             }
@@ -667,7 +679,6 @@ public class CajuScript {
                 startWithSign = true;
                 scriptSign = script.substring(1);
             }
-            int sign = -1;
             int s1 = scriptSign.indexOf('+');
             int s2 = scriptSign.indexOf('-');
             int s3 = scriptSign.indexOf('*');
@@ -771,7 +782,7 @@ public class CajuScript {
                         scriptGroupFunc = "";
                         groupType = 0;
                         for (int y = x - 1; y >= 0; y--) {
-                            if ("+*-/%(),".indexOf(scriptChars[y]) > -1) {
+                            if ("+*-/%(),<=>!&|".indexOf(scriptChars[y]) > -1) {
                                 break;
                             }
                             if (scriptChars[y] != ' ') {
@@ -914,8 +925,8 @@ public class CajuScript {
     }
     /**
      * Convert Java objects to CajuScript object to be used like value of variables.
-     * @param obj Object to be converted in Value
-     * @return Newly Value generated from the Object
+     * @param obj
+     * @return
      * @throws org.cajuscript.CajuScriptException Errors
      */
     public Value toValue(Object obj) throws CajuScriptException {
@@ -996,7 +1007,7 @@ public class CajuScript {
                     return value.toString().toCharArray()[0];
                 }
             }
-            if (type.equalsIgnoreCase("boolean") || type.equalsIgnoreCase("java.lang.Boolean") || type.equalsIgnoreCase("b")) {
+            if (type.equalsIgnoreCase("boolean") || type.equalsIgnoreCase("java.lang.Boolean") || type.equalsIgnoreCase("b")  || type.equalsIgnoreCase("bool")) {
                 try {
                     if (Integer.parseInt(cast(value, "i").toString()) > 0) {
                         return Boolean.valueOf(true);
@@ -1034,6 +1045,7 @@ public class CajuScript {
         try {
             if (args.length > 0) {
                 CajuScript caju = new CajuScript();
+                caju.set("args", args);
                 caju.evalFile(args[0]);
             }
         } catch (Exception e) {
