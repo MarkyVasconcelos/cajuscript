@@ -1,4 +1,5 @@
 #summary Casting objects
+#labels Tutorial
 
 = Cast =
 
