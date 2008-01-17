@@ -24,7 +24,7 @@
      System.out.println(x.toString())
 }}}
 
-===IFs:===
+===[tutorialIf IF]:===
 {{{
      // IF
      x = 10
@@ -39,7 +39,7 @@
      ?
 }}}
 
-===LOOPs:===
+===[tutorialLoop LOOP]:===
 {{{
      // LOOP
      x = 0
@@ -49,7 +49,7 @@
      @
 }}}
 
-===FUNCTIONs:===
+===[tutorialFunction FUNCTION]:===
 {{{
      // FUNCTION
      // Allowed:
@@ -70,7 +70,7 @@
      x = $
 }}}     
 
-===Arithmetic Operators:===
+===[tutorialArithmetic Arithmetic Operators]:===
 {{{
      // + Addition
      x = 0 + 1
@@ -93,7 +93,7 @@
      x %= 1
 }}}
 
-===Comparison Operators:===
+===[tutorialComparison Comparison Operators]:===
 {{{
      // = Equal to
      (x = y)
@@ -114,7 +114,7 @@
      (x >= y)
 }}}
 
-===Comments allowed:===
+===[tutorialComment Comments allowed]:===
 {{{
      -- Comment...
 
