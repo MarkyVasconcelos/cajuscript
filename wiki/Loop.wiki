@@ -1,0 +1,24 @@
+#summary Repetition block
+
+=Loop=
+
+Is like "While" and "For" in others languages. In CajuScript only "While". But an variable can be used to do like "For".
+
+===While===
+{{{
+    x = 0
+        x < 10 & x >= 0 @
+        System.out.println(x)
+        x += 1
+    @
+}}}
+
+===For===
+{{{
+    x = 0
+    x < 10 @
+        System.out.println(x)
+        x += 1
+    @
+}}}
+
