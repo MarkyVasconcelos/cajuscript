@@ -3,7 +3,9 @@ $java.net
 $java.util
 $java.lang
 
-serverSocket = ServerSocket(8085)
+serverPort = caju.cast(array.get(args, 1), "i")
+
+serverSocket = ServerSocket(serverPort)
 
 System.out.println()
 System.out.println("Webserver Started: localhost:"+ serverSocket.getLocalPort())

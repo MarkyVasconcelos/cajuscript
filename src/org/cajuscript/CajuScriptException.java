@@ -18,81 +18,81 @@
 */
 package org.cajuscript;
 /**
- * All exceptions are generated from this class.
+ * Exceptions of the CajuScript.
  * @author eduveks
  */
 public class CajuScriptException extends Exception {
     /**
-     * Create a new exception.
+     * Newly exception.
      */
     public CajuScriptException() {
 	super();
     }
     /**
-     * Create a new exception.
-     * @param message Exception message
+     * Newly exception.
+     * @param message Message
      */
     public CajuScriptException(String message) {
 	super(message);
     }
     /**
-     * Create a new exception.
-     * @param cause Another exceptions
+     * Newly exception.
+     * @param cause More exceptions
      */
     public CajuScriptException(Throwable cause) {
         super(cause);
     }
     /**
-     * Create a new exception.
-     * @param message Exception message
-     * @param cause Another exceptions
+     * Newly exception.
+     * @param message Message
+     * @param cause More exceptions
      */
     public CajuScriptException(String message, Throwable cause) {
         super(message, cause);
     }
     /**
-     * Create a new exception.
+     * Create an newly exception.
      * @param caju CajuScript instance
-     * @param message Message for the new exception
+     * @param message Message of the exception
      * @param script Script where ocurred the exception
-     * @return Exception generated
+     * @return Newly exception
      * @throws org.cajuscript.CajuScriptException
      */
     public static CajuScriptException create(CajuScript caju, String message, String script) throws CajuScriptException {
         return create(caju, message, caju.getLine(), script, null);
     }
     /**
-     * Create a new exception.
+     * Create an newly exception.
      * @param caju CajuScript instance
-     * @param message Message for the new exception
+     * @param message Message of the exception
      * @param line Line where ocurred the exception
      * @param script Script where ocurred the exception
-     * @return Exception generated
+     * @return Newly exception
      * @throws org.cajuscript.CajuScriptException
      */
     public static CajuScriptException create(CajuScript caju, String message, int line, String script) throws CajuScriptException {
         return create(caju, message, line, script, null);
     }
     /**
-     * Create a new exception.
+     * Create an newly exception.
      * @param caju CajuScript instance
-     * @param message Message for the new exception
+     * @param message Message of the exception
      * @param script Script where ocurred the exception
-     * @param cause Another exceptions
-     * @return Exception generated
+     * @param cause More exceptions
+     * @return Newly exception
      * @throws org.cajuscript.CajuScriptException
      */
     public static CajuScriptException create(CajuScript caju, String message, String script, Throwable cause) throws CajuScriptException {
         return create(caju, message, caju.getLine(), script, cause);
     }
     /**
-     * Create a new exception.
+     * Create an newly exception.
      * @param caju CajuScript instance
-     * @param message Message for the new exception
+     * @param message Message of the exception
      * @param line Line where ocurred the exception
      * @param script Script where ocurred the exception
-     * @param cause Another exceptions
-     * @return Exception generated
+     * @param cause More exceptions
+     * @return Newly exception
      * @throws org.cajuscript.CajuScriptException
      */
     public static CajuScriptException create(CajuScript caju, String message, int line, String script, Throwable cause) throws CajuScriptException {

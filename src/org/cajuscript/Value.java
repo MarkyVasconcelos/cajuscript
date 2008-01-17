@@ -60,10 +60,13 @@ public class Value {
             script = script.trim();
             if (script.equals("$")) {
                 value = null;
-            } else if (script.startsWith("\"") && script.endsWith("\"")) {
+            } else if ((script.startsWith("'") && script.endsWith("'"))
+                        || (script.startsWith("\"") && script.endsWith("\""))) {
                 script = script.replace((CharSequence)"\\t", (CharSequence)"\t");
                 script = script.replace((CharSequence)"\\r", (CharSequence)"\r");
                 script = script.replace((CharSequence)"\\n", (CharSequence)"\n");
+                script = script.replace((CharSequence)"\\\"", (CharSequence)"\"");
+                script = script.replace((CharSequence)"\\'", (CharSequence)"'");
                 value = script.substring(1, script.length() - 1);
             } else {
                 try {

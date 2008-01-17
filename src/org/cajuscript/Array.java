@@ -80,7 +80,7 @@ public class Array {
         if (type.equalsIgnoreCase("char") || type.equalsIgnoreCase("c")) {
             return new char[size];
         }
-        if (type.equalsIgnoreCase("boolean") || type.equalsIgnoreCase("b")) {
+        if (type.equalsIgnoreCase("boolean") || type.equalsIgnoreCase("b") || type.equalsIgnoreCase("bool")) {
             return new boolean[size];
         }
         if (type.equalsIgnoreCase("byte") || type.equalsIgnoreCase("bt")) {
