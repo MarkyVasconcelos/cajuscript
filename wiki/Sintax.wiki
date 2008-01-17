@@ -1,4 +1,5 @@
 #summary Overview on language sintax
+#labels Tutorial
 
 = Sintax =
 
