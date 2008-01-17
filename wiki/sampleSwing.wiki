@@ -1,4 +1,5 @@
 #summary How you can use CajuScript with Swing
+#labels Sample
 
 =Swing=
 
