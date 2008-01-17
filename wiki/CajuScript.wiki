@@ -34,4 +34,4 @@ Easy to use Java. Sample:
     System.out.println(str)
 }}}
 
-You can see the [http://code.google.com/p/cajuscript/wiki/Sintax sintax overview]:
+You can see the [http://code.google.com/p/cajuscript/wiki/Sintax sintax overview].
