@@ -5,6 +5,10 @@
 
 This sample show two ways to read an file. First read is byte at byte. Second is read all in a buffer. And have an timer of performance.
 
+*Command line*:
+
+    java -jar cajuscript.jar fileread.cj
+
 *fileread.cj*:
 {{{
 $java.lang
