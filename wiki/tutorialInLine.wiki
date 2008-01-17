@@ -3,7 +3,7 @@
 
 = In Line =
 
-CajuScript supports programing in single line with ";" separator.
+CajuScript supports programing in single line with *";"* separator.
 
 *Sample:*
 
