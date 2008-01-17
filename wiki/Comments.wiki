@@ -13,12 +13,15 @@ All signs of comments allowed:
 
 Only is possible comment a entire line:
 {{{
-    // x = 1
+    x = 1 ?
+        // Comments...
+        x += 1
+    ?
 }}}
 
-This comment is not allowed:
+This comment is *not* allowed:
 {{{
-    x = 1 ? // Coments...
+    x = 1 ? // Comments...
         x += 1
     ?
 }}}
