@@ -35,4 +35,6 @@ Easy to use Java. Sample:
     System.out.println(str)
 }}}
 
+CajuScript supports [tutorialInLine programming in single line].
+
 You can see the [http://code.google.com/p/cajuscript/wiki/tutorialSintax overview of sintax].
