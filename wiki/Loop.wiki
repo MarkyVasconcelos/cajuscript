@@ -33,8 +33,10 @@ Is like "While" and "For" in others languages. In CajuScript only "While". But a
 
 | used for the sign "or".
 {{{
-    x = 10 | x = 0 ?
-        System.out.println("X is 10 or 0!")
+    x = 1
+    x = 1 | x = 2 | x = 3 ?
+        System.out.println("X is " + x + "!")
+        x += 1
     ?
 }}}
 
@@ -42,16 +44,22 @@ Is like "While" and "For" in others languages. In CajuScript only "While". But a
 
 & used for the sign "and".
 {{{
-    x > 0 & x < 10 ?
-        System.out.println("X is greater than 0 and less than 10!")
-    ?
+    x = 1
+    x > 0 & x < 10 @
+        System.out.println("X is " + x + "!")
+        x += 1
+    @
 }}}
 
 ===Groups===
 
 Parenthesis to determine groups of conditions.
 {{{
-    (x > 0 & x < 10) | (x > 10 & x < 20) ?
-        System.out.println("X is an value between 1 and 19 but not 10!")
-    ?
+    x = 1
+    (x > 0 & x < 10) | (x >= 10 & x < 20) @
+        System.out.println("X is " + x + "!")
+        x += 1
+    @
 }}}
+
+===[http://code.google.com/p/cajuscript/wiki/ComparisonOperators Comparison operators]===
