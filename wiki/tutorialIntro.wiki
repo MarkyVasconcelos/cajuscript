@@ -15,8 +15,8 @@ All basics resources of programing like:
   * [tutorialArray Arrays]
   * [tutorialIf If]
   * [tutorialLoop Loop]
-  * [tutorialFunction Function
-  * [tutorialImportAndInclude Imports and Includes
+  * [tutorialFunction Function]
+  * [tutorialImportAndInclude Imports and Includes]
   * [tutorialCast Cast]
 
 
