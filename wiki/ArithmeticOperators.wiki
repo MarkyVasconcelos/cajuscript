@@ -1,0 +1,33 @@
+#summary Arithmetic Operators
+
+=Arithmetic Operators=
+
+===Addition===
+{{{
+     x = 0 + 1
+     x += 1
+}}}
+
+===Subtraction===
+{{{
+     x = 0 - 1
+     x -= 1
+}}}
+
+===Multiplication===
+{{{
+     x = 0 * 1
+     x *= 1
+}}}
+
+===Division===
+{{{
+     x = 0 / 1
+     x /= 1
+}}}
+
+===Modulus===
+{{{
+     x = 0 % 1
+     x %= 1
+}}}
