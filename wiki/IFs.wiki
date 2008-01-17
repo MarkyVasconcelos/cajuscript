@@ -62,4 +62,4 @@ Parenthesis to determine groups of conditions.
     ?
 }}}
 
-===[http://code.google.com/p/cajuscript/wiki/ComparisonOperators Comparison operators]===
+See about *[http://code.google.com/p/cajuscript/wiki/ComparisonOperators Comparison operators]*
