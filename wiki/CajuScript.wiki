@@ -1,4 +1,4 @@
-#summary About
+#summary Introdution
 
 =CajuScript=
 
@@ -11,9 +11,33 @@ In CajuScript was implemented many ways to do easy the programming in Java.
 All basics resources of programing like:
 
 * Variables
+
 * Arrays
+
 * If
+
 * Loops
+
 * Functions
 
-Easy to use Java:
+* Includes and Imports
+
+* Casts
+
+
+Easy to use Java. Sample:
+{{{
+    $java.lang
+    str = "Hello world!"
+    len = 0
+    len < str.length() @
+        System.out.println(str.substring(len, len + 1))
+        len += 1
+    @
+    System.out.println(str.replaceAll("Hello", "Hi"))
+    str = StringBuilder(str)
+    str.append(" Bye bye bye...")
+    System.out.println(str)
+}}}
+
+You can see the sintax overview:
