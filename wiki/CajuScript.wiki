@@ -10,19 +10,13 @@ In CajuScript was implemented many ways to do easy the programming in Java.
 
 All basics resources of programing like:
 
-* Variables
-
-* Arrays
-
-* If
-
-* Loops
-
-* Functions
-
-* Includes and Imports
-
-* Casts
+  * Variables
+  * Arrays
+  * If
+  * Loops
+  * Functions
+  * Includes and Imports
+  * Casts
 
 
 Easy to use Java. Sample:
