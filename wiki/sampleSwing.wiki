@@ -5,6 +5,10 @@
 
 Creating an simple window using Java Swing.
 
+Command line:
+
+    java -jar cajuscript.jar swing.cj
+
 *swing.cj*:
 {{{
     $java.lang
