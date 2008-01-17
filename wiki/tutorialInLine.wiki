@@ -1,7 +1,7 @@
-#summary Programing in line.
+#summary Programing in single line.
 #labels Tutorial
 
-= In Line =
+= Programing in single line =
 
 CajuScript supports programing in single line with *";"* separator.
 
