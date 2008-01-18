@@ -34,3 +34,5 @@ All arithmetic operators allowed.
      x = 0 % 1
      x %= 1
 }}}
+
+_*Not is supported ++ and --!*_
