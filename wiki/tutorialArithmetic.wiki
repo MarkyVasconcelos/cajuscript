@@ -35,4 +35,4 @@ All arithmetic operators allowed.
      x %= 1
 }}}
 
-_*Not is supported ++ and --!*_
+_*Not is supported "++" and "--"! Use "+=1" and "-=1".*_
