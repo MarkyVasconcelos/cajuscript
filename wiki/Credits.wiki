@@ -4,8 +4,8 @@
 
 CajuScript for Java:
 
-Eduardo Fonseca Velasques
+  * Eduardo Fonseca Velasques
 
 CajuScript for .Net:
 
-Carlos Filipe Torres
+  * Carlos Filipe Torres
