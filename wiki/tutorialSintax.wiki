@@ -1,7 +1,7 @@
-#summary Overview on language sintax
+#summary Overview on language syntax
 #labels Tutorial
 
-= Sintax =
+=Syntax=
 
 ===[tutorialImportAndInclude Imports and include file]:===
 {{{
