@@ -37,4 +37,4 @@ Easy to use Java. Sample:
 
 CajuScript supports [tutorialInLine programming in single line].
 
-You can see the [http://code.google.com/p/cajuscript/wiki/tutorialSintax overview of sintax].
+You can see the [http://code.google.com/p/cajuscript/wiki/tutorialSyntax overview of syntax].
