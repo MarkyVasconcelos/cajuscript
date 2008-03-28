@@ -77,5 +77,12 @@ Always with parenthesis and commas, use commas to separate parameters:
     x = addWithX(1, 2)
 }}}
 
-===Observations:===
-_*All variables are global, variables defined into an function can be used on outer and in another function.*_
+===Context:===
+
+If have an variable global with same name of an variable internal of function, must use the sign of the context global to differentiate the variables. The sign of global context is "." (look the "*.x*" is the global variable "x"):
+{{{
+    x = 5
+    addWithX(x) #
+        ~ .x + x
+    #
+}}}
