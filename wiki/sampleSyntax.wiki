@@ -3,20 +3,20 @@
 
 =Syntax=
 
-Custumizable the syntax is allowed, you can define your syntax style.
+Customize the syntax is allowed, you can define your style.
 
-You can define your syntax using the class *org.cajuscript.Syntax*.
+You can define your style of syntax using the class *org.cajuscript.Syntax*.
 
-Put the new instance of Syntax on CajuScript:
+Register the new instance of Syntax in the CajuScript:
 {{{
     org.cajuscript.CajuScript.addGlobalSyntax("SYNTAX_NAME", syntaxInstance);
 }}}
 
-To use your syntax just in first line of your script put this:
+To use your syntax, just in first line of your script put this:
 
 *caju.syntax: SYNTAX_NAME*
 
-See scripts using custom syntax: [sampleSyntaxBasic Basic], [sampleSyntaxJava Java]
+See about scripts using the custom syntax: [sampleSyntaxBasic Basic], [sampleSyntaxJava Java]
 
 ===Java===
 
@@ -47,12 +47,12 @@ Define your style:
     syntaxJ.setBreak("break");
 }}}
 
-Register the syntax style on CajuScript:
+Register the instance of Syntax in the CajuScript:
 {{{
     org.cajuscript.CajuScript.addGlobalSyntax("MyJava", syntaxJ);
 }}}
 
-To use your syntax just in first line of your script put this:
+To use your syntax, just in first line of your script put this:
 *caju.syntax: MyJava*
 
 ===Basic===
@@ -84,10 +84,10 @@ Define your style:
     syntaxB.setBreak("break");
 }}}
 
-Register the syntax style on CajuScript:
+Register the instance of Syntax in the CajuScript:
 {{{
     org.cajuscript.CajuScript.addGlobalSyntax("MyBasic", syntaxB);
 }}}
 
-To use your syntax just in first line of your script put this:
+To use your syntax, just in first line of your script put this:
 *caju.syntax: MyBasic*
