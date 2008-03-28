@@ -23,7 +23,7 @@ Right now you can execute your script:
 }}}
 
 
-See about scripts using the custom syntax: [sampleSyntaxBasic Basic], [sampleSyntaxJava Java]
+See about samples of scripts using the custom syntax: [sampleSyntaxBasic Basic], [sampleSyntaxJava Java]
 
 ===Java===
 
