@@ -17,6 +17,7 @@
  * along with CajuScript.  If not, see <http://www.gnu.org/licenses/>.
 */
 package org.cajuscript;
+
 /**
  * Exceptions of the CajuScript.
  * @author eduveks
@@ -30,78 +31,51 @@ public class CajuScriptException extends Exception {
     }
     /**
      * Newly exception.
-     * @param message Message
+     * @param message Message.
      */
     public CajuScriptException(String message) {
 	super(message);
     }
     /**
      * Newly exception.
-     * @param cause More exceptions
+     * @param cause More exceptions.
      */
     public CajuScriptException(Throwable cause) {
         super(cause);
     }
     /**
      * Newly exception.
-     * @param message Message
-     * @param cause More exceptions
+     * @param message Message.
+     * @param cause More exceptions.
      */
     public CajuScriptException(String message, Throwable cause) {
         super(message, cause);
     }
     /**
      * Create an newly exception.
-     * @param caju CajuScript instance
-     * @param message Message of the exception
-     * @param script Script where ocurred the exception
-     * @return Newly exception
-     * @throws org.cajuscript.CajuScriptException
+     * @param caju CajuScript instance.
+     * @param message Message of the exception.
+     * @return Newly exception.
+     * @throws org.cajuscript.CajuScriptException Creating exception.
      */
-    public static CajuScriptException create(CajuScript caju, String message, String script) throws CajuScriptException {
-        return create(caju, message, caju.getLine(), script, null);
+    public static CajuScriptException create(CajuScript caju, Context context, String message) throws CajuScriptException {
+        return create(caju, context, message, null);
     }
     /**
      * Create an newly exception.
-     * @param caju CajuScript instance
-     * @param message Message of the exception
-     * @param line Line where ocurred the exception
-     * @param script Script where ocurred the exception
-     * @return Newly exception
-     * @throws org.cajuscript.CajuScriptException
+     * @param caju CajuScript instance.
+     * @param message Message of the exception.
+     * @param cause More exceptions.
+     * @return Newly exception.
+     * @throws org.cajuscript.CajuScriptException Creating exception.
      */
-    public static CajuScriptException create(CajuScript caju, String message, int line, String script) throws CajuScriptException {
-        return create(caju, message, line, script, null);
+    public static CajuScriptException create(CajuScript caju, Context context, String message, Throwable cause) throws CajuScriptException {
+        return new CajuScriptException(message + " > " + caju.getRunningLine().getNumber() + ": " + formatScript(caju, context, caju.getRunningLine().getContent()), cause);
     }
-    /**
-     * Create an newly exception.
-     * @param caju CajuScript instance
-     * @param message Message of the exception
-     * @param script Script where ocurred the exception
-     * @param cause More exceptions
-     * @return Newly exception
-     * @throws org.cajuscript.CajuScriptException
-     */
-    public static CajuScriptException create(CajuScript caju, String message, String script, Throwable cause) throws CajuScriptException {
-        return create(caju, message, caju.getLine(), script, cause);
-    }
-    /**
-     * Create an newly exception.
-     * @param caju CajuScript instance
-     * @param message Message of the exception
-     * @param line Line where ocurred the exception
-     * @param script Script where ocurred the exception
-     * @param cause More exceptions
-     * @return Newly exception
-     * @throws org.cajuscript.CajuScriptException
-     */
-    public static CajuScriptException create(CajuScript caju, String message, int line, String script, Throwable cause) throws CajuScriptException {
-        return new CajuScriptException(message + " > " + line + ": " + formatScript(caju, script) + "\n"+ caju.getLineContent(), cause);
-    }
-    private static String formatScript(CajuScript caju, String script) {
+    private static String formatScript(CajuScript caju, Context context, String script) {
         for (String key : caju.getAllKeys(true)) {
             if (key.startsWith(CajuScript.CAJU_VARS)) {
-                script = script.replace((CharSequence)key, "\""+ caju.getVar(key).toString() + "\"");
+                script = script.replace((CharSequence)key, "\""+ context.getVar(key).toString() + "\"");
             }
         }
         return script;

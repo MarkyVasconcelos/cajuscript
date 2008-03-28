@@ -57,12 +57,12 @@ public class Array {
      * <p><blockquote><pre>
      *     Object array = cajuArray.create("java.lang.String", 2);
      * </pre></blockquote></p>
-     * @param type Types: "int" = "i", "long" = "l", "double" = "d",
-     * "float" = "f", "char" = "c", "boolean" = "b", "byte" = "bt",
-     * "string" = "s", "java.ANY_CLASS"
-     * @param size Size of the new array 
-     * @return Newly array created is returned
-     * @throws java.lang.Exception If the reference of class not been found
+     * @param type Types: "int" or "i", "long" or "l", "double" or "d",
+     * "float" or "f", "char" or "c", "boolean" or "b", "byte" or "bt",
+     * "string" or "s", "java.ANY_CLASS".
+     * @param size Size of the new array.
+     * @return Newly array created is returned.
+     * @throws java.lang.Exception If the reference of class not been found.
      */
     public static Object create(String type, int size) throws Exception {
         if (type.equalsIgnoreCase("int") || type.equalsIgnoreCase("i")) {
@@ -93,26 +93,26 @@ public class Array {
     }
     /**
      * Get the size of array.
-     * @param array The array
-     * @return The size
+     * @param array The array.
+     * @return The size.
      */
     public static int size(Object array) {
         return java.lang.reflect.Array.getLength(array);
     }
     /**
-     * Get the value in determined position
-     * @param array The array
-     * @param i The position on the array
-     * @return Object of this position
+     * Get the value in determined position.
+     * @param array The array.
+     * @param i The position on the array.
+     * @return Object of this position.
      */
     public static Object get(Object array, int i) {
         return java.lang.reflect.Array.get(array, i);
     }
     /**
-     * Defining the value in specific position
-     * @param array The array for be affected
-     * @param i The position on the array for be affected
-     * @param v The new object for the specific position
+     * Defining the value in specific position.
+     * @param array The array for be affected.
+     * @param i The position on the array for be affected.
+     * @param v The new object for the specific position.
      */
     public static void set(Object array, int i, Object v) {
         java.lang.reflect.Array.set(array, i, v);

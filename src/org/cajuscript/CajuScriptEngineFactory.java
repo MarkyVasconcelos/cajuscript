@@ -20,6 +20,7 @@ package org.cajuscript;
 
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 import java.util.List;
 import java.util.Vector;
 
@@ -34,13 +35,13 @@ import java.util.Vector;
  * @author eduveks
  */
 public class CajuScriptEngineFactory implements ScriptEngineFactory {  
+    private static CajuScriptEngineFactory INSTANCE = new CajuScriptEngineFactory();
     /**
      * Create a newly instance.<br/>
      */
     public CajuScriptEngineFactory() {
         
     }
-    
     /**
      * Get the engine name.
      * @return Engine name.
@@ -48,7 +49,6 @@ public class CajuScriptEngineFactory implements ScriptEngineFactory {
     public String getEngineName() {
         return "CajuScript";
     }
-    
     /**
      * Get the engine version.
      * @return Engine version.
@@ -56,10 +56,9 @@ public class CajuScriptEngineFactory implements ScriptEngineFactory {
     public String getEngineVersion() {
         return CajuScript.VERSION;
     }
-    
     /**
      * Get all extensions to CajuScript files.
-     * @return List of extensions to CajuScript files
+     * @return List of extensions to CajuScript files.
      */
     public List<String> getExtensions() {
         Vector<String> v = new Vector<String>();
@@ -68,21 +67,19 @@ public class CajuScriptEngineFactory implements ScriptEngineFactory {
         v.add("cjs");
         return v;
     }
-    
     /**
      * Get a list of mime types?
      * @return All mime types to CajuScript.
      */
     public List<String> getMimeTypes() {
         Vector<String> v = new Vector<String>();
-        v.add("text/caju");
+        v.add("text/cajuscript");
         v.add("text/plain");
         return v;
     }
-    
     /**
      * Get a list of names.
-     * @return All names to CajuScript
+     * @return All names to CajuScript.
      */
     public List<String> getNames() {
         Vector<String> v = new Vector<String>();
@@ -92,23 +89,20 @@ public class CajuScriptEngineFactory implements ScriptEngineFactory {
         v.add("cajuscript");
         return v;
     }
-    
     /**
      * Get the language name.
-     * @return Language name
+     * @return Language name.
      */
     public String getLanguageName() {
         return CajuScript.NAME;
     }
-    
     /**
      * Get the language version.
-     * @return Language version
+     * @return Language version.
      */
     public String getLanguageVersion() {
         return CajuScript.LANGUAGE_VERSION;
     }
-    
     /**
      * Parameters of the engine.<br/>
      * Keys:<br/>
@@ -134,7 +128,6 @@ public class CajuScriptEngineFactory implements ScriptEngineFactory {
         }
         return "";
     }
-    
     /**
      * Sintax in CajuScript to call a method.<br/>
      * <br/>
@@ -156,15 +149,13 @@ public class CajuScriptEngineFactory implements ScriptEngineFactory {
         cmd += m + "(";
         for (int i = 0; i < args.length; i++) {
             cmd += args[i];
-            if (i == args.length - 1) {
-                cmd += ")";
-            } else {    
+            if (i < args.length - 1) {
                 cmd += ",";
             }
         }
+        cmd += ")";
         return cmd;
     }
-    
     /**
      * Show a string in output.<br/>
      * <br/>
@@ -179,7 +170,6 @@ public class CajuScriptEngineFactory implements ScriptEngineFactory {
     public String getOutputStatement(String toDisplay) {
         return "java.lang.System.out.println(\"" + toDisplay + "\");";
     }
-    
     /**
      * Not has implemented.
      * @param statements Not has implemented.
@@ -188,7 +178,6 @@ public class CajuScriptEngineFactory implements ScriptEngineFactory {
     public String getProgram(String... statements) {
         return "";
     }
-    
     /**
      * Get a newly instance of the Caju Script Engine.
      * @return New instance of the Caju Script Engine.
@@ -199,6 +188,23 @@ public class CajuScriptEngineFactory implements ScriptEngineFactory {
         } catch (Exception e) {
             return null;
         }
+    }
+    /**
+     * Load script engine manager with CajuScript.
+     * @param mgr Script engine manager to be loaded.
+     * @return Script engine manager is loaded with CajuScript.
+     */
+    public static ScriptEngineManager loadScriptEngineManager(ScriptEngineManager mgr) {
+        for (String i : INSTANCE.getNames()) {
+            mgr.registerEngineName(i, INSTANCE);
+        }
+        for (String i : INSTANCE.getExtensions()) {
+            mgr.registerEngineExtension(i, INSTANCE);
+        }
+        for (String i : INSTANCE.getMimeTypes()) {
+            mgr.registerEngineMimeType(i, INSTANCE);
+        }
+        return mgr;
     }
 }
 
