@@ -16,6 +16,7 @@ To use your syntax just in first line of your script put this:
 
 *caju.syntax: SYNTAX_NAME*
 
+See scripts using custom syntax: [sampleSyntaxBasic Basic], [sampleSyntaxJava Java]
 
 ===Java===
 
