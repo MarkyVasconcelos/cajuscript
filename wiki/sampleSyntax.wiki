@@ -1,0 +1,90 @@
+#summary Can create your syntax.
+
+=Syntax=
+
+Custumizable the syntax is allowed, you can define your syntax style.
+
+You can define your syntax using the class org.cajuscript.Syntax.
+
+Put the new instance of Syntax on CajuScript:
+{{{
+    CajuScript.addGlobalSyntax("SYNTAX_NAME", syntaxInstance);
+}}}
+
+To use your syntax just in first line of your script put this:
+*caju.syntax: SYNTAX_NAME*
+
+
+===Java===
+
+Define your style:
+{{{
+    Syntax syntaxJ = new Syntax();
+    syntaxJ.setIf("if ");
+    syntaxJ.setIfBegin("{");
+    syntaxJ.setElseIf("} else if ");
+    syntaxJ.setElseIfBegin("{");
+    syntaxJ.setElse("} else {");
+    syntaxJ.setIfEnd("}");
+    syntaxJ.setLoop("while ");
+    syntaxJ.setLoopBegin("{");
+    syntaxJ.setLoopEnd("}");
+    syntaxJ.setTry("try ");
+    syntaxJ.setTryBegin("{");
+    syntaxJ.setTryCatch("} catch {");
+    syntaxJ.setTryFinally("} finally {");
+    syntaxJ.setTryEnd("}");
+    syntaxJ.setFunction("function ");
+    syntaxJ.setFunctionBegin("{");
+    syntaxJ.setFunctionEnd("}");
+    syntaxJ.setReturn("return");
+    syntaxJ.setImport("import ");
+    syntaxJ.setRootContext("root.");
+    syntaxJ.setContinue("continue");
+    syntaxJ.setBreak("break");
+}}}
+
+Register the syntax style on CajuScript:
+{{{
+    CajuScript.addGlobalSyntax("CajuJava", syntaxJ);
+}}}
+
+To use your syntax just in first line of your script put this:
+*caju.syntax: CajuJava*
+
+===Basic===
+
+Define your style:
+{{{
+    Syntax syntaxB = new Syntax();
+    syntaxB.setIf("if ");
+    syntaxB.setIfBegin("");
+    syntaxB.setElseIf("elseif ");
+    syntaxB.setElseIfBegin("");
+    syntaxB.setElse("else");
+    syntaxB.setIfEnd("end");
+    syntaxB.setLoop("while ");
+    syntaxB.setLoopBegin("");
+    syntaxB.setLoopEnd("end");
+    syntaxB.setTry("try ");
+    syntaxB.setTryBegin("");
+    syntaxB.setTryCatch("catch");
+    syntaxB.setTryFinally("finally");
+    syntaxB.setTryEnd("end");
+    syntaxB.setFunction("function ");
+    syntaxB.setFunctionBegin("");
+    syntaxB.setFunctionEnd("end");
+    syntaxB.setReturn("return");
+    syntaxB.setImport("import ");
+    syntaxB.setRootContext("root.");
+    syntaxB.setContinue("continue");
+    syntaxB.setBreak("break");
+}}}
+
+Register the syntax style on CajuScript:
+{{{
+    CajuScript.addGlobalSyntax("CajuBasic", syntaxB);
+}}}
+
+To use your syntax just in first line of your script put this:
+*caju.syntax: CajuBasic*
