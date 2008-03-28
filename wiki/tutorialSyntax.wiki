@@ -123,7 +123,7 @@
      \ Comment...
 }}}
 
-===[tutorialTry/Catch]:===
+===[tutorialTryCatch Try/Catch]:===
 {{{
      // Try/Catch
      e ^
