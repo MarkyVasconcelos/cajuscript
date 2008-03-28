@@ -16,6 +16,13 @@ To use your syntax, just in first line of your script put this:
 
 *caju.syntax: SYNTAX_NAME*
 
+Right now you can execute your script:
+{{{
+    javax.script.ScriptEngine caju = new org.cajuscript.CajuScriptEngine();
+    caju.eval(YOUR_SCRIPT);
+}
+
+
 See about scripts using the custom syntax: [sampleSyntaxBasic Basic], [sampleSyntaxJava Java]
 
 ===Java===
