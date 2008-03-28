@@ -18,6 +18,7 @@ All basics resources of programing like:
   * [tutorialFunction Function]
   * [tutorialImportAndInclude Imports and Includes]
   * [tutorialCast Cast]
+  * [tutorialTryCatch Try/Catch]
 
 
 Easy to use Java. Sample:
