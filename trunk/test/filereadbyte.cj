@@ -15,4 +15,3 @@ readByte(filename) #
 	@
 	~ content.toString()
 #
-
