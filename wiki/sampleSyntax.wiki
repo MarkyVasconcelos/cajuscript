@@ -60,6 +60,7 @@ Register the instance of Syntax in the CajuScript:
 }}}
 
 To use your syntax, just in first line of your script put this:
+
 *caju.syntax: MyJava*
 
 ===Basic===
@@ -97,4 +98,5 @@ Register the instance of Syntax in the CajuScript:
 }}}
 
 To use your syntax, just in first line of your script put this:
+
 *caju.syntax: MyBasic*
