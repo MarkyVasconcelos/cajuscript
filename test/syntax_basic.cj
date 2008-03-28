@@ -16,7 +16,7 @@ caju.syntax: CajuBasic
 	 
 	 // LOOP
      x = 0
-     while x < 10 & x >= 0
+     while x < 100 & x >= 0
         System.out.println(x)
         x += 1
 		if x = 10
