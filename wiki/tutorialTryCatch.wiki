@@ -33,6 +33,6 @@ Is possible use the variable of exception over Finally:
      e ^
           "".substring(0, -1)
      ^~^
-          System.out.println("Finally..."+ e.getMessage())
+          System.out.println("Finally... error: "+ e.getMessage())
      ^
 }}}
