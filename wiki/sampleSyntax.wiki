@@ -1,4 +1,5 @@
 #summary Can create your syntax.
+#labels Sample
 
 =Syntax=
 
@@ -12,6 +13,7 @@ Put the new instance of Syntax on CajuScript:
 }}}
 
 To use your syntax just in first line of your script put this:
+
 *caju.syntax: SYNTAX_NAME*
 
 
