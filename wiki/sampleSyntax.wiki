@@ -5,11 +5,11 @@
 
 Custumizable the syntax is allowed, you can define your syntax style.
 
-You can define your syntax using the class org.cajuscript.Syntax.
+You can define your syntax using the class *org.cajuscript.Syntax*.
 
 Put the new instance of Syntax on CajuScript:
 {{{
-    CajuScript.addGlobalSyntax("SYNTAX_NAME", syntaxInstance);
+    org.cajuscript.CajuScript.addGlobalSyntax("SYNTAX_NAME", syntaxInstance);
 }}}
 
 To use your syntax just in first line of your script put this:
@@ -21,7 +21,7 @@ To use your syntax just in first line of your script put this:
 
 Define your style:
 {{{
-    Syntax syntaxJ = new Syntax();
+    org.cajuscript.Syntax syntaxJ = new org.cajuscript.Syntax();
     syntaxJ.setIf("if ");
     syntaxJ.setIfBegin("{");
     syntaxJ.setElseIf("} else if ");
@@ -48,17 +48,17 @@ Define your style:
 
 Register the syntax style on CajuScript:
 {{{
-    CajuScript.addGlobalSyntax("CajuJava", syntaxJ);
+    org.cajuscript.CajuScript.addGlobalSyntax("MyJava", syntaxJ);
 }}}
 
 To use your syntax just in first line of your script put this:
-*caju.syntax: CajuJava*
+*caju.syntax: MyJava*
 
 ===Basic===
 
 Define your style:
 {{{
-    Syntax syntaxB = new Syntax();
+    org.cajuscript.Syntax syntaxB = new org.cajuscript.Syntax();
     syntaxB.setIf("if ");
     syntaxB.setIfBegin("");
     syntaxB.setElseIf("elseif ");
@@ -85,8 +85,8 @@ Define your style:
 
 Register the syntax style on CajuScript:
 {{{
-    CajuScript.addGlobalSyntax("CajuBasic", syntaxB);
+    org.cajuscript.CajuScript.addGlobalSyntax("MyBasic", syntaxB);
 }}}
 
 To use your syntax just in first line of your script put this:
-*caju.syntax: CajuBasic*
+*caju.syntax: MyBasic*
