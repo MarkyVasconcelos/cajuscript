@@ -69,6 +69,7 @@ See about *[http://code.google.com/p/cajuscript/wiki/tutorialComparison Comparis
 
 The sign of continue is "*..*" and the sign of break is "*!!*":
 {{{
+    x = 0
     x < 10 & x >= 0 @
         System.out.println(x)
         x += 1
