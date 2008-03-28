@@ -1,13 +1,38 @@
-#summary One-sentence summary of this page.
+#summary Catching exceptions.
+#labels Tutorial
 
-= TryCatch =
+= Try/Catch =
 
-Add your content here.
+The definition is:
+{{{
+     e ^
+          "".substring(0, -1)
+     ^^
+          System.out.println("Error: "+ e.getMessage())
+     ^~^
+          System.out.println("Finally...")
+     ^
+}}}
 
 
-= Details =
+===Try/Catch:===
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+The sign of Catch is "^^":
+{{{
+     e ^
+          "".substring(0, -1)
+     ^^
+          System.out.println("Error: "+ e.getMessage())
+     ^
+}}}
+
+===Try/Finally:===
+
+The sign of finally is "^~^" and can use the error variable.
+{{{
+     e ^
+          "".substring(0, -1)
+     ^~^
+          System.out.println("Finally..."+ e.getMessage())
+     ^
+}}}
