@@ -17,7 +17,7 @@ The definition is:
 
 ===Try/Catch:===
 
-The sign of Catch is "^^":
+Simple way to catch an exception:
 {{{
      e ^
           "".substring(0, -1)
@@ -28,7 +28,7 @@ The sign of Catch is "^^":
 
 ===Try/Finally:===
 
-The sign of finally is "^~^" and can use the error variable.
+Is possible use the variable of exception over Finally:
 {{{
      e ^
           "".substring(0, -1)
