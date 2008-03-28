@@ -64,3 +64,18 @@ Parenthesis to determine groups of conditions.
 }}}
 
 See about *[http://code.google.com/p/cajuscript/wiki/tutorialComparison Comparison operators]*
+
+===Continue and Break===
+
+The sign of continue is "*..*" and the sign of break is "*!!*":
+{{{
+    x < 10 & x >= 0 @
+        System.out.println(x)
+        x += 1
+        x = 10 ?
+            !!
+        ??
+            ..
+        ?
+     @
+}}}
