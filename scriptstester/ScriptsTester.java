@@ -32,7 +32,7 @@ public class ScriptsTester {
         time = System.currentTimeMillis();
         com.judoscript.JudoEngine judo = new com.judoscript.JudoEngine();
         judo.runCode("var x = 0; while x < "+ times +" { x = x + "+ value +"; }", null, null);
-        System.out.println("Judo: "+ (System.currentTimeMillis() - time) + "ms - " + judo.getBean("x"));
+        System.out.println("JudoScript: "+ (System.currentTimeMillis() - time) + "ms - " + judo.getBean("x"));
         // Jython
         time = System.currentTimeMillis();
         org.python.util.PythonInterpreter jython = new org.python.util.PythonInterpreter();
@@ -48,7 +48,7 @@ public class ScriptsTester {
         time = System.currentTimeMillis();
         org.cajuscript.CajuScript caju = new org.cajuscript.CajuScript();
         caju.eval("x = 0; x < "+ times +" @ x = x + "+ value +"; @");
-        System.out.println("Caju: "+ (System.currentTimeMillis() - time) + "ms - "+ caju.get("x"));
+        System.out.println("CajuScript: "+ (System.currentTimeMillis() - time) + "ms - "+ caju.get("x"));
         // LuaJava
         time = System.currentTimeMillis();
         org.keplerproject.luajava.LuaState L = org.keplerproject.luajava.LuaStateFactory.newLuaState();
