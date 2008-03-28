@@ -122,3 +122,15 @@
 
      \ Comment...
 }}}
+
+===[tutorialTry/Catch]:===
+{{{
+     // Try/Catch
+     e ^
+          "".substring(0, -1)
+     ^^
+          System.out.println("Error: "+ e.getMessage())
+     ^~^
+          System.out.println("Finally...")
+     ^
+}}}
