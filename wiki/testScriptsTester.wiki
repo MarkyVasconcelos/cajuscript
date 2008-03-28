@@ -5,6 +5,21 @@
 
 http://cajuscript.googlecode.com/svn/trunk/scriptstester/scriptstester.png
 
+===Output===
+{{{
+======================
+Scripts Tester
+======================
+Rhino: 797ms - 100000.0
+BeanShell: 812ms - 100000
+Groovy: 859ms - 100000
+JudoScript: 750ms - 100000
+Jython: 969ms - 100000
+JRuby: 1266ms - 100000
+CajuScript: 312ms - 100000
+LuaJava: 31ms - 100000.0
+}}}
+
 ====Source===
 {{{
 public class ScriptsTester {
@@ -62,23 +77,8 @@ public class ScriptsTester {
         time = System.currentTimeMillis();
         org.keplerproject.luajava.LuaState L = org.keplerproject.luajava.LuaStateFactory.newLuaState();
         L.openLibs();
-        L.LdoString("x = 1; while x < "+ times +" do x = x + "+ value +" end");
+        L.LdoString("x = 0; while x < "+ times +" do x = x + "+ value +" end");
         System.out.println("LuaJava: "+ (System.currentTimeMillis() - time) + "ms - "+ L.getLuaObject("x").getNumber());
     }
 }
-}}}
-
-===Output===
-{{{
-======================
-Scripts Tester
-======================
-Rhino: 797ms - 100000.0
-BeanShell: 812ms - 100000
-Groovy: 859ms - 100000
-JudoScript: 750ms - 100000
-Jython: 969ms - 100000
-JRuby: 1266ms - 100000
-CajuScript: 312ms - 100000
-LuaJava: 31ms - 100000.0
 }}}
