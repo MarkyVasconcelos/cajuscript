@@ -17,12 +17,12 @@
  * along with CajuScript.  If not, see <http://www.gnu.org/licenses/>.
 */
 package org.cajuscript;
+import org.cajuscript.parser.LineDetail;
+import java.util.Set;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.List;
-import java.util.ArrayList;
+import org.cajuscript.parser.Function;
 /**
  * The core of the <code>CajuScript</code> language.
  * <p>Sample:</p>
@@ -49,112 +49,21 @@ import java.util.ArrayList;
  *     e.printStackTrace();
  * }
  * </pre></blockquote></p>
- * <p><code>CajuScript</code> syntax:</p>
- * <p><blockquote><pre>
- * \ Imports
- * $java.lang
- * 
- * \ Defining a new variable
- * x = 0
- * 
- * \ LOOP
- * x &lt; 10 & x >= 0 &#64;
- *    System.out.println(x)
- *    x = x + 1
- * &#64;
- * 
- * \ IF
- * x &lt; 10 | x &gt; 0 ?
- *     System.out.println("X is less than 10!")
- * ? x &gt; 10 & x = 10 ?
- *     System.out.println("X is greater than 10!")
- * ??
- *     System.out.println("X = "+ x)
- * ?
- * 
- * \ FUNCTION
- * \ Allowed:
- * \ addWithX v1, v2 # ... #
- * \ addWithX(v1 v2) # ... #
- * addWithX(v1, v2) #
- *     \ "~" is the return
- *     ~ x + v1 + v2
- * #
- * 
- * x = addWithX(1, 2)
- * 
- * System.out.println("X = "+ x)
- * </pre></blockquote></p>
- * <p>Null value:</p>
- * <p><blockquote><pre>
- * \ $ is the null value
- * x = $
- * </pre></blockquote></p>
- * <p>Arithmetic Operators:</p>
- * <p><blockquote><pre>
- * \ + Addition
- * x = 0 + 1
- * x += 1
- * 
- * \ - Subtraction
- * x = 0 - 1
- * x -= 1
- * 
- * \ * Multiplication
- * x = 0 * 1
- * x *= 1
- * 
- * \ / Division
- * x = 0 / 1
- * x /= 1
- * 
- * \ % Modulus
- * x = 0 % 1
- * x %= 1
- * </pre></blockquote></p>
- * <p>Comparison Operators:</p>
- * <p><blockquote><pre>
- * \ = Equal to
- * (x = y)
- * 
- * \ ! Not equal to
- * (x ! y)
- * 
- * \ &lt; Less Than
- * (x &lt; y)
- * 
- * \ &gt; Greater Than
- * (x &gt; y)
- * 
- * \ &lt; Less Than or Equal To
- * (x &lt;= y)
- * 
- * \ &gt; Greater Than or Equal To
- * (x &gt;= y)
- * </pre></blockquote></p>
- * <p>Imports or include file:</p>
- * <p><blockquote><pre>
- * \ Import
- * $java.lang
- * 
- * \ Include file
- * $"script.cj"
- * </pre></blockquote></p>
  * @author eduveks
  */
 public class CajuScript {
     /**
-     * Name.
+     * Core name.
      */
     public static final String NAME = "CajuScript";
     /**
-     * Version.
+     * Core version.
      */
-    public static final String VERSION = "0.1";
+    public static final String VERSION = "0.2";
     /**
      * Language version.
      */
-    public static final String LANGUAGE_VERSION = "0.1";
+    public static final String LANGUAGE_VERSION = "0.2";
     /**
      * Line Limiter.
      */
@@ -168,697 +77,327 @@ public class CajuScript {
      */
     public static final String CAJU_VARS = "__caju";
     /**
-     * Strings along the code are replaced by statics variables whit this name.
+     * Strings along the code are replaced by statics variables with this name.
      */
     public static final String CAJU_VARS_STATIC_STRING = CAJU_VARS + "_static_string_";
     /**
      * Commands embraced by parenthesis are executed and the value is saved on
-     * variables whit this name. All parenthesis are replaced by variables whit
+     * variables with this name. All parenthesis are replaced by variables with
      * the final value when the line is interpreted.
      */
     public static final String CAJU_VARS_GROUP = CAJU_VARS + "_group_";
-    private List<String> imports = new ArrayList<String>();
-    private Map<String, Value> vars = new HashMap<String, Value>();
-    private Map<String, Func> funcs = new HashMap<String, Func>();
-    private int lineNumber = 0;
-    private String lineContent = "";
+    /**
+     * Functions parameters are going to variables setting with this name.
+     */
+    public static final String CAJU_VARS_PARAMETER = CAJU_VARS + "_param_";
+    private static Map<String, Syntax> globalSyntaxs = new HashMap<String, Syntax>();
+    private Context context = new Context();
+    private LineDetail runningLine = new LineDetail(0, "");
+    private Syntax syntax = new Syntax();
+    private Map<String, Syntax> syntaxs = new HashMap<String, Syntax>();
     /**
      * Create a newly instance of Caju Script. The variables caju and array
      * are initialized.
-     * @throws org.cajuscript.CajuScriptException Problems on starting
+     * @throws org.cajuscript.CajuScriptException Problems on starting.
      */
     public CajuScript() throws CajuScriptException {
-        vars.put("caju", toValue(this));
-        vars.put("array", toValue(new Array()));
+        context.setVar("caju", toValue(this));
+        context.setVar("array", toValue(new Array()));
     }
     /**
-     * Get number of line in execution.
-     * @return Line number
+     * Add custom syntax for all instances of CajuScript.
+     * @param name Syntax name.
+     * @param syntax Syntax instance.
      */
-    public int getLine() {
-        return lineNumber;
+    public static void addGlobalSyntax(String name, Syntax syntax) {
+        globalSyntaxs.put(name, syntax);
     }
     /**
-     * Set number of line in execution.
-     * @param l Line number
+     * Get global custom syntax by name.
+     * @param name Syntax name.
+     * @return Syntax instance.
      */
-    public void setLine(int l) {
-        lineNumber = l;
+    public static Syntax getGlobalSyntax(String name) {
+        return globalSyntaxs.get(name);
     }
     /**
-     * Get content of line in execution.
-     * @return Line content
+     * Get default syntax.
+     * @return Syntax.
      */
-    public String getLineContent() {
-        return lineContent;
+    public Syntax getSyntax() {
+        return syntax;
     }
     /**
-     * Excute a script.
-     * @param script Script to be executed
-     * @return Value returned by script
-     * @throws org.cajuscript.CajuScriptException Errors ocurred on script execution
+     * Set default syntax.
+     * @param s Syntax.
+     */
+    public void setSyntax(Syntax s) {
+        this.syntax = s;
+    }
+    /**
+     * Add custom syntax.
+     * @param name Syntax name.
+     * @param syntax Syntax instance.
+     */
+    public void addSyntax(String name, Syntax syntax) {
+        syntaxs.put(name, syntax);
+    }
+    /**
+     * Get custom syntax by name.
+     * @param name Syntax name.
+     * @return Syntax instance.
+     */
+    public Syntax getSyntax(String name) {
+        return syntaxs.get(name);
+    }
+    /**
+     * Get root context.
+     * @return Context.
+     */
+    public Context getContext() {
+        return context;
+    }
+    /**
+     * Set root context.
+     * @param c Context.
+     */
+    public void setContext(Context c) {
+        this.context = c;
+    }
+    /**
+     * Get line detail in execution.
+     * @return Line detail.
+     */
+    public LineDetail getRunningLine() {
+        return runningLine;
+    }
+    /**
+     * Set line detail in execution.
+     * @param l Line detail.
+     */
+    public void setRunningLine(LineDetail l) {
+        runningLine = l;
+    }
+    /**
+     * Script execute.
+     * @param script Script to be executed.
+     * @return Value returned by script.
+     * @throws org.cajuscript.CajuScriptException Errors ocurred on script execution.
      */
     public Value eval(String script) throws CajuScriptException {
-        String line = "";
-        try {
-            if (script.equals("")) {
-                return null;
+        return eval(script, syntax);
+    }
+    /**
+     * Script execute with specific syntax.
+     * @param script Script to be executed.
+     * @param syntax Syntax of the script.
+     * @return Value returned by script.
+     * @throws org.cajuscript.CajuScriptException Errors ocurred on script execution.
+     */
+    public Value eval(String script, Syntax syntax) throws CajuScriptException {
+        if (script.equals("")) {
+            return null;
+        }
+        script += LINE_LIMITER;
+        script = script.replace((CharSequence)"\r\n", LINE_LIMITER);
+        script = script.replace((CharSequence)"\n\r", LINE_LIMITER);
+        script = script.replace((CharSequence)"\n", LINE_LIMITER);
+        script = script.replace((CharSequence)"\r", LINE_LIMITER);
+        String[] lines = script.split(LINE_LIMITER);
+        script = "";
+        StringBuffer scriptBuffer = new StringBuffer();
+        String staticStringKey = "";
+        String staticStringValue = "";
+        String previousLine = "";
+        boolean isString1 = false;
+        boolean isString2 = false;
+        int lineNumber = 0;
+        lines: for (String line : lines) {
+            line = line.trim();
+            lineNumber++;
+            if (lineNumber == 1) {
+                if (line.trim().startsWith("caju.syntax")) {
+                    int endSyntaxLine = line.indexOf(SUBLINE_LIMITER) == -1 ? line.length() : line.indexOf(SUBLINE_LIMITER);
+                    String syntaxName = line.substring(0, endSyntaxLine).replace('\t', ' ');
+                    syntaxName = syntaxName.trim().substring(syntaxName.lastIndexOf(' ') + 1);
+                    Syntax _syntax = getSyntax(syntaxName);
+                    Syntax __syntax = getGlobalSyntax(syntaxName);
+                    if (_syntax != null) {
+                        syntax = _syntax;
+                        continue;
+                    } else if (__syntax != null) {
+                        syntax = __syntax;
+                        continue;
+                    } else {
+                        throw CajuScriptException.create(this, context, "Syntax \""+ syntaxName +"\" not found.");
+                    }
+                }
             }
-            script += LINE_LIMITER;
-            script = script.replace((CharSequence)"\r\n", LINE_LIMITER);
-            script = script.replace((CharSequence)"\n\r", LINE_LIMITER);
-            script = script.replace((CharSequence)"\n", LINE_LIMITER);
-            script = script.replace((CharSequence)"\r", LINE_LIMITER);
-            String[] lines = script.split(LINE_LIMITER);
-            script = "";
-            StringBuffer scriptBuffer = new StringBuffer();
-            String staticStringKey = "";
-            String staticStringValue = "";
-            String contentCondition = "";
-            String previousLine = "";
-            boolean isString1 = false;
-            boolean isString2 = false;
-            boolean isCondition = false;
-            int lineNumberBackup = getLine();
-            for (String _line : lines) {
-                lineContent = _line;
-                line = _line;
-                if (isString1 || isString2) {
-                    throw CajuScriptException.create(this, "Sintax error", getLine(), previousLine);
-                }
-                lineNumber++;
-                String lineComment = line.trim();
-                if (lineComment.startsWith("\\") || lineComment.startsWith("--") || lineComment.startsWith("//")) {
-                    scriptBuffer.append(LINE_LIMITER);
-                    continue;
-                }
-                char[] chars = line.toCharArray();
-                previousLine = line;
-                isString1 = false;
-                isString2 = false;
-                char cO = (char)-1;
-                for (char c : chars) {
-                    switch (c) {
+            if (isString1 || isString2) {
+                setRunningLine(new LineDetail(lineNumber, previousLine));
+                throw CajuScriptException.create(this, context, "String not closed");
+            }
+            String lineGarbage = line.trim();
+            if (lineGarbage.equals("")) {
+                continue;
+            }
+            for (String comment : syntax.getComments()) {
+                if (lineGarbage.startsWith(comment)) {
+                    continue lines;
+                } 
+            }
+            char[] chars = line.toCharArray();
+            previousLine = line;
+            isString1 = false;
+            isString2 = false;
+            char cO = (char)-1;
+            for (char c : chars) {
+                switch (c) {
                     case '\'':
                         if (cO != '\\' && !isString2) {
                             if (isString1) {
                                 isString1 = false;
-                                vars.put(staticStringKey, new Value(this, "'" + staticStringValue + "'"));
-                                if (isCondition) {
-                                    contentCondition += staticStringKey;
-                                } else {
-                                    scriptBuffer.append(staticStringKey);
-                                }
+                                context.setVar(staticStringKey, new Value(this, getContext(), syntax, "'" + staticStringValue + "'"));
+                                line = line.replace((CharSequence)("'" + staticStringValue + "'"), staticStringKey); 
                                 staticStringKey = "";
                                 staticStringValue = "";
                             } else {
                                 isString1 = true;
-                                staticStringKey = CAJU_VARS_STATIC_STRING + vars.size();
+                                staticStringKey = CAJU_VARS_STATIC_STRING + context.getVars().size();
                             }
                         } else if (isString2 || cO == '\\') {
                             staticStringValue += c;
-                        } else {
-                            scriptBuffer.append(c);
                         }
                         break;
                     case '"':
                         if (cO != '\\' && !isString1) {
                             if (isString2) {
                                 isString2 = false;
-                                vars.put(staticStringKey, new Value(this, "\"" + staticStringValue + "\""));
-                                if (isCondition) {
-                                    contentCondition += staticStringKey;
-                                } else {
-                                    scriptBuffer.append(staticStringKey);
-                                }
+                                context.setVar(staticStringKey, new Value(this, getContext(), syntax, "\"" + staticStringValue + "\""));
+                                line = line.replace((CharSequence)("\"" + staticStringValue + "\""), staticStringKey); 
                                 staticStringKey = "";
                                 staticStringValue = "";
                             } else {
                                 isString2 = true;
-                                staticStringKey = CAJU_VARS_STATIC_STRING + vars.size();
+                                staticStringKey = CAJU_VARS_STATIC_STRING + context.getVars().size();
                             }
                         } else if (isString1 || cO == '\\') {
                             staticStringValue += c;
-                        } else {
-                            scriptBuffer.append(c);
-                        }
-                        break;
-                    case '?':
-                        if (isCondition) {
-                            isCondition = false;
-                            scriptBuffer.append("?" + contentCondition + "?" + SUBLINE_LIMITER);
-                            contentCondition = "";
-                        } else {
-                            isCondition = true;
                         }
                         break;
                     default:
                         if (isString1 || isString2) {
                             staticStringValue += c;
-                        } else if (isCondition) {
-                            if (c == ';') {
-                                isCondition = false;
-                                scriptBuffer.append("?" + SUBLINE_LIMITER + contentCondition + SUBLINE_LIMITER);
-                                contentCondition = "";
-                            } else {
-                                contentCondition += c;
-                            }
-                        //} else if (c == ';') {
-                        //    script += LINE_LIMITER;
-                        } else {
-                            scriptBuffer.append(c);
-                            if (!isString1 && !isString2 && (c == '?' || c == '@' || c == '#')) {
-                                scriptBuffer.append(SUBLINE_LIMITER);
-                            }
                         }
                         break;
-                    }
-                    cO = c;
                 }
-                if (isCondition) {
-                    isCondition = false;
-                    scriptBuffer.append("?" + SUBLINE_LIMITER + contentCondition);
-                    contentCondition = "";
-                }
-                scriptBuffer.append(LINE_LIMITER);
+                cO = c;
             }
-            script = scriptBuffer.toString();
-            setLine(lineNumberBackup);
-            lines = script.split(LINE_LIMITER);
-            for (int y = 0; y < lines.length; y++) {
-                lineNumber++;
-                lineContent = lines[y];
-                lines[y] = lines[y].trim();
-                String[] subLines = lines[y].split("\\"+ SUBLINE_LIMITER);
-                for (int x = 0; x < subLines.length; x++) {
-                    line = subLines[x].trim();
-                    if (line.startsWith("~")) {
-                        if (line.length() == 1) {
-                            return new Value(this);
-                        } else {
-                            return new Value(this, evalValue(line.substring(1)));
-                        }
-                    } else if (line.endsWith("?")) {
-                        StringBuffer scriptIFCondition = new StringBuffer(line.substring(0, line.length() - 1));
-                        StringBuffer scriptIF = new StringBuffer();
-                        if (scriptIFCondition.indexOf("?") > -1) {
-                            throw CajuScriptException.create(this, "Sintax error", line);
-                        }
-                        List<String> ifs = new ArrayList<String>();
-                        int ifLineNumber = getLine();
-                        int[] ifLineEnd = loadIfLine(ifs, ifLineNumber, subLines, x, scriptIFCondition, scriptIF, 0);
-                        if (ifLineEnd[1] == 0) {
-                            for (int z = y + 1; z < lines.length; z++) {
-                                ifLineNumber++;
-                                subLines = lines[z].split("\\;");
-                                ifLineEnd = loadIfLine(ifs, ifLineNumber, subLines, -1, scriptIFCondition, scriptIF, ifLineEnd[1]);
-                                scriptIF.append(LINE_LIMITER);
-                                if (ifLineEnd[0] != -1 && ifLineEnd[1] == -1) {
-                                    x = ifLineEnd[0];
-                                    y = z;
-                                    break;
-                                }
-                            }
-                        } else {
-                            x = ifLineEnd[0];
-                        }
-                        for (String content : ifs) {
-                            int p1 = content.indexOf("?");
-                            int p2 = content.substring(p1 + 1).indexOf("?") + p1 + 1;
-                            String _ifCondition = content.substring(0, p1);
-                            String _ifLineNumber = content.substring(p1 + 1, p2);
-                            String _ifContent = content.substring(p2 + 1);
-                            _ifCondition = _ifCondition.trim();
-                            if (((Boolean)cast(evalValue(_ifCondition), "b")).booleanValue()) {
-                                setLine(Integer.valueOf(_ifLineNumber).intValue());
-                                eval(_ifContent);
-                                break;
-                            }
-                        }
-                        setLine(ifLineNumber);
-                    } else if (line.endsWith("@")) {
-                        StringBuffer scriptLOOP = new StringBuffer();
-                        int loopLineNumber = getLine();
-                        int[] loopLineEnd = loadLoopLine(subLines, x, scriptLOOP, 0);
-                        if (loopLineEnd[1] == 0) {
-                            for (int z = y + 1; z < lines.length; z++) {
-                                loopLineNumber++;
-                                subLines = lines[z].split("\\;");
-                                loopLineEnd = loadLoopLine(subLines, -1, scriptLOOP, loopLineEnd[1]);
-                                scriptLOOP.append(LINE_LIMITER);
-                                if (loopLineEnd[0] != -1 && loopLineEnd[1] == -1) {
-                                    x = loopLineEnd[0];
-                                    y = z;
-                                    break;
-                                }
-                            }
-                        } else {
-                            x = loopLineEnd[0];
-                        }
-                        line = line.substring(0, line.length() - 1);
-                        lineNumberBackup = getLine();
-                        while (((Boolean)cast(evalValue(line), "b")).booleanValue()) {
-                            setLine(lineNumberBackup);
-                            eval(scriptLOOP.toString());
-                        }
-                        setLine(loopLineNumber);
-                    } else if (line.endsWith("#")) {
-                        String scriptFuncDef = line.substring(0, line.length() - 1);
-                        StringBuffer scriptFunc = new StringBuffer();
-                        lineNumberBackup = getLine();
-                        int loopLineNumber = getLine();
-                        int funcLineEnd = loadFuncLine(subLines, x, scriptFunc);
-                        if (funcLineEnd == -1) {
-                            for (int z = y + 1; z < lines.length; z++) {
-                                loopLineNumber++;
-                                subLines = lines[z].split("\\;");
-                                funcLineEnd = loadFuncLine(subLines, -1, scriptFunc);
-                                scriptFunc.append(LINE_LIMITER);
-                                if (funcLineEnd != -1) {
-                                    x = funcLineEnd;
-                                    y = z;
-                                    break;
-                                }
-                            }
-                        } else {
-                            x = funcLineEnd;
-                        }
-                        Func func = new Func(this, scriptFuncDef, scriptFunc.toString(), lineNumberBackup);
-                        funcs.put(func.getName(), func);
-                    } else if (line.indexOf('=') > -1) {
-                        try {
-                            int p = line.indexOf('=');
-                            String[] allKeys = line.substring(0, p).replaceAll(" ", "").split(",");
-                            for (String key : allKeys) {
-                                Value value = new Value(this, evalValue(line.substring(p + 1)));
-                                if (key.endsWith("+") || key.endsWith("-") || key.endsWith("*") || key.endsWith("/") || key.endsWith("%")) {
-                                    char s = key.substring(key.length() - 1).toCharArray()[0];
-                                    key = key.substring(0, key.length() - 1);
-                                    Value value1 = vars.get(key);
-                                    Value value2 = value;
-                                    Double n1 = new Double(0);
-                                    Double n2 = new Double(0);
-                                    if (value1.getType() == Value.TYPE_NUMBER && value2.getType() == Value.TYPE_NUMBER) {
-                                        n1 = (Double)value1.getValue();
-                                        n2 = (Double)value2.getValue();
-                                    }
-                                    switch (s) {
-                                    case '+':
-                                        if (value1.getType() == Value.TYPE_NUMBER && value2.getType() == Value.TYPE_NUMBER) {
-                                            Double n = new Double(n1.doubleValue() + n2.doubleValue());
-                                            value1.setValue(n);
-                                            vars.put(key, value1);
-                                        } else if (value1.getType() == Value.TYPE_STRING || value2.getType() == Value.TYPE_STRING) {
-                                            value1.setValue(value1.getValue().toString() + value2.getValue().toString());
-                                            vars.put(key, value1);
-                                        }
-                                        break;
-                                    case '-':
-                                        if (value1.getType() == Value.TYPE_NUMBER && value2.getType() == Value.TYPE_NUMBER) {
-                                            Double n = new Double(n1.doubleValue() - n2.doubleValue());
-                                            value1.setValue(n);
-                                            vars.put(key, value1);
-                                        }
-                                        break;
-                                    case '*':
-                                        if (value1.getType() == Value.TYPE_NUMBER && value2.getType() == Value.TYPE_NUMBER) {
-                                            Double n = new Double(n1.doubleValue() * n2.doubleValue());
-                                            value1.setValue(n);
-                                            vars.put(key, value1);
-                                        }
-                                        break;
-                                    case '/':
-                                        if (value1.getType() == Value.TYPE_NUMBER && value2.getType() == Value.TYPE_NUMBER) {
-                                            Double n = new Double(n1.doubleValue() / n2.doubleValue());
-                                            value1.setValue(n);
-                                            vars.put(key, value1);
-                                        }
-                                        break;
-                                    case '%':
-                                        if (value1.getType() == Value.TYPE_NUMBER && value2.getType() == Value.TYPE_NUMBER) {
-                                            Double n = new Double(n1.doubleValue() % n2.doubleValue());
-                                            value1.setValue(n);
-                                            vars.put(key, value1);
-                                        }
-                                        break;
-                                    default:
-                                        break;
-                                    }
-                                } else { 
-                                    vars.put(key, value);
-                                }
-                            }
-                        } catch (CajuScriptException e) {
-                            throw e;
-                        } catch (Exception e) {
-                            throw CajuScriptException.create(this, "Sintax error", line, e);
-                        }
-                    } else if (line.startsWith("$")) {
-                        String path = line.substring(1).trim();
-                        if (path.startsWith(CAJU_VARS)) {
-                            evalFile(getVar(path).toString());
-                        } else {
-                            addImport(path);
-                        }
-                    } else {
-                        if (!line.equals("")) {
-                            new Value(this, evalValue(line));
-                        }
-                    }
-                }
-            }
-            return new Value(this);
-        } catch (CajuScriptException e) {
-            throw e;
-        } catch (Exception e) {
-            throw CajuScriptException.create(this, "Sintax error", line, e);
+            scriptBuffer.append(">" + lineNumber + ":" + line);
+            scriptBuffer.append(SUBLINE_LIMITER);
         }
-    }
-    private int[] loadIfLine(List<String> ifs, int lineNumber, String[] subLines, int subLinesIndex, StringBuffer scriptIFCondition, StringBuffer scriptIF, int ifLevel) throws CajuScriptException {
-        int countSubLines = 0;
-        for (int z = subLinesIndex + 1; z < subLines.length; z++) {
-            String scriptIFline = subLines[z].trim();
-            if (ifLevel == 0 && scriptIFline.length() > 1 && scriptIFline.startsWith("?") && scriptIFline.endsWith("?")) {
-                ifs.add(scriptIFCondition + "?" + lineNumber + "?" + scriptIF);
-                scriptIFCondition.delete(0, scriptIFCondition.length());
-                String condition = scriptIFline.substring(1, scriptIFline.length() - 1);
-                if (condition.trim().equals("")) {
-                    condition = "1 = 1";
-                }
-                scriptIFCondition = scriptIFCondition.append(condition);
-                scriptIF.delete(0, scriptIF.length());
-                continue;
-            } else if (scriptIFline.length() == 1 && scriptIFline.equals("?")) {
-                if (ifLevel == 0) {
-                    ifs.add(scriptIFCondition + "?" + lineNumber + "?" + scriptIF);
-                    return new int[] {z, -1};
-                }
-                ifLevel--;
-            } else if (scriptIFline.length() > 1 && !scriptIFline.startsWith("?") && scriptIFline.endsWith("?")) {
-                ifLevel++;
+        lines = scriptBuffer.toString().split(SUBLINE_LIMITER);
+        scriptBuffer = new StringBuffer();
+        for (String line : lines) {
+            line = line.trim();
+            String lineN = "";
+            if (line.startsWith(">")) {
+                lineN = line.substring(0, line.indexOf(":") + 1);
+                line = line.substring(lineN.length()).trim();
             }
-            if (!scriptIFline.equals("")) {
-                scriptIF.append(countSubLines > 0 ? SUBLINE_LIMITER + scriptIFline : scriptIFline );
+            int p = endLineIndex(line, syntax);
+            if (p > -1) {
+                String endLine = line.substring(p);
+                if (!endLine.trim().equals("")) {
+                    endLine += SUBLINE_LIMITER;
+                }
+                scriptBuffer.append(lineN + line.substring(0, p) + SUBLINE_LIMITER + endLine);
+            } else {
+                scriptBuffer.append(lineN + line + SUBLINE_LIMITER);
             }
-            countSubLines++;
         }
-        return new int[] {-1, ifLevel};
+        script = scriptBuffer.toString();
+        org.cajuscript.parser.Base base = new org.cajuscript.parser.Base(new LineDetail(-1, ""), syntax);
+        base.parse(this, script, syntax);
+        return base.execute(this, context);
     }
-    private int[] loadLoopLine(String[] subLines, int subLinesIndex, StringBuffer scriptLOOP, int loopLevel) throws CajuScriptException {
-        int countSubLines = 0;
-        for (int z = subLinesIndex + 1; z < subLines.length; z++) {
-            String scriptLOOPline = subLines[z].trim();
-            if (scriptLOOPline.length() > 1 && scriptLOOPline.endsWith("@")) {
-                loopLevel++;
-            } else if (scriptLOOPline.length() == 1 && scriptLOOPline.equals("@")) {
-                if (loopLevel == 0) {
-                    return new int[] {z, -1};
-                }
-                loopLevel--;
-            }
-            if (!scriptLOOPline.equals("")) {
-                scriptLOOP.append(countSubLines > 0 ? SUBLINE_LIMITER + scriptLOOPline : scriptLOOPline);
-            }
-            countSubLines++;
+    private int endLineIndex(String line, Syntax syntax) {
+        if (line.equals("")) {
+            return -1;
         }
-        return new int[] {-1, loopLevel};
-    }
-    private int loadFuncLine(String[] subLines, int subLinesIndex, StringBuffer scriptFUNC) throws CajuScriptException {
-        int countSubLines = 0;
-        for (int z = subLinesIndex + 1; z < subLines.length; z++) {
-            String scriptFUNCline = subLines[z].trim();
-            if (scriptFUNCline.equals("#")) {
-                return z;
-            }
-            if (!scriptFUNCline.equals("")) {
-                scriptFUNC.append(countSubLines > 0 ? SUBLINE_LIMITER + scriptFUNCline : scriptFUNCline);
-            }
-            countSubLines++;
+        int p = line.indexOf(syntax.getIfBegin());
+        if (line.startsWith(syntax.getIf()) && ((!syntax.getIfBegin().equals("") && p > syntax.getIf().length()) || syntax.getIfBegin().equals(""))) {
+            return p + syntax.getElseIfBegin().length();
+        }
+        p = line.substring(1).indexOf(syntax.getElseIfBegin()) + 1;
+        if (line.startsWith(syntax.getElseIf()) && ((!syntax.getElseIfBegin().equals("") && p > syntax.getElseIf().length()) || syntax.getElseIfBegin().equals(""))) {
+            return p + syntax.getIfBegin().length();
+        }
+        p = line.indexOf(syntax.getElse());
+        if (line.startsWith(syntax.getElse())) {
+            return p + syntax.getElse().length();
+        }
+        p = line.indexOf(syntax.getLoopBegin());
+        if (line.startsWith(syntax.getLoop()) && ((!syntax.getLoopBegin().equals("") && p > syntax.getLoop().length()) || syntax.getLoopBegin().equals(""))) {
+            return p + syntax.getLoopBegin().length();
+        }
+        p = line.indexOf(syntax.getFunctionBegin());
+        if (line.startsWith(syntax.getFunction()) && ((!syntax.getFunctionBegin().equals("") && p > syntax.getFunction().length()) || syntax.getFunctionBegin().equals(""))) {
+            return p + syntax.getFunctionBegin().length();
+        }
+        p = line.indexOf(syntax.getTryBegin());
+        if (line.startsWith(syntax.getTry()) && ((!syntax.getTryBegin().equals("") && p > syntax.getTry().length()) || syntax.getTryBegin().equals(""))) {
+            return p + syntax.getTryBegin().length();
+        }
+        p = 0;
+        if (line.startsWith(syntax.getTryCatch())) {
+            return p + syntax.getTryCatch().length();
+        }
+        p = 0;
+        if (line.startsWith(syntax.getTryFinally())) {
+            return p + syntax.getTryFinally().length();
+        }
+        if (line.startsWith(syntax.getIfEnd())) {
+            return p + syntax.getIfEnd().length();
+        }
+        if (line.startsWith(syntax.getLoopEnd())) {
+            return p + syntax.getLoopEnd().length();
+        }
+        if (line.startsWith(syntax.getFunctionEnd())) {
+            return p + syntax.getFunctionEnd().length();
+        }
+        if (line.startsWith(syntax.getTryEnd())) {
+            return p + syntax.getTryEnd().length();
         }
         return -1;
     }
-    private boolean condition(String script) throws CajuScriptException {
-        try {
-            script = script.trim();
-            int s1 = script.indexOf("&");
-            int s2 = script.indexOf("|");
-            s1 = s1 == -1 ? Integer.MAX_VALUE : s1;
-            s2 = s2 == -1 ? Integer.MAX_VALUE : s2;
-            int min1 = Math.min(s1, s2);
-            if (s1 < Integer.MAX_VALUE && min1 == s1) {
-                if (condition(script.substring(0, s1)) && condition(script.substring(s1 + 1))) {
-                    return true;
-                }
-            } else if (s2 < Integer.MAX_VALUE && min1 == s2) {
-                if (condition(script.substring(0, s2)) || condition(script.substring(s2 + 1))) {
-                    return true;
-                }
-            } else if (!script.equals("")) {
-                int cs1 = script.indexOf("=");
-                int cs2 = script.indexOf("!");
-                int cs3 = script.indexOf(">=");
-                int cs4 = script.indexOf("<=");
-                int cs5 = script.indexOf(">");
-                int cs6 = script.indexOf("<");
-                if (cs3 > -1 || cs4 > -1) {
-                    cs1 = -1;
-                }
-                int max = Math.max(cs1, Math.max(cs2, Math.max(cs3, Math.max(cs4, Math.max(cs5, cs6)))));
-                if (max > -1) {
-                    int len = max == cs3 || max == cs4 ? 2 : 1;
-                    Value value1 = new Value(this, evalValue(script.substring(0, max)));
-                    Value value2 = new Value(this, evalValue(script.substring(max + len)));
-                    if ((cs1 > -1 || cs2 > -1) && (value1.getValue() == null || value2.getValue() == null)) {
-                        if (cs1 > -1 && value1.getValue() == value2.getValue()) {
-                            return true;
-                        } else if (cs2 > -1 && value1.getValue() != value2.getValue()) {
-                            return true;
-                        }
-                    } else if ((cs1 > -1 || cs2 > -1) && (value1.getType() == Value.TYPE_NUMBER || value2.getType() == Value.TYPE_NUMBER)) {
-                        if (cs1 > -1 && value1.getNumberValue() == value2.getNumberValue()) {
-                            return true;
-                        } else if (cs2 > -1 && value1.getNumberValue() != value2.getNumberValue()) {
-                            return true;
-                        }
-                    } else if (cs1 > -1 && value1.getValue().equals(value2.getValue())) {
-                        return true;
-                    } else if (cs2 > -1 && !value1.getValue().equals(value2.getValue())) {
-                        return true;
-                    } else if (value1.getType() == Value.TYPE_NUMBER && value2.getType() == Value.TYPE_NUMBER) {
-                        if (cs3 > -1 && value1.getNumberValue() >= value2.getNumberValue()) {
-                            return true;
-                        } else if (cs4 > -1 && value1.getNumberValue() <= value2.getNumberValue()) {
-                            return true;
-                        } else if (cs5 > -1 && value1.getNumberValue() > value2.getNumberValue()) {
-                            return true;
-                        } else if (cs6 > -1 && value1.getNumberValue() < value2.getNumberValue()) {
-                            return true;
-                        }
-                    }
-                } else {
-                    Value value = new Value(this, evalValue(script));
-                    return ((Boolean)cast(value.getValue(), "b")).booleanValue();
-                }
-            }
-            return false;
-        } catch (CajuScriptException e) {
-            throw e;
-        } catch (Exception e) {
-            throw CajuScriptException.create(this, "Sintax error", script, e);
-        }
-    }
-    private String evalValue(String script) throws CajuScriptException {
-        return evalValueGroup(script);
-    }
-    private String evalValueSingle(String script) throws CajuScriptException {
-        try {
-            script = script.trim();
-            String scriptSign = script;
-            boolean startWithSign = false;
-            if (script.startsWith("-") || script.startsWith("+")) {
-                startWithSign = true;
-                scriptSign = script.substring(1);
-            }
-            int s1 = scriptSign.indexOf('+');
-            int s2 = scriptSign.indexOf('-');
-            int s3 = scriptSign.indexOf('*');
-            int s4 = scriptSign.indexOf('/');
-            int s5 = scriptSign.indexOf('%');
-            s1 = s1 == -1 ? Integer.MAX_VALUE : s1;
-            s2 = s2 == -1 ? Integer.MAX_VALUE : s2;
-            s3 = s3 == -1 ? Integer.MAX_VALUE : s3;
-            s4 = s4 == -1 ? Integer.MAX_VALUE : s4;
-            s5 = s5 == -1 ? Integer.MAX_VALUE : s5;
-            int min1 = Math.min(s1, Math.min(s2, Math.min(s3, Math.min(s4, s5))));
-            if (min1 > -1 && min1 < Integer.MAX_VALUE) {
-                if (startWithSign) {
-                    if (min1 == s1) {
-                        s1++;
-                    } else if (min1 == s2) {
-                        s2++;
-                    } else if (min1 == s3) {
-                        s3++;
-                    } else if (min1 == s4) {
-                        s4++;
-                    } else if (min1 == s5) {
-                        s5++;
-                    }
-                    min1++;
-                }
-                Value value1 = new Value(this, script.substring(0, min1));
-                int min2 = Math.min(s3, Math.min(s4, s5));
-                if (min2 > min1 && min2 < Integer.MAX_VALUE) {
-                    for (int x = min2 - 2; x > 0; x--) {
-                        if (script.substring(x).startsWith(" ")
-                            || script.substring(x).startsWith("+")
-                            || script.substring(x).startsWith("-")
-                            || script.substring(x).startsWith("/")
-                            || script.substring(x).startsWith("*")
-                            || script.substring(x).startsWith("%")) {
-                            script = evalValueSingle(script.substring(0, x+1) + evalValueSingle(script.substring(x+1)));
-                            return script;
-                        }
-                    }
-                }
-                Value value2 = null;
-                for (int x = min1 + 1; x < script.length(); x++) {
-                    String nextValue = script.substring(min1 + 1, x);
-                    String nextValueTrim = nextValue.trim();
-                    if (!nextValueTrim.equals("") && !nextValueTrim.equals("-") && !nextValueTrim.equals("+") && (
-                        nextValue.endsWith("/") || nextValue.endsWith("*") || nextValue.endsWith("%") || 
-                        nextValue.endsWith("-") || nextValue.endsWith("+"))) {
-                        value2 = new Value(this, nextValue.substring(0, nextValue.length() - 1));
-                        script = script.substring(x - 1);
-                        break;
-                    }
-                }
-                if (value2 == null) {
-                    value2 = new Value(this, script.substring(min1 + 1));
-                    script = "";
-                }
-                String valueFinal = "";
-                if (value1.getType() == Value.TYPE_NUMBER && value2.getType() == Value.TYPE_NUMBER) {
-                    if (min1 == s1) {
-                        valueFinal += (value1.getNumberValue() + value2.getNumberValue());
-                    } else if (min1 == s2) {
-                        valueFinal += (value1.getNumberValue() - value2.getNumberValue());
-                    } else if (min1 == s3) {
-                        valueFinal += (value1.getNumberValue() * value2.getNumberValue());
-                    } else if (min1 == s4) {
-                        valueFinal += (value1.getNumberValue() / value2.getNumberValue());
-                    } else if (min1 == s5) {
-                        valueFinal += (value1.getNumberValue() % value2.getNumberValue());
-                    }
-                } else {
-                    String varKey = CAJU_VARS_STATIC_STRING + vars.size();
-                    vars.put(varKey, new Value(this, "\"" + value1.getValue().toString() + value2.getValue().toString() + "\""));
-                    valueFinal += varKey;
-                }
-                if (script.indexOf('+') > -1 || script.indexOf('-') > -1 ||
-                    script.indexOf('*') > -1 || script.indexOf('/') > -1 || script.indexOf('%') > -1) {
-                    return evalValueSingle(valueFinal + script);
-                } else {
-                    return valueFinal;
-                }
-            } else {
-                return script.trim();
-            }
-        } catch (CajuScriptException e) {
-            throw e;
-        } catch (Exception e) {
-            throw CajuScriptException.create(this, "Sintax error", script, e);
-        }
-    }
-    private String evalValueGroup(String script) throws CajuScriptException {
-        if (script.indexOf('(') > -1) {
-            try {
-                char[] scriptChars = script.toCharArray();
-                String scriptGroup = "";
-                String scriptGroupFunc = "";
-                int groupType = 0;
-                for (int x = 0; x < scriptChars.length; x++) {
-                    if (scriptChars[x] == '(') {
-                        scriptGroup = "";
-                        scriptGroupFunc = "";
-                        groupType = 0;
-                        for (int y = x - 1; y >= 0; y--) {
-                            if ("+*-/%(),<=>!&|".indexOf(scriptChars[y]) > -1) {
-                                break;
-                            }
-                            if (scriptChars[y] != ' ') {
-                                groupType = 1;
-                            }
-                            scriptGroupFunc = scriptChars[y] + scriptGroupFunc;
-                        }
-                    } else if (scriptChars[x] == ')') {
-                        String varKey = CAJU_VARS_GROUP + vars.size();
-                        String valueScript = scriptGroup;
-                        if (!scriptGroupFunc.trim().equals("")
-                            && scriptGroupFunc.indexOf("<") == -1 && scriptGroupFunc.indexOf("=") == -1 && scriptGroupFunc.indexOf(">") == -1
-                            && scriptGroupFunc.indexOf("!") == -1 && scriptGroupFunc.indexOf("&") == -1 && scriptGroupFunc.indexOf("|") == -1) {
-                            String[] params = scriptGroup.split(",");
-                            String scriptParams = "";
-                            for (int k = 0; k < params.length; k++) {
-                                if (k > 0) {
-                                    scriptParams += ",";
-                                }
-                                scriptParams += evalValueSingle(params[k]);
-                            }
-                            valueScript = scriptGroupFunc + "(" + scriptParams + ")";
-                        }
-                        if (scriptGroup.indexOf('<') > -1 || scriptGroup.indexOf('=') > -1 || scriptGroup.indexOf('>') > -1
-                            || scriptGroup.indexOf("!") > -1 || scriptGroup.indexOf('&') > -1 || scriptGroup.indexOf('|') > -1) {
-                            groupType = 0;
-                            vars.put(varKey, new Value(this, condition(scriptGroup) ? "true" : "false"));
-                        } else {
-                            vars.put(varKey, new Value(this, groupType == 0 ? evalValueSingle(valueScript) : valueScript));
-                        }
-                        script = script.replace(groupType == 0 ? "(" + scriptGroup + ")" : scriptGroupFunc + "(" + scriptGroup + ")", varKey);
-                        if (script.indexOf('(') > -1) {
-                            return evalValueGroup(script);
-                        } else {
-                            if (script.indexOf('<') > -1 || script.indexOf('=') > -1 || script.indexOf('>') > -1
-                                || script.indexOf("!") > -1 || script.indexOf('&') > -1 || script.indexOf('|') > -1) {
-                                return condition(script) ? "true" : "false";
-                            } else {
-                                return evalValueSingle(script);
-                            }
-                        }
-                    } else {
-                        scriptGroup += scriptChars[x];
-                    }
-                }
-            } catch (CajuScriptException e) {
-                throw e;
-            } catch (Exception e) {
-                throw CajuScriptException.create(this, "Sintax error", script, e);
-            }
-            return "";
-        } else {
-            if (script.indexOf('<') > -1 || script.indexOf('=') > -1 || script.indexOf('>') > -1
-                || script.indexOf("!") > -1 || script.indexOf('&') > -1 || script.indexOf('|') > -1) {
-                return condition(script) ? "true" : "false";
-            } else {
-                return evalValueSingle(script);
-            }
-        }
+    /**
+     * File exucute.
+     * @param path File to be executed.
+     * @return Value returned by script.
+     * @throws org.cajuscript.CajuScriptException File cannot be executed or error ocurred on execution.
+     */
+    public Value evalFile(String path) throws CajuScriptException {
+        return evalFile(path, syntax);
     }
     /**
-     * Exucute a file.
-     * @param path File to be executed
-     * @throws org.cajuscript.CajuScriptException File cannot be executed or error ocurred on execution
+     * File execute with specific syntax.
+     * @param path File to be executed.
+     * @param syntax Syntax of the script in file.
+     * @return Value returned by script.
+     * @throws org.cajuscript.CajuScriptException File cannot be executed or error ocurred on execution.
      */
-    public void evalFile(String path) throws CajuScriptException {
+    public Value evalFile(String path, Syntax syntax) throws CajuScriptException {
         java.io.InputStream is = null;
         try {
             is = new java.io.FileInputStream(path);
             byte[] b = new byte[is.available()];
             is.read(b);
-            eval(new String(b));
+            return eval(new String(b), syntax);
         } catch (CajuScriptException e) {
             throw e;
         } catch (Exception e) {
-            throw CajuScriptException.create(this, "Cannot read file \"" + e.getMessage() + "\"", path, e);
+            throw CajuScriptException.create(this, context, "Cannot read file \"" + e.getMessage() + "\"", e);
         } finally {
             if (is != null) {
                 try {
@@ -868,28 +407,28 @@ public class CajuScript {
         }
     }
     /**
-     * Get funcion.
-     * @param key Funcion name
-     * @return Function object
+     * Get function.
+     * @param key Function name.
+     * @return Function object.
      */
-    public Func getFunc(String key) {
-        return funcs.get(key);
+    public Function getFunc(String key) {
+        return context.getFunc(key);
     }
     /**
-     * Define a funcion.
-     * @param key Funcion name
-     * @param func Object of the function
+     * Define a function.
+     * @param key Function name.
+     * @param func Object of the function.
      */
-    public void setFunc(String key, Func func) {
-        funcs.put(key, func);
+    public void setFunc(String key, Function func) {
+        context.setFunc(key, func);
     }
     /**
-     * Get variable.
-     * @param key Variable name
-     * @return Variable object
+     * Get variable value.
+     * @param key Variable name.
+     * @return Variable object.
      */
     public Value getVar(String key) {
-        return vars.get(key);
+        return context.getVar(key);
     }
     /**
      * Get all name of variables without variables created automaticaly by
@@ -902,144 +441,212 @@ public class CajuScript {
     /**
      * Get all name of variables including variables created automaticaly by
      * CajuScript if parameter are true.
-     * @param withCajuVars Including variables created automaticaly by CajuScript or not
-     * @return List of all variables names
+     * @param withCajuVars Including variables created automaticaly by CajuScript or not.
+     * @return List of all variables names.
      */
     public Set<String> getAllKeys(boolean withCajuVars) {
-        Set<String> keys = new HashSet<String>();
-        for (String key : vars.keySet()) {
-            if (!withCajuVars && key.startsWith(CAJU_VARS)) {
-                continue;
-            }
-            keys.add(key);
-        }
-        return keys;
+        return context.getAllKeys(withCajuVars);
     }
     /**
-     * Adding new variable.
-     * @param key Variable name
-     * @param value Variable value
+     * Setting new variable.
+     * @param key Variable name.
+     * @param value Variable value.
      */
-    public void addVar(String key, Value value) {
-        vars.put(key, value);
+    public void setVar(String key, Value value) {
+        context.setVar(key.trim(), value);
     }
     /**
      * Convert Java objects to CajuScript object to be used like value of variables.
-     * @param obj
-     * @return
-     * @throws org.cajuscript.CajuScriptException Errors
+     * @param obj Object to be converted in Value.
+     * @return New value generated from object.
+     * @throws org.cajuscript.CajuScriptException Errors.
      */
     public Value toValue(Object obj) throws CajuScriptException {
-        Value v = new Value(this);
+        Value v = new Value(this, getContext(), getSyntax());
         v.setValue(obj);
         return v;
     }
     /**
-     * Defining new variable.
-     * @param key Variable name
-     * @param value Variable value
-     * @throws org.cajuscript.CajuScriptException Errors
+     * Convert Java objects to CajuScript object to be used like value of variables.
+     * @param obj Object to be converted in Value.
+     * @param context Context for this value.
+     * @param syntax Syntax for this value.
+     * @return New value generated from object.
+     * @throws org.cajuscript.CajuScriptException Errors.
      */
-    public void set(String key, Object value) throws CajuScriptException {
-        addVar(key, toValue(value));
+    public Value toValue(Object obj, Context context, Syntax syntax) throws CajuScriptException {
+        Value v = new Value(this, context, syntax);
+        v.setValue(obj);
+        return v;
     }
     /**
-     * Getting value of variables in Java object.
-     * @param key Variable name
-     * @return Variable value in Java
-     * @throws org.cajuscript.CajuScriptException Errors
+     * Defining new variable and setting value from a Java object.
+     * @param key Variable name.
+     * @param value Variable value.
+     * @throws org.cajuscript.CajuScriptException Errors.
+     */
+    public void set(String key, Object value) throws CajuScriptException {
+        setVar(key.trim(), toValue(value));
+    }
+    /**
+     * Getting value from variables to Java object.
+     * @param key Variable name.
+     * @return Variable value in Java.
+     * @throws org.cajuscript.CajuScriptException Errors.
      */
     public Object get(String key) throws CajuScriptException {
         return getVar(key).getValue();
     }
     /**
      * Get list of all imports used by script in execution.
-     * @return List of imports defined
+     * @return List of imports defined.
      */
     public List<String> getImports() {
-        return imports;
+        return context.getImports();
     }
     /**
      * Define a new import to be used. Only Java package.
      * @param i The content of importing is only Java package.
      */
     public void addImport(String i) {
-        imports.add(i);
+        context.addImport(i);
     }
     /**
      * Remove import.
      * @param s Import content to be removed.
      */
     public void removeImport(String s) {
-        imports.remove(s);
+        context.removeImport(s);
     }
     /**
      * Convert value to type specified.
-     * @param value Value to be converted
-     * @param type Types: "int" = "i", "long" = "l", "double" = "d",
-     * "float" = "f", "char" = "c", "boolean" = "b", "byte" = "bt",
-     * "string" = "s", "java.ANY_CLASS"
-     * @return Object converted
+     * @param value Value to be converted.
+     * @param type Types: "int" or "i", "long" or "l", "double" or "d",
+     * "float" or "f", "char" or "c", "boolean" or "b", "byte" or "bt",
+     * "string" or "s", "java.ANY_CLASS".
+     * @return Object converted.
      * @throws org.cajuscript.CajuScriptException Errors ocurred on converting.
      */
-    public Object cast(Object value, String type) throws CajuScriptException {
-        try {
-            if (type.equalsIgnoreCase("int") || type.equalsIgnoreCase("java.lang.Integer") || type.equalsIgnoreCase("i")) {
-                if (value.toString().indexOf('.') > -1) {
-                    return Integer.valueOf((int)Double.valueOf(value.toString()).doubleValue());
-                } else {
-                    return Integer.valueOf(value.toString());
-                }
+    public Object cast(Object value, String type) throws Exception {
+        if (type.equalsIgnoreCase("int") || type.equalsIgnoreCase("java.lang.Integer") || type.equalsIgnoreCase("i")) {
+            if (value.toString().indexOf('.') > -1) {
+                return Integer.valueOf((int)Double.valueOf(value.toString()).doubleValue());
+            } else {
+                return Integer.valueOf(value.toString());
             }
-            if (type.equalsIgnoreCase("long") || type.equalsIgnoreCase("java.lang.Long") || type.equalsIgnoreCase("l")) {
-                return Long.valueOf(value.toString());
-            }
-            if (type.equalsIgnoreCase("double") || type.equalsIgnoreCase("java.lang.Double") || type.equalsIgnoreCase("d")) {
-                return Double.valueOf(value.toString());
-            }
-            if (type.equalsIgnoreCase("float") || type.equalsIgnoreCase("java.lang.Float") || type.equalsIgnoreCase("f")) {
-                return Float.valueOf(value.toString());
-            }
-            if (type.equalsIgnoreCase("char") || type.equalsIgnoreCase("java.lang.Character") || type.equalsIgnoreCase("c")) {
-                try {
-                    return (char)Integer.valueOf(value.toString()).intValue();
-                } catch (Exception e) {
-                    return value.toString().toCharArray()[0];
-                }
-            }
-            if (type.equalsIgnoreCase("boolean") || type.equalsIgnoreCase("java.lang.Boolean") || type.equalsIgnoreCase("b")  || type.equalsIgnoreCase("bool")) {
-                try {
-                    if (Integer.parseInt(cast(value, "i").toString()) > 0) {
-                        return Boolean.valueOf(true);
-                    } else {
-                        return Boolean.valueOf(false);
-                    }
-                } catch (Exception e) {
-                    return Boolean.valueOf(value.toString());
-                }
-            }
-            if (type.equalsIgnoreCase("byte") || type.equalsIgnoreCase("java.lang.Byte") || type.equalsIgnoreCase("bt")) {
-                try {
-                    return (byte)Integer.valueOf(value.toString()).intValue();
-                } catch (Exception e) {
-                    return value.toString().getBytes()[0];
-                }
-            }
-            if (type.equalsIgnoreCase("string") || type.equalsIgnoreCase("java.lang.String") || type.equalsIgnoreCase("s")) {
-                return value.toString();
-            }
-            try {
-                return Class.forName(type).cast(value);
-            } catch (Exception e) {
-                throw e;
-            }
-        } catch (Exception e) {
-            throw CajuScriptException.create(this, "Cannot convert \""+ value.toString() +"\" to "+ type, "convert("+ value.toString() +", "+ type +")", e);
         }
+        if (type.equalsIgnoreCase("long") || type.equalsIgnoreCase("java.lang.Long") || type.equalsIgnoreCase("l")) {
+            return Long.valueOf(value.toString());
+        }
+        if (type.equalsIgnoreCase("double") || type.equalsIgnoreCase("java.lang.Double") || type.equalsIgnoreCase("d")) {
+            return Double.valueOf(value.toString());
+        }
+        if (type.equalsIgnoreCase("float") || type.equalsIgnoreCase("java.lang.Float") || type.equalsIgnoreCase("f")) {
+            return Float.valueOf(value.toString());
+        }
+        if (type.equalsIgnoreCase("char") || type.equalsIgnoreCase("java.lang.Character") || type.equalsIgnoreCase("c")) {
+            try {
+                return (char)Integer.valueOf(value.toString()).intValue();
+            } catch (Exception e) {
+                return value.toString().toCharArray()[0];
+            }
+        }
+        if (type.equalsIgnoreCase("boolean") || type.equalsIgnoreCase("java.lang.Boolean") || type.equalsIgnoreCase("b")  || type.equalsIgnoreCase("bool")) {
+            try {
+                if (Integer.parseInt(cast(value, "i").toString()) > 0) {
+                    return Boolean.valueOf(true);
+                } else {
+                    return Boolean.valueOf(false);
+                }
+            } catch (Exception e) {
+                return Boolean.valueOf(value.toString());
+            }
+        }
+        if (type.equalsIgnoreCase("byte") || type.equalsIgnoreCase("java.lang.Byte") || type.equalsIgnoreCase("bt")) {
+            try {
+                return (byte)Integer.valueOf(value.toString()).intValue();
+            } catch (Exception e) {
+                return value.toString().getBytes()[0];
+            }
+        }
+        if (type.equalsIgnoreCase("string") || type.equalsIgnoreCase("java.lang.String") || type.equalsIgnoreCase("s")) {
+            return value.toString();
+        }
+        return Class.forName(type).cast(value);
+    }
+    /**
+     * Generate an exception.
+     * @throws org.cajuscript.CajuScriptException Exception generated.
+     */
+    public static void error() throws CajuScriptException {
+        throw new CajuScriptException();
+    }
+    /**
+     * Generate an exception with custom message.
+     * @param msg Message of the exception.
+     * @throws org.cajuscript.CajuScriptException Exception generated.
+     */
+    public static void error(String msg) throws CajuScriptException {
+        throw new CajuScriptException(msg);
+    }
+    /**
+     * If two Object.getClass().getName() are from same type.
+     * @param type1 First type, Object.getClass().getName().
+     * @param type2 Second type, Object.getClass().getName().
+     * @return Is from same type or not.
+     */
+    public static boolean isSameType(String type1, String type2) {
+        int p = type1.indexOf("$");
+        if (type1.indexOf("$") > -1) {
+            type1 = type1.substring(0, type1.indexOf("$"));
+        }
+        p = type2.indexOf("$");
+        if (type2.indexOf("$") > -1) {
+            type2 = type2.substring(0, type2.indexOf("$"));
+        }
+        if (type1.toLowerCase().endsWith("." + type2.toLowerCase()) || type2.toLowerCase().endsWith("." + type1.toLowerCase()) || type1.equals(type2)) {
+            return true;
+        }
+        return false;
+    }
+    /**
+     * If Object.getClass().getName() is from primitive type.
+     * @param type Object type, Object.getClass().getName().
+     * @return Is from primitive type or not.
+     */
+    public static boolean isPrimitiveType(String type) {
+        if (type.equals("int") || type.equals("java.lang.Integer")
+            || type.equals("long") || type.equals("java.lang.Long")
+            || type.equals("double") || type.equals("java.lang.Double")
+            || type.equals("float") || type.equals("java.lang.Float")
+            || type.equals("char") || type.equals("java.lang.Character")
+            || type.equals("byte") || type.equals("java.lang.Byte")
+            || type.equals("boolean") || type.equals("java.lang.Boolean")) {
+            return true;
+        }
+        return false;
+    }
+    /**
+     * If the object is instance of specified class.
+     * @param o Object.
+     * @param c Class.
+     * @return If the object is instance of class or not.
+     */
+    public boolean isInstance(Object o, Class c) {
+        if (c.isInstance(o)) {
+            return true;
+        } else {
+            for (int y = 0; y < o.getClass().getClasses().length; y++) {
+                if (isSameType(o.getClass().getClasses()[y].getName(), c.getName())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     /**
      * Entry point to running.
-     * @param args Arguments
+     * @param args Arguments.
      */
     public static void main(String[] args) {
         try {
@@ -1051,5 +658,60 @@ public class CajuScript {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    static {
+        Syntax syntaxJ = new Syntax();
+        syntaxJ.setIf("if ");
+        syntaxJ.setIfBegin("{");
+        syntaxJ.setElseIf("} else if ");
+        syntaxJ.setElseIfBegin("{");
+        syntaxJ.setElse("} else {");
+        syntaxJ.setIfEnd("}");
+        syntaxJ.setLoop("while ");
+        syntaxJ.setLoopBegin("{");
+        syntaxJ.setLoopEnd("}");
+        syntaxJ.setTry("try ");
+        syntaxJ.setTryBegin("{");
+        syntaxJ.setTryCatch("} catch {");
+        syntaxJ.setTryFinally("} finally {");
+        syntaxJ.setTryEnd("}");
+        syntaxJ.setFunction("function ");
+        syntaxJ.setFunctionBegin("{");
+        syntaxJ.setFunctionEnd("}");
+        syntaxJ.setReturn("return");
+        syntaxJ.setImport("import ");
+        syntaxJ.setRootContext("root.");
+        syntaxJ.setContinue("continue");
+        syntaxJ.setBreak("break");
+        globalSyntaxs.put("CajuJava", syntaxJ);
+        Syntax syntaxB = new Syntax();
+        syntaxB.setIf("if ");
+        syntaxB.setIfBegin("");
+        syntaxB.setElseIf("elseif ");
+        syntaxB.setElseIfBegin("");
+        syntaxB.setElse("else");
+        syntaxB.setIfEnd("end");
+        syntaxB.setLoop("while ");
+        syntaxB.setLoopBegin("");
+        syntaxB.setLoopEnd("end");
+        syntaxB.setTry("try ");
+        syntaxB.setTryBegin("");
+        syntaxB.setTryCatch("catch");
+        syntaxB.setTryFinally("finally");
+        syntaxB.setTryEnd("end");
+        syntaxB.setFunction("function ");
+        syntaxB.setFunctionBegin("");
+        syntaxB.setFunctionEnd("end");
+        syntaxB.setReturn("return");
+        syntaxB.setImport("import ");
+        syntaxB.setRootContext("root.");
+        syntaxB.setContinue("continue");
+        syntaxB.setBreak("break");
+        globalSyntaxs.put("CajuBasic", syntaxB);
+    }
+    
+    @Override
+    protected void finalize() throws Throwable {
+        context = null;
     }
 }

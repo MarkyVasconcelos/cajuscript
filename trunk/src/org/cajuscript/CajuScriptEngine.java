@@ -23,6 +23,7 @@ import javax.script.ScriptContext;
 import javax.script.ScriptException;
 import javax.script.ScriptEngineFactory;
 import javax.script.SimpleScriptContext;
+import javax.script.ScriptEngineManager;
 import java.io.Reader;
 import java.util.List;
 import java.util.Set;
@@ -63,98 +64,7 @@ import java.util.List;
  *     e.printStackTrace();
  * }
  * </pre></blockquote></p>
- * <p><code>CajuScript</code> syntax:</p>
- * <p><blockquote><pre>
- * \ Imports
- * $java.lang
- * 
- * \ Defining a new variable
- * x = 0
- * 
- * \ LOOP
- * x &lt; 10 & x >= 0 &#64;
- *    System.out.println(x)
- *    x = x + 1
- * &#64;
- * 
- * \ IF
- * x &lt; 10 | x &gt; 0 ?
- *     System.out.println("X is less than 10!")
- * ? x &gt; 10 & x = 10 ?
- *     System.out.println("X is greater than 10!")
- * ??
- *     System.out.println("X = "+ x)
- * ?
- * 
- * \ FUNCTION
- * \ Allowed:
- * \ addWithX v1, v2 # ... #
- * \ addWithX(v1 v2) # ... #
- * addWithX(v1, v2) #
- *     \ "~" is the return
- *     ~ x + v1 + v2
- * #
- * 
- * x = addWithX(1, 2)
- * 
- * System.out.println("X = "+ x)
- * </pre></blockquote></p>
- * <p>Null value:</p>
- * <p><blockquote><pre>
- * \ $ is the null value
- * x = $
- * </pre></blockquote></p>
- * <p>Arithmetic Operators:</p>
- * <p><blockquote><pre>
- * \ + Addition
- * x = 0 + 1
- * x += 1
- * 
- * \ - Subtraction
- * x = 0 - 1
- * x -= 1
- * 
- * \ * Multiplication
- * x = 0 * 1
- * x *= 1
- * 
- * \ / Division
- * x = 0 / 1
- * x /= 1
- * 
- * \ % Modulus
- * x = 0 % 1
- * x %= 1
- * </pre></blockquote></p>
- * <p>Comparison Operators:</p>
- * <p><blockquote><pre>
- * \ = Equal to
- * (x = y)
- * 
- * \ ! Not equal to
- * (x ! y)
- * 
- * \ &lt; Less Than
- * (x &lt; y)
- * 
- * \ &gt; Greater Than
- * (x &gt; y)
- * 
- * \ &lt; Less Than or Equal To
- * (x &lt;= y)
- * 
- * \ &gt; Greater Than or Equal To
- * (x &gt;= y)
- * </pre></blockquote></p>
- * <p>Imports or include file:</p>
- * <p><blockquote><pre>
- * \ Import
- * $java.lang
- * 
- * \ Include file
- * $"script.cj"
- * </pre></blockquote></p>
- * @autor eduveks
+ * @author eduveks
  */
 public class CajuScriptEngine implements ScriptEngine, Invocable {
     /**
@@ -335,17 +245,17 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
         }
     }
     /**
-     * Get Bindings
-     * @param scope Scope
-     * @return Binding
+     * Get Bindings.
+     * @param scope Scope.
+     * @return Binding.
      */
     public Bindings getBindings(int scope) {
         return context.getBindings(scope);
     }
     /**
-     * Set Binding
-     * @param bindings Binding
-     * @param scope Scope
+     * Set Binding.
+     * @param bindings Binding.
+     * @param scope Scope.
      */
     public void setBindings(Bindings bindings, int scope) {
         context.setBindings(bindings, scope);
@@ -432,8 +342,8 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
         }
     }
     /**
-     * Get interface
-     * @param clasz Class
+     * Get interface.
+     * @param clasz Class.
      * @return Interface.
      */
     public <T>T getInterface(Class<T> clasz) {
@@ -459,6 +369,29 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
             return null;
         }
     }
+    /**
+     * Get the CajuScript instance.
+     * @return CajuScript.
+     */
+    public CajuScript getCajuScript() {
+        return caju;
+    }
+    /**
+     * Set the CajuScript instance.
+     * @param caju CajuScript.
+     */
+    public void setCajuScript(CajuScript caju) {
+        this.caju = caju;
+    }
+    /**
+     * Load script engine manager with CajuScript.
+     * @param mgr Script engine manager to be loaded.
+     * @return Script engine manager is loaded with CajuScript.
+     */
+    public static ScriptEngineManager loadScriptEngineManager(ScriptEngineManager mgr) {
+        return CajuScriptEngineFactory.loadScriptEngineManager(mgr);
+    }
+    
     private void loadBindings(ScriptContext context) throws ScriptException {
         List<Integer> scopes = context.getScopes();
         for (Integer i : scopes) {
@@ -499,7 +432,12 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
     }
     private Object runScript(String script) throws ScriptException {
         try {
-            return caju.eval(script).getValue();
+            Value v = caju.eval(script);
+            if (v != null) {
+                return caju.eval(script).getValue();
+            } else {
+                return null;
+            }
         } catch (Exception e) {
             throw new  ScriptException(e);
         }
