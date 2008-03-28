@@ -53,7 +53,7 @@ public class ScriptsTester {
         time = System.currentTimeMillis();
         org.keplerproject.luajava.LuaState L = org.keplerproject.luajava.LuaStateFactory.newLuaState();
         L.openLibs();
-        L.LdoString("x = 1; while x < "+ times +" do x = x + "+ value +" end");
+        L.LdoString("x = 0; while x < "+ times +" do x = x + "+ value +" end");
         System.out.println("LuaJava: "+ (System.currentTimeMillis() - time) + "ms - "+ L.getLuaObject("x").getNumber());
     }
 }
