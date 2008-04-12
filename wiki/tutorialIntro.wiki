@@ -5,8 +5,8 @@
 
 CajuScript:
 
-# is an easy to use script language for Java.
-# has good features to create newly instances of class and invocation of methods.
+  * is an easy to use script language for Java.
+  * has good features to create newly instances of class and invocation of methods.
 
 In CajuScript was implemented many ways to make easy to programme in Java.
 
