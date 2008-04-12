@@ -3,8 +3,7 @@
 
 =File Read=
 
-This sample show two ways to read an file. First read is byte at byte. Second is read all in a buffer. And have an timer of performance.
-
+This sample shows two ways of reading a file. The first reads byte by byte. Second reads all in a buffer. It also show the time spent in each operation.
 *Command line*:
 
     java -jar cajuscript.jar fileread.cj
