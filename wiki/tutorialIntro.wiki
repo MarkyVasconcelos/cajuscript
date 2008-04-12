@@ -3,13 +3,15 @@
 
 =CajuScript Introdution=
 
-Is a script language very simple for work on Java.
+CajuScript:
 
-Have good features to create newly instances of class  and invocation of methods.
+#is an easy to use script language for Java.
 
-In CajuScript was implemented many ways to make easy the programming in Java.
+#has good features to create newly instances of class and invocation of methods.
 
-All basics resources of programing like:
+In CajuScript was implemented many ways to make easy to programme in Java.
+
+It supports all basics resources of programing like:
 
   * Variables
   * [tutorialArray Arrays]
