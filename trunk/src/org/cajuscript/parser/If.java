@@ -62,7 +62,20 @@ public class If extends Base {
     @Override
     public Value execute(CajuScript caju, Context context) throws CajuScriptException {
         caju.setRunningLine(getLineDetail());
-        if (((Boolean)condition.execute(caju, context).getValue()).booleanValue()) {
+        Object conditionValue = condition.execute(caju, context).getValue();
+        boolean finalValue = false;
+        if (conditionValue instanceof Boolean) {
+            finalValue = ((Boolean)conditionValue).booleanValue();
+        } else if (conditionValue instanceof Integer) {
+            if (((Integer)conditionValue).intValue() > 0) {
+                finalValue = true;
+            } else {
+                finalValue = false;
+            }
+        } else {
+            finalValue = Boolean.getBoolean(conditionValue.toString());
+        }
+        if (finalValue) {
             for (Element element : elements) {
                 Value v = element.execute(caju, context);
                 if (v != null && canElementReturn(element)) {

@@ -186,7 +186,7 @@ public class CajuScriptEngineFactory implements ScriptEngineFactory {
         try {
             return new CajuScriptEngine();
         } catch (Exception e) {
-            return null;
+            throw new Error(e);
         }
     }
     /**

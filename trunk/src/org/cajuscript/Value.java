@@ -37,52 +37,27 @@ import org.cajuscript.parser.Function;
  * @author eduveks
  */
 public class Value implements Cloneable {
-    /**
-     * Value type Null.
-     */
-    public static final int TYPE_NULL = 0;
-    /**
-     * Value type Number.
-     */
-    public static final int TYPE_NUMBER = 1;
-    /**
-     * Value type String.
-     */
-    public static final int TYPE_STRING = 2;
-    /**
-     * Value type Object.
-     */
-    public static final int TYPE_OBJECT = 3;
-    /**
-     * Value number type Integer.
-     */
-    public static final int TYPE_NUMBER_INTEGER = 1;
-    /**
-     * Value number type Long.
-     */
-    public static final int TYPE_NUMBER_LONG = 2;
-    /**
-     * Value number type Float.
-     */
-    public static final int TYPE_NUMBER_FLOAT = 3;
-    /**
-     * Value number type Double.
-     */
-    public static final int TYPE_NUMBER_DOUBLE = 4;
+    public static enum Type {
+        NULL, NUMBER, STRING, OBJECT
+    }
+    public static enum TypeNumber {
+        INTEGER, LONG, DOUBLE, FLOAT
+    }
     private Object value = null;
     private int valueNumberInteger = 0;
     private long valueNumberLong = 0;
     private float valueNumberFloat = 0;
     private double valueNumberDouble = 0;
     private String valueString = "";
-    private int typeNumber = 0;
-    private int type = 0;
+    private TypeNumber typeNumber = null;
+    private Type type = Type.NULL;
     private boolean _isCommand = false;
-    String command = "";
+    private String command = "";
     private CajuScript cajuScript = null;
     private Context context = null;
     private Syntax syntax = null;
     private String flag = "";
+    private ScriptCommand scriptCommand = null;
     /**
      * Create a new value.
      * @param caju CajuScript.
@@ -118,7 +93,7 @@ public class Value implements Cloneable {
                 script = script.replace((CharSequence)"\\n", (CharSequence)"\n");
                 script = script.replace((CharSequence)"\\\"", (CharSequence)"\"");
                 script = script.replace((CharSequence)"\\'", (CharSequence)"'");
-                type = TYPE_STRING;
+                type = Type.STRING;
                 valueString = script.substring(1, script.length() - 1);
                 value = valueString;
             } else {
@@ -129,14 +104,14 @@ public class Value implements Cloneable {
                         value = new Boolean(true);
                         valueNumberInteger = 1;
                         valueString = valueNumberInteger + "";
-                        type = TYPE_NUMBER;
-                        typeNumber = TYPE_NUMBER_INTEGER;
+                        type = Type.NUMBER;
+                        typeNumber = TypeNumber.INTEGER;
                     } else if (script.toLowerCase().equals("false")) {
                         value = new Boolean(false);
                         valueNumberInteger = 0;
                         valueString = valueNumberInteger + "";
-                        type = TYPE_NUMBER;
-                        typeNumber = TYPE_NUMBER_INTEGER;
+                        type = Type.NUMBER;
+                        typeNumber = TypeNumber.INTEGER;
                     } else {
                         setCommand(script);
                     }
@@ -190,55 +165,120 @@ public class Value implements Cloneable {
     public String getCommand() {
         return command;
     }
+    public static Context Xcontext = null;
     /**
      * Set command.
      * @param script Command script.
      * @throws org.cajuscript.CajuScriptException Errors loading command.
      */
     public void setCommand(String script) throws CajuScriptException {
-        script = script.trim();
-        command = script;
-        int f1 = script.indexOf('(');
-        int f2 = script.indexOf(')');
-        int fd = script.indexOf('.');
-        if (script.startsWith(syntax.getRootContext())) {
-            fd = script.substring(fd + 1).indexOf('.');
+        Value v = null;
+        boolean varMode = false;
+        if (scriptCommand == null) {
+            script = script.trim();
+            command = script;
+            if (scriptCommand != null && !script.equals(scriptCommand.getScript())) {
+                scriptCommand = null;
+            }
+            SyntaxPosition syntaxRootContext = syntax.matcherPosition(script, syntax.getRootContext());
+            SyntaxPosition syntaxPathSeparator = syntax.matcherPosition(script, syntax.getFunctionCallPathSeparator());
+            SyntaxPosition syntaxParamBegin = syntax.matcherPosition(script, syntax.getFunctionCallParametersBegin());
+            SyntaxPosition syntaxParamEnd = syntax.matcherPosition(script, syntax.getFunctionCallParametersEnd());
+            if ((syntaxParamBegin.getStart() > -1 && syntaxParamBegin.getStart() < syntaxParamEnd.getStart()) || syntaxPathSeparator.getStart() > -1) {
+                String path = syntaxParamBegin.getStart() > -1 ? script.substring(0, syntaxParamBegin.getStart()) : script;
+                if (syntaxRootContext.getStart() == 0) {
+                    path = path.substring(syntaxRootContext.getEnd());
+                    syntaxPathSeparator = syntax.matcherPosition(path, syntax.getFunctionCallPathSeparator());
+                }
+                path = path.trim();
+                String name = syntaxPathSeparator.getStart() > -1 && syntaxPathSeparator.getEnd() < syntaxParamBegin.getStart() ? path.substring(0, syntaxPathSeparator.getStart()) : path;
+                name = name.trim();
+                Function func = cajuScript.getFunc(path);
+                Value val = null;
+                boolean isRootContext = false;
+                if (syntaxRootContext.getStart() != 0) {
+                    val = context.getVar(name);
+                    if (val == null) {
+                        val = cajuScript.getVar(name);
+                    }
+                } else {
+                    isRootContext = true;
+                    val = cajuScript.getVar(name);
+                }
+                if (func != null) {
+                    scriptCommand = new ScriptCommand(script, ScriptCommand.Type.FUNCTION);
+                    Context funcContext = new Context();
+                    script = script.substring(path.length());
+                    Object[] _values = invokeValues(script, scriptCommand);
+                    //script = script.substring(_values[values.length].toString().length());
+                    scriptCommand.setClassPath(path);
+                    value = func.invoke(cajuScript, funcContext, scriptCommand.getParams()).getValue();
+                } else if (val != null) {
+                    String _script = script;
+                    if (syntaxPathSeparator.getStart() == -1) {
+                        _script = "";
+                    }
+                    scriptCommand = new ScriptCommand(_script, isRootContext ? ScriptCommand.Type.NATIVE_OBJECT_ROOT : ScriptCommand.Type.NATIVE_OBJECT);
+                    //scriptCommand.setObject(name);
+                    scriptCommand.setValue(val);
+                } else {
+                    scriptCommand = new ScriptCommand(script, ScriptCommand.Type.NATIVE_CLASS);
+                }
+            } else {
+                varMode = true;
+                if (syntaxRootContext.getStart() == 0) {
+                    scriptCommand = new ScriptCommand(script.substring(syntaxRootContext.getEnd()), ScriptCommand.Type.VARIABLE_ROOT);
+                } else {
+                    scriptCommand = new ScriptCommand(script, ScriptCommand.Type.VARIABLE);
+                }
+            }
         }
-        if ((f1 > -1 && f1 < f2) || fd > -1) {
-            String path = f1 > -1 ? script.substring(0, f1) : script;
-            path = path.trim();
-            String name = fd > -1 && fd < f1 ? path.substring(0, fd) : path;
-            name = name.trim();
-            Function func = cajuScript.getFunc(path);
-            Value val = context.getVar(name);
-            if (func != null) {
-                Context funcContext = new Context();
-                script = script.substring(path.length());
-                Object[] _values = invokeValues(script);
-                Value[] values = new Value[_values.length - 1];
-                for (int x = 0; x < _values.length - 1; x++) {
-                    values[x] = cajuScript.toValue(_values[x], funcContext, syntax);
-                }
-                script = script.substring(_values[values.length].toString().length());
-                value = invokeNative(func.invoke(cajuScript, funcContext, values).getValue(), script);
-            } else if (val != null) {
-                script = script.substring(fd + 1);
-                value = invokeNative(val.getValue(), script);
-            } else {
-                value = invokeNative(null, script);
+        if (scriptCommand != null) {
+            switch (scriptCommand.getType()) {
+                case VARIABLE_ROOT:
+                    varMode = true;
+                    v = cajuScript.getVar(scriptCommand.getScript());
+                    break;
+                case VARIABLE:
+                    varMode = true;
+                    v = context.getVar(scriptCommand.getScript());
+                    if (v == null) {
+                        v = cajuScript.getVar(scriptCommand.getScript());
+                    }
+                    break;
+                case NATIVE_OBJECT_ROOT:
+                    //Value valueObjRoot = cajuScript.getVar(scriptCommand.getObject());
+                    value = invokeNative(scriptCommand.getValue().getValue() == null ? null : scriptCommand.getValue().getValue(), scriptCommand.getScript(), scriptCommand);
+                    break;
+                case NATIVE_OBJECT:
+                    //Value valueObj = context.getVar(scriptCommand.getObject());
+                    String _script = scriptCommand.getScript();
+                    //if (valueObj != null) {
+                    //    _script = scriptCommand.getScript().substring(scriptCommand.getObject().length());
+                    //}
+                    if (scriptCommand.getValue() != null) {
+                        SyntaxPosition syntaxPathSeparator = syntax.matcherPosition(_script, syntax.getFunctionCallPathSeparator());
+                        _script = _script.substring(syntaxPathSeparator.getEnd());
+                    }
+                    value = invokeNative(scriptCommand.getValue() == null ? null : scriptCommand.getValue().getValue(), _script, scriptCommand);
+                    break;
+                case NATIVE_CLASS:
+                    value = invokeNative(null, scriptCommand.getScript(), scriptCommand);
+                    break;
+                case FUNCTION:
+                    Context funcContext = new Context();
+                    Function func = cajuScript.getFunc(scriptCommand.getClassPath());
+                    value = func.invoke(cajuScript, funcContext, scriptCommand.getParams()).getValue();
+                    break;
+                default:
+                    break;
             }
-        } else {
-            Value v = null;
-            if (script.startsWith(syntax.getRootContext())) {
-                v = cajuScript.getVar(script.substring(syntax.getRootContext().length()));
-            } else {
-                v = context.getVar(script);
-                if (v == null) {
-                    v = cajuScript.getVar(script);
-                }
-            }
+        }
+        if (varMode) {
             if (v == null) {
-                if (script.indexOf(' ') > -1 || script.indexOf(')') > -1 || script.indexOf('(') > -1) {
+                SyntaxPosition syntaxParamBegin = syntax.matcherPosition(script, syntax.getFunctionCallParametersBegin());
+                SyntaxPosition syntaxParamEnd = syntax.matcherPosition(script, syntax.getFunctionCallParametersEnd());
+                if (script.indexOf(' ') > -1 || syntaxParamBegin.getStart() > -1 || syntaxParamEnd.getStart() > -1) {
                     throw CajuScriptException.create(cajuScript, context, "Syntax error");
                 }
                 throw CajuScriptException.create(cajuScript, context, script + " is not defined");
@@ -261,13 +301,13 @@ public class Value implements Cloneable {
      */
     public double getNumberValue() {
         switch (typeNumber) {
-            case TYPE_NUMBER_INTEGER:
+            case INTEGER:
                 return (double)valueNumberInteger;
-            case TYPE_NUMBER_FLOAT:
+            case FLOAT:
                 return (double)valueNumberFloat;
-            case TYPE_NUMBER_LONG:
+            case LONG:
                 return (double)valueNumberLong;
-            case TYPE_NUMBER_DOUBLE:
+            case DOUBLE:
                 return valueNumberDouble;
             default:
                 return 0d;
@@ -326,12 +366,12 @@ public class Value implements Cloneable {
             loadNumberValue(value, false);
         } catch (Exception e) {
             if (value == null) {
-                type = TYPE_NULL;
+                type = Type.NULL;
             } else if (value instanceof String || value instanceof Character) {
-                type = TYPE_STRING;
+                type = Type.STRING;
                 valueString = value.toString();
             } else {
-                type = TYPE_OBJECT;
+                type = Type.OBJECT;
             }
             this.value = value;
             valueNumberInteger = 0;
@@ -342,18 +382,18 @@ public class Value implements Cloneable {
     }
     /**
      * Get the type internal of value.
-     * Types: TYPE_NULL = 0, TYPE_NUMBER = 1, TYPE_STRING = 2, TYPE_OBJECT = 3.
+     * Types: Type.NULL = 0, Type.NUMBER = 1, Type.STRING = 2, Type.OBJECT = 3.
      * @return Number of type.
      */
-    public int getType() {
+    public Type getType() {
         return type;
     }
     /**
      * Get the type internal of number value.
-     * Types: TYPE_NUMBER_INTEGER = 1, TYPE_NUMBER_LONG = 2, TYPE_NUMBER_FLOAT = 3, TYPE_NUMBER_DOUBLE = 4.
+     * Types: TypeNumber.INTEGER = 1, TypeNumber.LONG = 2, TypeNumber.FLOAT = 3, TypeNumber.DOUBLE = 4.
      * @return Number of type.
      */
-    public int getTypeNumber() {
+    public TypeNumber getTypeNumber() {
         return typeNumber;
     }
     /**
@@ -388,28 +428,28 @@ public class Value implements Cloneable {
             valueNumberFloat = (float)valueNumberInteger;
             valueNumberDouble = (double)valueNumberInteger;
             valueString = valueNumberInteger + "";
-            type = TYPE_NUMBER;
-            typeNumber = TYPE_NUMBER_INTEGER;
+            type = Type.NUMBER;
+            typeNumber = TypeNumber.INTEGER;
             return;
         } else if (o instanceof Float) {
             valueNumberFloat = ((Float)o).floatValue();
             valueNumberDouble = (double)valueNumberFloat;
             valueString = valueNumberFloat + "";
-            type = TYPE_NUMBER;
-            typeNumber = TYPE_NUMBER_FLOAT;
+            type = Type.NUMBER;
+            typeNumber = TypeNumber.FLOAT;
             return;
         } else if (o instanceof Long) {
             valueNumberLong = ((Long)o).longValue();
             valueNumberDouble = (double)valueNumberLong;
             valueString = valueNumberLong + "";
-            type = TYPE_NUMBER;
-            typeNumber = TYPE_NUMBER_LONG;
+            type = Type.NUMBER;
+            typeNumber = TypeNumber.LONG;
             return;
         } else if (o instanceof Double) {
             valueNumberDouble = (float)((Double)o).doubleValue();
             valueString = valueNumberDouble + "";
-            type = TYPE_NUMBER;
-            typeNumber = TYPE_NUMBER_DOUBLE;
+            type = Type.NUMBER;
+            typeNumber = TypeNumber.DOUBLE;
             return;
         }
         Double v = (Double)cajuScript.cast(o, "d");
@@ -440,145 +480,185 @@ public class Value implements Cloneable {
             }
         }
     }
-    private Object invokeNative(Object value, String script) throws CajuScriptException {
-        String realClassName = "";
+    private Object invokeNative(Object value, String script, ScriptCommand scriptCommand) throws CajuScriptException {
         try {
-            if (script == null || script.equals("")) {
-                return value;
-            }
-            if (script.startsWith(".")) {
-                script = script.substring(1);
-            }
-            script = script.trim();
-            String path = "";
-            String realPath = "";
-            int p = -1;
-            String scriptRest = script;
-            while (true) {
-                p++;
+            Class c = null;
+            String cName = "";
+            if (scriptCommand.getClassReference() == null || scriptCommand.getMethod() == null || scriptCommand.getConstructor() == null || scriptCommand.getParamName().equals("")) {
+                if (script == null || script.equals("")) {
+                    return value;
+                }
+                String realClassName = "";
+                SyntaxPosition syntaxPathSeparator = syntax.matcherPosition(script, syntax.getFunctionCallPathSeparator());
+                if (syntaxPathSeparator.getStart() == 0) {
+                    script = script.substring(syntaxPathSeparator.getEnd());
+                }
+                script = script.trim();
+                String path = "";
+                String realPath = "";
+                int p = -1;
+                String scriptRest = script;
+
                 String scriptPart = "";
-                String cName = "";
-                if (scriptRest.indexOf(".") > -1) {
-                    scriptPart = scriptRest.substring(0, scriptRest.indexOf("."));
-                    scriptRest = scriptRest.substring(scriptRest.indexOf(".") + 1);
-                } else {
-                    scriptPart = scriptRest;
-                    scriptRest = "";
-                }
-                if (p > 0) {
-                    path += ".";
-                    realPath += ".";
-                }
-                if (realPath.endsWith("..")) {
-                    realClassName = path.substring(0, path.lastIndexOf('.') - 1);
+                while (true) {
+                    p++;
+                    syntaxPathSeparator = syntax.matcherPosition(scriptRest, syntax.getFunctionCallPathSeparator());
+                    if (syntaxPathSeparator.getStart() > -1) {
+                        scriptPart = scriptRest.substring(0, syntaxPathSeparator.getStart());
+                        scriptRest = scriptRest.substring(syntaxPathSeparator.getEnd());
+                    } else {
+                        scriptPart = scriptRest;
+                        scriptRest = "";
+                    }
+                    if (p > 0) {
+                        path += ".";
+                        realPath += ".";
+                    }
+                    if (realPath.endsWith("..")) {
+                        realClassName = path.substring(0, path.lastIndexOf('.') - 1);
+                        throw new Exception("Cannot invoke " + realClassName);
+                    }
+                    SyntaxPosition syntaxParameterBegin = syntax.matcherPosition(scriptPart, syntax.getFunctionCallParametersBegin());
+                    if (syntaxParameterBegin.getStart() > -1 && value == null) {
+                        cName = scriptPart.substring(0, syntaxParameterBegin.getStart());
+                        realPath += cName;
+                        cName = cName.trim();
+                        path += cName;
+                    } else if (syntaxParameterBegin.getStart() > -1 && value != null) {
+                        cName = scriptPart.substring(0, syntaxParameterBegin.getStart());
+                        realPath += cName;
+                        cName = cName.trim();
+                        path += cName;
+                    } else {
+                        path += scriptPart.trim();
+                        realPath += scriptPart;
+                    }
+                    if (value == null) {
+                        try {
+                            try {
+                                c = Class.forName(path);
+                            } catch (Exception e) {
+                                for(String i : cajuScript.getImports()) {
+                                    if (i.endsWith(path)) {
+                                        try {
+                                            c = Class.forName(i);
+                                        } catch (Exception ex) { }
+                                    } else {
+                                        try {
+                                            c = Class.forName(i + "." + path);
+                                        } catch (Exception ex) { }
+                                    }
+                                    if (c != null) {
+                                        break;
+                                    }
+                                }
+                                if (c == null) {
+                                    throw new Exception();
+                                }
+                            }
+                        } catch (Exception e) {
+                            boolean isRootContext = false;
+                            Value _value = context.getVar(path);
+                            if (_value == null) {
+                                isRootContext = true;
+                                _value = cajuScript.getVar(path);
+                            }
+                            if (_value != null) {
+                                scriptCommand.setValue(_value);
+                                //scriptCommand.setObject(path);
+                                if (isRootContext) {
+                                    scriptCommand.setType(ScriptCommand.Type.NATIVE_OBJECT_ROOT);
+                                } else {
+                                    scriptCommand.setType(ScriptCommand.Type.NATIVE_OBJECT);
+                                }
+                                value = _value.getValue();
+                                c = value.getClass();
+                            } else {
+                                continue;
+                            }
+                        }
+                        script = script.substring(realPath.length());
+                    } else {
+                        c = value.getClass();
+                    }
+                    scriptCommand.setClassPath(c.getName());
+                    scriptCommand.setClassReference(c);
                     break;
                 }
-                if (scriptPart.indexOf("(") > -1 && value == null) {
-                    cName = scriptPart.substring(0, scriptPart.indexOf("("));
-                    realPath += cName;
-                    cName = cName.trim();
-                    path += cName;
-                } else if (scriptPart.indexOf("(") > -1 && value != null) {
-                    cName = scriptPart.substring(0, scriptPart.indexOf("("));
-                    realPath += cName;
-                    cName = cName.trim();
-                    path += cName;
-                } else {
-                    path += scriptPart.trim();
-                    realPath += scriptPart;
-                }
-                Class c = null;
-                if (value == null) {
-                    try {
-                        try {
-                            c = Class.forName(path);
-                        } catch (Exception e) {
-                            for(String i : cajuScript.getImports()) {
-                                if (i.endsWith(path)) {
-                                    try {
-                                        c = Class.forName(i);
-                                    } catch (Exception ex) { }
-                                } else {
-                                    try {
-                                        c = Class.forName(i + "." + path);
-                                    } catch (Exception ex) { }
-                                }
-                                if (c != null) {
-                                    break;
-                                }
-                            }
-                            if (c == null) {
-                                throw new Exception();
-                            }
-                        }
-                    } catch (Exception e) {
-                        Value _value = context.getVar(path);
-                        if (_value == null) {
-                            _value = cajuScript.getVar(path);
-                        }
-                        if (_value != null) {
-                            value = _value.getValue();
-                            c = value.getClass();
-                        } else {
-                            continue;
-                        }
-                    }
-                    script = script.substring(realPath.length());
-                } else {
-                    c = value.getClass();
-                }
                 if (!cName.equals("") && value == null) {
-                    Object[] values = invokeValues(scriptPart.substring(cName.length()));
-                    script = script.substring(values[values.length - 1].toString().length());
-                    return invokeConstructor(c, values, script);
+                    Object[] values = invokeValues(scriptPart.substring(cName.length()), scriptCommand);
+                    return invokeConstructor(c, values, script, scriptCommand);
                 } else if (!cName.equals("") && value != null) {
-                    Object[] values = invokeValues(script);
-                    script = script.substring(values[values.length - 1].toString().length());
-                    return invokeMethod(c, value, cName, values, script);
+                    Object[] values = invokeValues(script, scriptCommand);
+                    //script = script.substring(values[values.length - 1].toString().length());
+                    return invokeMethod(c, value, cName, values, script, scriptCommand);
                 } else {
-                    if (script.startsWith(".")) {
-                        script = script.substring(1);
+                    syntaxPathSeparator = syntax.matcherPosition(script, syntax.getFunctionCallPathSeparator());
+                    if (syntaxPathSeparator.getStart() == 0) {
+                        script = script.substring(syntaxPathSeparator.getEnd());
                     }
+                    syntaxPathSeparator = syntax.matcherPosition(script, syntax.getFunctionCallPathSeparator());
+                    SyntaxPosition syntaxParameterBegin = syntax.matcherPosition(script, syntax.getFunctionCallParametersBegin());
                     boolean isMethod = false;
-                    if (script.indexOf("(") > -1 && (script.indexOf("(") < script.indexOf(".") || script.indexOf(".") == -1)) {
+                    if (syntaxParameterBegin.getStart() > -1 && (syntaxParameterBegin.getStart() < syntaxPathSeparator.getStart() || syntaxPathSeparator.getStart() == -1)) {
                         isMethod = true;
-                        scriptPart = script.substring(0, script.indexOf("("));
+                        scriptPart = script.substring(0, syntaxParameterBegin.getStart());
                     } else {
                         scriptPart = script;
                     }
-                    int d = script.indexOf(".");
-                    if (!isMethod || d > -1) {
+                    syntaxPathSeparator = syntax.matcherPosition(script, syntax.getFunctionCallPathSeparator());
+                    if (!isMethod || syntaxPathSeparator.getStart() > -1) {
                         String paramName = scriptPart;
-                        if (d > -1) {
-                            paramName = scriptPart.substring(0, d);
+                        if (syntaxPathSeparator.getStart() > -1) {
+                            paramName = scriptPart.substring(0, syntaxPathSeparator.getStart());
                         }
                         script = script.substring(paramName.length());
                         if (value != null) {
-                            return invokeNative(value.getClass().getField(paramName).get(value), script);
+                            return invokeNative(value.getClass().getField(paramName).get(value), script, scriptCommand);
                         }
                         if (paramName.equals("class")) {
-                            return invokeNative(c, script);
+                            return invokeNative(c, script, scriptCommand);
                         } else {
-                            return invokeNative(c.getField(paramName).get(c), script);
+                            scriptCommand.setParamName(paramName);
+                            ScriptCommand sc = new ScriptCommand(script, ScriptCommand.Type.NATIVE_OBJECT);
+                            Object oParam = c.getField(paramName).get(c);
+                            sc.setClassReference(oParam.getClass());
+                            sc.setClassPath(oParam.getClass().getName());
+                            Object o = invokeNative(oParam, script, sc);
+                            scriptCommand.setNextScriptCommand(sc);
+                            return o;
                         }
                     } else {
-                        Object[] values = invokeValues(script.substring(script.indexOf("(")));
-                        String propName = script.substring(0, script.indexOf("("));
-                        script = script.substring(propName.length() + values[values.length - 1].toString().length());
-                        return invokeMethod(c, value, propName, values, script);
+                        Object[] values = invokeValues(script.substring(syntaxParameterBegin.getStart()), scriptCommand);
+                        String propName = script.substring(0, syntaxParameterBegin.getStart());
+                        //script = script.substring(propName.length() + values[values.length - 1].toString().length());
+                        return invokeMethod(c, value, propName, values, script, scriptCommand);
                     }
                 }
+            } else {
+                c = scriptCommand.getClassReference();
+                if (scriptCommand.getMethod() != null) {
+                    Object[] values = invokeValues(null, scriptCommand);
+                    return invokeMethod(c, value, null, values, null, scriptCommand);
+                } else if (scriptCommand.getConstructor() != null) {
+                    Object[] values = invokeValues(null, scriptCommand);
+                    return invokeConstructor(c, values, script, scriptCommand);
+                } else if (!scriptCommand.getParamName().equals("")) {
+                    return invokeNative(c.getField(scriptCommand.getParamName()).get(c), script, scriptCommand.getNextScriptCommand());
+                }
+                throw new Exception("Cannot invoke " + scriptCommand.getScript());
+                //cName = scriptCommand.getClassPath();
+                //scriptPart = scriptCommand.getScript();
             }
-            throw new Exception("Cannot invoke " + realClassName);
         } catch (CajuScriptException e) {
             throw e;
         } catch (Exception e) {
             throw CajuScriptException.create(cajuScript, context, e.getMessage(), e);
         }
     }
-    private boolean foundMethod(Object[] values, Class[] cx, boolean allowAutoPrimitiveCast) {
+    private boolean foundMethod(Object[] values, Class[] cx, boolean allowAutoPrimitiveCast, ScriptCommand scriptCommand) {
         int count = 0;
-        for (int x = 0; x < values.length - 1; x++) {
+        for (int x = 0; x < values.length; x++) {
             if (values[x] == null && !CajuScript.isPrimitiveType(cx[x].getName())) {
                 count++;
             } else if (values[x] != null) {
@@ -599,13 +679,16 @@ public class Value implements Cloneable {
                 count = 0;
             }
         }
-        if (count == cx.length && values.length - 1 == count) {
+        if (count == cx.length && values.length == count) {
             return true;
         } else {
             return false;
         }
     }
-    private Object invokeConstructor(Class c, Object[] values, String script) throws Exception {
+    private Object invokeConstructor(Class c, Object[] values, String script, ScriptCommand scriptCommand) throws Exception {
+        if (scriptCommand.getConstructor() != null) {
+            return scriptCommand.getConstructor().newInstance(getParams(values, scriptCommand.getConstructor().getParameterTypes(), scriptCommand));
+        }
         Constructor[] cn = c.getDeclaredConstructors();
         boolean allowAutoPrimitiveCast = true;
         for (int i = 0; i < cn.length; i++) {
@@ -621,90 +704,123 @@ public class Value implements Cloneable {
                 i = -1;
             }
             Class cx[] = cn[x].getParameterTypes();
-            if (values.length - 1 != cx.length) {
+            if (values.length != cx.length) {
                 continue;
             }
-            if (foundMethod(values, cx, allowAutoPrimitiveCast)) {
-                return invokeNative(cn[x].newInstance(getParams(values, cx)), script);
+            if (foundMethod(values, cx, allowAutoPrimitiveCast, scriptCommand)) {
+                scriptCommand.setConstructor(cn[x]);
+                scriptCommand.setType(ScriptCommand.Type.NATIVE_OBJECT);
+                return cn[x].newInstance(getParams(values, cx, scriptCommand));
             }
         }
         throw new Exception("Constructor \""+ c.getName() +"\" cannot be invoked");
     }
-    private Object invokeMethod(Class c, Object o, String name, Object[] values, String script) throws Exception {
-        Method[] mt = c.getMethods();
-        boolean allowAutoPrimitiveCast = true;
-        for (int i = 0; i < mt.length; i++) {
-            if (i == 0) {
-                if (allowAutoPrimitiveCast) {
-                    allowAutoPrimitiveCast = false;
-                } else {
-                    allowAutoPrimitiveCast = true;
+    private Object invokeMethod(Class c, Object o, String name, Object[] values, String script, ScriptCommand scriptCommand) throws Exception {
+        if (scriptCommand.getMethod() != null) {
+            return scriptCommand.getMethod().invoke(o, getParams(values, scriptCommand.getMethod().getParameterTypes(), scriptCommand));
+        }
+        Class[] classes = null;
+        if (c.isMemberClass()) {
+            Class[] interfaces = c.getInterfaces();
+            classes = new Class[interfaces.length + 1];
+            for (int i = 0; i < interfaces.length; i++) {
+                classes[i] = interfaces[i];
+            }
+            classes[classes.length - 1] = c.getSuperclass();
+        } else {
+            classes = new Class[] {c};
+        }
+        for (Class cls : classes) {
+            Method[] mt = cls.getMethods();
+            boolean allowAutoPrimitiveCast = true;
+            for (int i = 0; i < mt.length; i++) {
+                if (i == 0) {
+                    if (allowAutoPrimitiveCast) {
+                        allowAutoPrimitiveCast = false;
+                    } else {
+                        allowAutoPrimitiveCast = true;
+                    }
                 }
-            }
-            int x = i;
-            if (i == mt.length -1 && !allowAutoPrimitiveCast) {
-                i = -1;
-            }
-            if (!mt[x].getName().equals(name)) {
-                continue;
-            }
-            Class[] cx = mt[x].getParameterTypes();
-            if (values.length - 1 != cx.length) {
-                continue;
-            }
-            if (foundMethod(values, cx, allowAutoPrimitiveCast)) {
-                return invokeNative(mt[x].invoke(o, getParams(values, cx)), script);
+                int x = i;
+                if (i == mt.length -1 && !allowAutoPrimitiveCast) {
+                    i = -1;
+                }
+                if (!mt[x].getName().equals(name)) {
+                    continue;
+                }
+                Class[] cx = mt[x].getParameterTypes();
+                if (values.length != cx.length) {
+                    continue;
+                }
+                if (foundMethod(values, cx, allowAutoPrimitiveCast, scriptCommand)) {
+                    scriptCommand.setMethod(mt[x]);
+                    return mt[x].invoke(o, getParams(values, cx, scriptCommand));
+                }
             }
         }
         throw new Exception("Method \""+ name +"\" cannot be invoked");
     }
-    private Object[] invokeValues(String script) throws CajuScriptException {
-        String originalScript = script;
-        script = script.substring(script.indexOf("(") + 1, script.indexOf("(") + script.substring(script.indexOf("(")).indexOf(")"));
-        if (script.trim().equals("")) {
-            return new Object[] {originalScript};
-        }
-        String[] _values = new String[1];
-        _values[0] = "";
-        int groupID = 0;
-        for (char c : script.toCharArray()) {
-            switch (c) {
-            case '(':
-                groupID++;
-                break;
-            case ')':
-                groupID--;
-                break;
-            case ',':
-                if (groupID == 0) {
-                    _values = java.util.Arrays.copyOf(_values, _values.length + 1);
-                    _values[_values.length - 1] = "";
-                }
-                continue;
-            default:
-                break;
+    private Object[] invokeValues(String script, ScriptCommand scriptCommand) throws CajuScriptException {
+        if (scriptCommand.getParams() != null) {
+            Value[] paramsVal = scriptCommand.getParams();
+            Object[] values = new Object[paramsVal.length];
+            for (int x = 0; x < paramsVal.length; x++) {
+                values[x] = paramsVal[x].getValue();
             }
-            _values[_values.length - 1] += ""+ c;
+            return values;
         }
-        Object[] values = new Object[_values.length + 1];
-        for (int x = 0; x < _values.length; x++) {
-            values[x] = new Value(cajuScript, context, syntax, _values[x]).getValue();
+        int lenBegin = (syntax.matcherPosition(script, syntax.getFunctionCallParametersBegin())).getEnd();
+        int lenEnd = (syntax.matcherPosition(script, syntax.getFunctionCallParametersEnd())).getStart();
+        String params = script.substring(lenBegin, lenEnd);
+        if (params.trim().equals("")) {
+            scriptCommand.setParams(new Value[0]);
+            return new Object[0];
         }
-        values[_values.length] = originalScript;
+        String[] paramsKeys = syntax.getFunctionCallParametersSeparator().split(params);
+        Value[] paramsVal = new Value[paramsKeys.length];
+        Object[] values = new Object[paramsKeys.length];
+        for (int x = 0; x < paramsKeys.length; x++) {
+            SyntaxPosition syntaxRootContext = syntax.matcherPosition(paramsKeys[x], syntax.getRootContext());
+            if (syntaxRootContext.getStart() == 0) {
+                paramsKeys[x] = paramsKeys[x].substring(syntaxRootContext.getEnd());
+                values[x] = cajuScript.getVar(paramsKeys[x]);
+            } else {
+                values[x] = context.getVar(paramsKeys[x]);
+                if (values[x] == null) {
+                    values[x] = cajuScript.getVar(paramsKeys[x]);
+                }
+            }
+            paramsVal[x] = (Value)values[x];
+            values[x] = paramsVal[x].getValue();
+        }
+        scriptCommand.setParams(paramsVal);
         return values;
     }
-    private Object[] getParams(Object[] values, Class[] cx) throws Exception {
+    Object[] paramsValues = null;
+    Object[] paramsFinal = null;
+    private Object[] getParams(Object[] values, Class[] cx, ScriptCommand scriptCommand) throws Exception {
+        if (values.equals(paramsValues)) {
+            return paramsFinal;
+        }
         Object[] params = new Object[cx.length];
         for (int x = 0; x < cx.length; x++) {
+            if (paramsValues != null && paramsValues[x].equals(values[x])) {
+                params[x] = paramsValues[x];
+            }
             if (CajuScript.isPrimitiveType(cx[x].getName())) {
                 params[x] = cajuScript.cast(values[x], cx[x].getName());
             } else {
                 params[x] = cx[x].cast(values[x]);
             }
         }
+        paramsValues = values;
+        paramsFinal = params;
         return params;
     }
-    
+    /**
+     * Clone.
+     * @return Object cloned.
+     */
     @Override
     public Object clone() {
         try {
@@ -713,12 +829,192 @@ public class Value implements Cloneable {
             throw new Error("Cannot clone this object.");
         }
     }
-    
+    /**
+     * Finalize.
+     * @throws java.lang.Throwable Exception.
+     */
     @Override
     protected void finalize() throws Throwable {
         value = null;
         cajuScript = null;
         context = null;
         syntax = null;
+    }
+    
+}
+
+class ScriptCommand {
+    /**
+     * Type of script commands.
+     */
+    public static enum Type {
+        VARIABLE, VARIABLE_ROOT, FUNCTION, NATIVE_CLASS, NATIVE_OBJECT, NATIVE_OBJECT_ROOT
+    }
+    private String script = "";
+    private Type type = null;
+    private Value[] params = null;
+    private String function = "";
+    private String classPath = "";
+    private String paramName = "";
+    private Class classReference = null;
+    private String object = "";
+    private Value value = null;
+    private Constructor constructor = null;
+    private Method method = null;
+    private ScriptCommand nextScriptCommand = null;
+    /**
+     * Create new script command with script and type.
+     * @param script Script.
+     * @param type Type.
+     */
+    public ScriptCommand(String script, Type type) {
+        this.script = script;
+        this.type = type;
+    }
+    /**
+     * Get the script.
+     * @return Script.
+     */
+    public String getScript() {
+        return script;
+    }
+    /**
+     * Set the script.
+     * @param script Script.
+     */
+    public void setScript(String script) {
+        this.script = script;
+    }
+    /**
+     * Get the type of command.
+     * @return Type.
+     */
+    public Type getType() {
+        return type;
+    }
+    /**
+     * Set the type of command.
+     * @param type Type.
+     */
+    public void setType(Type type) {
+        this.type = type;
+    }
+    /**
+     * Set function configuration.
+     * @param function Function name.
+     * @param params Parameters names.
+     */
+    public void setFunction(String function, Value[] params) {
+        this.function = function;
+        this.params = params;
+    }
+    /**
+     * Set static method configuration.
+     * @param classPath Class path.
+     * @param method Method.
+     * @param params Parameters.
+     */
+    public void setStatic(String classPath, Method method, Value[] params) {
+        this.classPath = classPath;
+        this.method = method;
+        this.params = params;
+    }
+    /**
+     * Set method configuration.
+     * @param object Name of object.
+     * @param method Method.
+     * @param params Parameters.
+     */
+    public void setMethod(String object, Method method, Value[] params) {
+        this.object = object;
+        this.method = method;
+        this.params = params;
+    }
+
+    public void setNewInstance(String classPath, Constructor constructor, Value[] params) {
+        this.classPath = classPath;
+        this.constructor = constructor;
+        this.params = params;
+    }
+
+    public Class getClassReference() {
+        return classReference;
+    }
+
+    public void setClassReference(Class classReference) {
+        this.classReference = classReference;
+    }
+
+    public Constructor getConstructor() {
+        return constructor;
+    }
+
+    public void setConstructor(Constructor constructor) {
+        this.constructor = constructor;
+    }
+
+    public String getFunction() {
+        return function;
+    }
+
+    public void setFunction(String function) {
+        this.function = function;
+    }
+
+    public Method getMethod() {
+        return method;
+    }
+
+    public void setMethod(Method method) {
+        this.method = method;
+    }
+
+    public Value[] getParams() {
+        return params;
+    }
+
+    public void setParams(Value[] params) {
+        this.params = params;
+    }
+
+    public String getClassPath() {
+        return classPath;
+    }
+
+    public void setClassPath(String classPath) {
+        this.classPath = classPath;
+    }
+
+    public Value getValue() {
+        return value;
+    }
+
+    public void setValue(Value value) {
+        this.value = value;
+    }
+    
+    /*
+    public String getObject() {
+        return object;
+    }
+
+    public void setObject(String object) {
+        this.object = object;
+    }
+    */
+    public ScriptCommand getNextScriptCommand() {
+        return nextScriptCommand;
+    }
+
+    public void setNextScriptCommand(ScriptCommand nextScriptCommand) {
+        this.nextScriptCommand = nextScriptCommand;
+    }
+
+    public String getParamName() {
+        return paramName;
+    }
+
+    public void setParamName(String paramName) {
+        this.paramName = paramName;
     }
 }

@@ -67,7 +67,7 @@ public class Break extends Base {
         }
         Value v = new Value(caju, context, getSyntax());
         if (!getLabel().equals("")) {
-            v.setFlag("break"+ getSyntax().getLabel() + getLabel());
+            v.setFlag("break:"+ getLabel());
         } else {
             v.setFlag("break");
         }

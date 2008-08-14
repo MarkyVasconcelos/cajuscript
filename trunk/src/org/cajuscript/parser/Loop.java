@@ -23,6 +23,7 @@ import org.cajuscript.CajuScript;
 import org.cajuscript.Context;
 import org.cajuscript.Value;
 import org.cajuscript.Syntax;
+import org.cajuscript.SyntaxPosition;
 import org.cajuscript.CajuScriptException;
 
 /**
@@ -77,24 +78,54 @@ public class Loop extends Base {
     @Override
     public Value execute(CajuScript caju, Context context) throws CajuScriptException {
         caju.setRunningLine(getLineDetail());
-        loop: while (((Boolean)condition.execute(caju, context).getValue()).booleanValue()) {
-            for (Element element : elements) {
-                Value v = element.execute(caju, context);
-                if (v != null && canElementReturn(element)) {
-                    if (v.getFlag().startsWith("break")) {
-                        if (v.getFlag().indexOf(getSyntax().getLabel()) > -1 && !v.getFlag().substring("break".length() + getSyntax().getLabel().length()).equals(getLabel())) {
+        loop: while (true) {
+            Object conditionValue = condition.execute(caju, context).getValue();
+            boolean finalValue = false;
+            if (conditionValue instanceof Boolean) {
+                finalValue = ((Boolean)conditionValue).booleanValue();
+            } else if (conditionValue instanceof Integer) {
+                if (((Integer)conditionValue).intValue() > 0) {
+                    finalValue = true;
+                } else {
+                    finalValue = false;
+                }
+            } else {
+                finalValue = Boolean.getBoolean(conditionValue.toString());
+            }
+            if (finalValue) {
+                for (Element element : elements) {
+                    Value v = element.execute(caju, context);
+                    if (v != null && canElementReturn(element)) {
+                        if (element instanceof Break) {
+                            break loop;
+                        } else if (element instanceof Continue) {
+                            continue loop;
+                        } else if (!v.getFlag().equals("")) {
+                            String act, lbl = "";
+                            int f = v.getFlag().indexOf(':');
+                            if (f > -1) {
+                                act = v.getFlag().substring(0, f);
+                                lbl = v.getFlag().substring(f+1);
+                            } else {
+                                act = v.getFlag();
+                            }
+                            if (!lbl.equals(getLabel())) {
+                                return v;
+                            } else {
+                                v.setFlag("");
+                            }
+                            if (act.equals("break")) {
+                                break loop;
+                            } else if (act.equals("continue")) {
+                                continue loop;
+                            }
+                        } else {
                             return v;
                         }
-                        break loop;
-                    } else if (v.getFlag().startsWith("continue")) {
-                        if (v.getFlag().indexOf(getSyntax().getLabel()) > -1 && !v.getFlag().substring("continue".length() + getSyntax().getLabel().length()).equals(getLabel())) {
-                            return v;
-                        }
-                        continue loop;
-                    } else {
-                        return v;
                     }
                 }
+            } else {
+                break;
             }
         }
         return null;

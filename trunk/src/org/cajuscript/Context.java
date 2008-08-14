@@ -37,6 +37,7 @@ public class Context {
      * New context instance.
      */
     public Context() {
+        imports.add("java.lang");
     }
     /**
      * Get list of all imports used by script in execution.
@@ -136,11 +137,13 @@ public class Context {
             vars.put(key, null);
             vars.remove(key);
         }
+        vars.clear();
         vars = null;
         for (String key : funcs.keySet()) {
             funcs.put(key, null);
             vars.remove(key);
         }
+        funcs.clear();
         funcs = null;
     }
 }

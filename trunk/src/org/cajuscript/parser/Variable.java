@@ -22,6 +22,7 @@ package org.cajuscript.parser;
 import org.cajuscript.CajuScript;
 import org.cajuscript.Context;
 import org.cajuscript.Value;
+import org.cajuscript.SyntaxPosition;
 import org.cajuscript.Syntax;
 import org.cajuscript.CajuScriptException;
 
@@ -76,14 +77,18 @@ public class Variable extends Base {
      */
     @Override
     public Value execute(CajuScript caju, Context context) throws CajuScriptException {
+        if (key.equals("__caju_param_2")) {
+            context.toString();
+        }
         caju.setRunningLine(getLineDetail());
         for (Element element : elements) {
             element.execute(caju, context);
         }
         Value v = value.execute(caju, context);
         if (!key.equals("")) {
-            if (key.startsWith(getSyntax().getRootContext())) {
-                caju.setVar(key.substring(getSyntax().getRootContext().length()), v);
+            SyntaxPosition syntaxPosition = getSyntax().matcherPosition(key, getSyntax().getRootContext());
+            if (syntaxPosition.getStart() == 0) {
+                caju.setVar(key.substring(syntaxPosition.getEnd()), v);
             } else {
                 context.setVar(key, v);
             }
