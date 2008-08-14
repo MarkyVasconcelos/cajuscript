@@ -22,6 +22,8 @@ import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import org.cajuscript.parser.Function;
 /**
  * The core of the <code>CajuScript</code> language.
@@ -241,8 +243,9 @@ public class CajuScript {
             if (lineGarbage.equals("")) {
                 continue;
             }
-            for (String comment : syntax.getComments()) {
-                if (lineGarbage.startsWith(comment)) {
+            for (Pattern comment : syntax.getComments()) {
+                Matcher m = comment.matcher(lineGarbage);
+                if (m.find() && m.start() == 0) {
                     continue lines;
                 } 
             }
@@ -325,49 +328,42 @@ public class CajuScript {
         if (line.equals("")) {
             return -1;
         }
-        int p = line.indexOf(syntax.getIfBegin());
-        if (line.startsWith(syntax.getIf()) && ((!syntax.getIfBegin().equals("") && p > syntax.getIf().length()) || syntax.getIfBegin().equals(""))) {
-            return p + syntax.getElseIfBegin().length();
+        int p = -1;
+        if ((p = syntax.matcherPosition(line, syntax.getIf()).getEnd()) > -1) {
+            return p;
         }
-        p = line.substring(1).indexOf(syntax.getElseIfBegin()) + 1;
-        if (line.startsWith(syntax.getElseIf()) && ((!syntax.getElseIfBegin().equals("") && p > syntax.getElseIf().length()) || syntax.getElseIfBegin().equals(""))) {
-            return p + syntax.getIfBegin().length();
+        if ((p = syntax.matcherPosition(line, syntax.getElseIf()).getEnd()) > -1) {
+            return p;
         }
-        p = line.indexOf(syntax.getElse());
-        if (line.startsWith(syntax.getElse())) {
-            return p + syntax.getElse().length();
+        if ((p = syntax.matcherPosition(line, syntax.getElse()).getEnd()) > -1) {
+            return p;
         }
-        p = line.indexOf(syntax.getLoopBegin());
-        if (line.startsWith(syntax.getLoop()) && ((!syntax.getLoopBegin().equals("") && p > syntax.getLoop().length()) || syntax.getLoopBegin().equals(""))) {
-            return p + syntax.getLoopBegin().length();
+        if ((p = syntax.matcherPosition(line, syntax.getLoop()).getEnd()) > -1) {
+            return p;
         }
-        p = line.indexOf(syntax.getFunctionBegin());
-        if (line.startsWith(syntax.getFunction()) && ((!syntax.getFunctionBegin().equals("") && p > syntax.getFunction().length()) || syntax.getFunctionBegin().equals(""))) {
-            return p + syntax.getFunctionBegin().length();
+        if ((p = syntax.matcherPosition(line, syntax.getFunction()).getEnd()) > -1) {
+            return p;
         }
-        p = line.indexOf(syntax.getTryBegin());
-        if (line.startsWith(syntax.getTry()) && ((!syntax.getTryBegin().equals("") && p > syntax.getTry().length()) || syntax.getTryBegin().equals(""))) {
-            return p + syntax.getTryBegin().length();
+        if ((p = syntax.matcherPosition(line, syntax.getTry()).getEnd()) > -1) {
+            return p;
         }
-        p = 0;
-        if (line.startsWith(syntax.getTryCatch())) {
-            return p + syntax.getTryCatch().length();
+        if ((p = syntax.matcherPosition(line, syntax.getTryCatch()).getEnd()) > -1) {
+            return p;
         }
-        p = 0;
-        if (line.startsWith(syntax.getTryFinally())) {
-            return p + syntax.getTryFinally().length();
+        if ((p = syntax.matcherPosition(line, syntax.getTryFinally()).getEnd()) > -1) {
+            return p;
         }
-        if (line.startsWith(syntax.getIfEnd())) {
-            return p + syntax.getIfEnd().length();
+        if ((p = syntax.matcherPosition(line, syntax.getIfEnd()).getEnd()) > -1) {
+            return p;
         }
-        if (line.startsWith(syntax.getLoopEnd())) {
-            return p + syntax.getLoopEnd().length();
+        if ((p = syntax.matcherPosition(line, syntax.getLoopEnd()).getEnd()) > -1) {
+            return p;
         }
-        if (line.startsWith(syntax.getFunctionEnd())) {
-            return p + syntax.getFunctionEnd().length();
+        if ((p = syntax.matcherPosition(line, syntax.getFunctionEnd()).getEnd()) > -1) {
+            return p;
         }
-        if (line.startsWith(syntax.getTryEnd())) {
-            return p + syntax.getTryEnd().length();
+        if ((p = syntax.matcherPosition(line, syntax.getTryEnd()).getEnd()) > -1) {
+            return p;
         }
         return -1;
     }
@@ -462,9 +458,7 @@ public class CajuScript {
      * @throws org.cajuscript.CajuScriptException Errors.
      */
     public Value toValue(Object obj) throws CajuScriptException {
-        Value v = new Value(this, getContext(), getSyntax());
-        v.setValue(obj);
-        return v;
+        return toValue(obj, getContext(), getSyntax());
     }
     /**
      * Convert Java objects to CajuScript object to be used like value of variables.
@@ -648,70 +642,58 @@ public class CajuScript {
      * Entry point to running.
      * @param args Arguments.
      */
-    public static void main(String[] args) {
-        try {
-            if (args.length > 0) {
-                CajuScript caju = new CajuScript();
-                caju.set("args", args);
-                caju.evalFile(args[0]);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+    public static void main(String[] args) throws CajuScriptException {
+        if (args.length > 0) {
+            CajuScript caju = new CajuScript();
+            caju.set("args", args);
+            caju.evalFile(args[0]);
         }
     }
     static {
         Syntax syntaxJ = new Syntax();
-        syntaxJ.setIf("if ");
-        syntaxJ.setIfBegin("{");
-        syntaxJ.setElseIf("} else if ");
-        syntaxJ.setElseIfBegin("{");
-        syntaxJ.setElse("} else {");
-        syntaxJ.setIfEnd("}");
-        syntaxJ.setLoop("while ");
-        syntaxJ.setLoopBegin("{");
-        syntaxJ.setLoopEnd("}");
-        syntaxJ.setTry("try ");
-        syntaxJ.setTryBegin("{");
-        syntaxJ.setTryCatch("} catch {");
-        syntaxJ.setTryFinally("} finally {");
-        syntaxJ.setTryEnd("}");
-        syntaxJ.setFunction("function ");
-        syntaxJ.setFunctionBegin("{");
-        syntaxJ.setFunctionEnd("}");
-        syntaxJ.setReturn("return");
-        syntaxJ.setImport("import ");
-        syntaxJ.setRootContext("root.");
-        syntaxJ.setContinue("continue");
-        syntaxJ.setBreak("break");
+        syntaxJ.setIf(Pattern.compile("if\\s*([\\s+|[\\s*\\(]].+)\\{"));
+        syntaxJ.setElseIf(Pattern.compile("\\}else\\s+if\\s*([\\s+|[\\s*\\(]].+)\\{"));
+        syntaxJ.setElse(Pattern.compile("\\}\\s*else\\s*\\{"));
+        syntaxJ.setIfEnd(Pattern.compile("\\}"));
+        syntaxJ.setLoop(Pattern.compile("while\\s*([\\s+|[\\s*\\(]].+)\\{"));
+        syntaxJ.setLoopEnd(Pattern.compile("\\}"));
+        syntaxJ.setTry(Pattern.compile("try\\s*([\\s+|[\\s*\\(]].+)\\{"));
+        syntaxJ.setTryCatch(Pattern.compile("\\}\\s*catch\\s*\\{"));
+        syntaxJ.setTryFinally(Pattern.compile("\\}\\s*finally\\s*\\{"));
+        syntaxJ.setTryEnd(Pattern.compile("\\}"));
+        syntaxJ.setFunction(Pattern.compile("function\\s*([\\s+|[\\s*\\(]].+)\\{"));
+        syntaxJ.setFunctionEnd(Pattern.compile("\\}"));
+        syntaxJ.setReturn(Pattern.compile("return"));
+        syntaxJ.setImport(Pattern.compile("import\\s+"));
+        syntaxJ.setRootContext(Pattern.compile("root."));
+        syntaxJ.setContinue(Pattern.compile("continue"));
+        syntaxJ.setBreak(Pattern.compile("break"));
         globalSyntaxs.put("CajuJava", syntaxJ);
         Syntax syntaxB = new Syntax();
-        syntaxB.setIf("if ");
-        syntaxB.setIfBegin("");
-        syntaxB.setElseIf("elseif ");
-        syntaxB.setElseIfBegin("");
-        syntaxB.setElse("else");
-        syntaxB.setIfEnd("end");
-        syntaxB.setLoop("while ");
-        syntaxB.setLoopBegin("");
-        syntaxB.setLoopEnd("end");
-        syntaxB.setTry("try ");
-        syntaxB.setTryBegin("");
-        syntaxB.setTryCatch("catch");
-        syntaxB.setTryFinally("finally");
-        syntaxB.setTryEnd("end");
-        syntaxB.setFunction("function ");
-        syntaxB.setFunctionBegin("");
-        syntaxB.setFunctionEnd("end");
-        syntaxB.setReturn("return");
-        syntaxB.setImport("import ");
-        syntaxB.setRootContext("root.");
-        syntaxB.setContinue("continue");
-        syntaxB.setBreak("break");
+        syntaxB.setIf(Pattern.compile("if\\s*([\\s+|[\\s*\\(]].+[\\s+|[\\)]])\\s*"));
+        syntaxB.setElseIf(Pattern.compile("elseif\\s*([\\s+|[\\s*\\(]].+[\\s+|[\\)]])\\s*"));
+        syntaxB.setElse(Pattern.compile("else"));
+        syntaxB.setIfEnd(Pattern.compile("end"));
+        syntaxB.setLoop(Pattern.compile("while\\s*([\\s+|[\\s*\\(]].+[\\s+|[\\)]])\\s*"));
+        syntaxB.setLoopEnd(Pattern.compile("end"));
+        syntaxB.setTry(Pattern.compile("try\\s*([\\s+|[\\s*\\(]].+[\\s+|[\\)]])\\s*"));
+        syntaxB.setTryCatch(Pattern.compile("catch"));
+        syntaxB.setTryFinally(Pattern.compile("finally"));
+        syntaxB.setTryEnd(Pattern.compile("end"));
+        syntaxB.setFunction(Pattern.compile("function\\s*([\\s+|[\\s*\\(]].+[\\s+|[\\)]])\\s*"));
+        syntaxB.setFunctionEnd(Pattern.compile("end"));
+        syntaxB.setReturn(Pattern.compile("return"));
+        syntaxB.setImport(Pattern.compile("import\\s+"));
+        syntaxB.setRootContext(Pattern.compile("root."));
+        syntaxB.setContinue(Pattern.compile("continue"));
+        syntaxB.setBreak(Pattern.compile("break"));
         globalSyntaxs.put("CajuBasic", syntaxB);
     }
     
     @Override
     protected void finalize() throws Throwable {
+        syntaxs.clear();
+        syntaxs = null;
         context = null;
     }
 }

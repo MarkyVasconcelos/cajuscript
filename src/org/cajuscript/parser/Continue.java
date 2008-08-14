@@ -67,7 +67,7 @@ public class Continue extends Base {
         }
         Value v = new Value(caju, context, getSyntax());
         if (!getLabel().equals("")) {
-            v.setFlag("continue"+ getSyntax().getLabel() + getLabel());
+            v.setFlag("continue:"+ getLabel());
         } else {
             v.setFlag("continue");
         }

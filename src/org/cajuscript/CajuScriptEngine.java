@@ -392,6 +392,11 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
         return CajuScriptEngineFactory.loadScriptEngineManager(mgr);
     }
     
+    @Override
+    protected void finalize() throws Throwable {
+        caju = null;
+    }
+    
     private void loadBindings(ScriptContext context) throws ScriptException {
         List<Integer> scopes = context.getScopes();
         for (Integer i : scopes) {
@@ -439,7 +444,7 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
                 return null;
             }
         } catch (Exception e) {
-            throw new  ScriptException(e);
+            throw new ScriptException(e);
         }
     }
     private String readAll(Reader reader) throws ScriptException {

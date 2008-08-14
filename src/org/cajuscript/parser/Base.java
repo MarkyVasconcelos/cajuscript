@@ -24,8 +24,10 @@ import java.util.List;
 import org.cajuscript.CajuScript;
 import org.cajuscript.Context;
 import org.cajuscript.Syntax;
+import org.cajuscript.SyntaxPosition;
 import org.cajuscript.Value;
 import org.cajuscript.CajuScriptException;
+import org.cajuscript.parser.Operation.Operator;
 
 /**
  * Base to do script parse.
@@ -36,7 +38,6 @@ public class Base implements Element {
     protected LineDetail baseLineDetail = null;
     protected Syntax baseSyntax = null;
     private static int staticVarsGroupCounter = 1;
-    private static int staticVarsParameterCounter = 1;
     /**
      * Base
      * @param line Line detail
@@ -131,24 +132,26 @@ public class Base implements Element {
                 line = lineDetail.getContent().trim();
             }
             String label = "";
-            if (line.indexOf(syntax.getLabel()) > -1) {
-                label = line.substring(0, line.indexOf(syntax.getLabel())).trim();
-                line = line.substring(line.indexOf(syntax.getLabel()) + syntax.getLabel().length()).trim();
+            SyntaxPosition syntaxPosition = null;
+            if ((syntaxPosition = syntax.matcherPosition(line, syntax.getLabel())).getStart() > -1) {
+                label = line.substring(0, syntaxPosition.getStart()).trim();
+                line = line.substring(syntaxPosition.getEnd()).trim();
             }
-            if (line.startsWith(syntax.getReturn())) {
-                if (line.equals(syntax.getReturn().trim())) {
+            if ((syntaxPosition = syntax.matcherPosition(line, syntax.getReturn())).getStart() == 0) {
+                if (syntax.matcherEquals(line, syntax.getReturn())) {
                     base.addElement(new Return(lineDetail, syntax));
                 } else {
                     Return r = new Return(lineDetail, syntax);
-                    r.setValue(evalValue(base, caju, lineDetail, syntax, line.substring(syntax.getReturn().length())));
+                    r.setValue(evalValue(base, caju, lineDetail, syntax, line.substring(syntaxPosition.getEnd())));
                     base.addElement(r);
                 }
-            } else if (line.startsWith(syntax.getIf()) && line.endsWith(syntax.getIfBegin())) {
-                String scriptIFCondition = line.substring(syntax.getIf().length(), line.length() - syntax.getIfBegin().length());
+            } else if ((syntaxPosition = syntax.matcherPosition(line, syntax.getIf())).getStart() == 0) {
+                SyntaxPosition syntaxPositionIf = syntaxPosition;
+                String scriptIFCondition = syntaxPositionIf.getGroup();
                 StringBuffer scriptIF = new StringBuffer();
-                List<String> ifs = new ArrayList<String>();
+                List<String> ifsConditions = new ArrayList();
+                List<String> ifsStatements = new ArrayList();
                 int ifLevel = 0;
-                int minElseIfDef = syntax.getElseIf().length() + syntax.getElseIfBegin().length();
                 for (int z = y + 1; z < lines.length; z++) {
                     y++;
                     String originalIFline = lines[z];
@@ -157,25 +160,29 @@ public class Base implements Element {
                     if (_lineDetail != null) {
                         scriptIFline = _lineDetail.getContent().trim();
                     }
-                    if (ifLevel == 0 && scriptIFline.length() > minElseIfDef && scriptIFline.startsWith(syntax.getElseIf()) && scriptIFline.endsWith(syntax.getElseIfBegin())) {
-                        ifs.add(scriptIFCondition + syntax.getIfEnd() + scriptIF);
-                        String condition = scriptIFline.substring(syntax.getElseIf().length(), scriptIFline.length() - syntax.getElseIfBegin().length());
+                    SyntaxPosition syntaxPositionElseIf = null;
+                    if (ifLevel == 0 && (syntaxPositionElseIf = syntax.matcherPosition(scriptIFline, syntax.getElseIf())).getStart() == 0) {
+                        ifsConditions.add(scriptIFCondition);
+                        ifsStatements.add(scriptIF.toString());
+                        String condition = syntaxPositionElseIf.getGroup();
                         if (condition.trim().equals("")) {
-                            condition = "1 "+ syntax.getOperatorEqual() +" 1";
+                            condition = "1";
                         }
                         scriptIFCondition = condition;
                         scriptIF.delete(0, scriptIF.length());
                         continue;
-                    } else if (ifLevel == 0 && scriptIFline.equals(syntax.getElse())) {
-                        ifs.add(scriptIFCondition + syntax.getIfEnd() + scriptIF);
-                        scriptIFCondition = "1 "+ syntax.getOperatorEqual() +" 1";
+                    } else if (ifLevel == 0 && (syntaxPositionElseIf = syntax.matcherPosition(scriptIFline, syntax.getElse())).getStart() == 0) {
+                        ifsConditions.add(scriptIFCondition);
+                        ifsStatements.add(scriptIF.toString());
+                        scriptIFCondition = "1";
                         scriptIF.delete(0, scriptIF.length());
                         continue;
                     } else if (isStatementBegins(scriptIFline, syntax)) {
                         ifLevel++;
                     } else if (isStatementEnds(scriptIFline, syntax)) {
                         if (ifLevel == 0) {
-                            ifs.add(scriptIFCondition + syntax.getIfEnd() + scriptIF);
+                            ifsConditions.add(scriptIFCondition);
+                            ifsStatements.add(scriptIF.toString());
                             break;
                         }
                         ifLevel--;
@@ -183,11 +190,9 @@ public class Base implements Element {
                     scriptIF.append(originalIFline + CajuScript.SUBLINE_LIMITER);
                 }
                 IfGroup ifGroup = new IfGroup(lineDetail, syntax);
-                for (String content : ifs) {
-                    int p1 = content.indexOf(syntax.getIfEnd());
-                    int p2 = p1 + syntax.getIfEnd().length();
-                    String _ifCondition = content.substring(0, p1);
-                    String _ifContent = content.substring(p2);
+                for (int i = 0; i < ifsConditions.size(); i++) {
+                    String _ifCondition = ifsConditions.get(i);
+                    String _ifContent = ifsStatements.get(i);
                     _ifCondition = _ifCondition.trim();
                     
                     If _if = new If(lineDetail, syntax);
@@ -198,8 +203,9 @@ public class Base implements Element {
                     ifGroup.addElement(_if);
                 }
                 base.addElement(ifGroup);
-            } else if (line.startsWith(syntax.getLoop()) && line.endsWith(syntax.getLoopBegin())) {
-                String scriptLOOPCondition = line.substring(syntax.getLoop().length(), line.length() - syntax.getLoopBegin().length());
+            } else if ((syntaxPosition = syntax.matcherPosition(line, syntax.getLoop())).getStart() == 0) {
+                SyntaxPosition syntaxPositionLoop = syntaxPosition;
+                String scriptLOOPCondition = syntaxPositionLoop.getGroup();
                 StringBuffer scriptLOOP = new StringBuffer();
                 int loopLevel = 0;
                 for (int z = y + 1; z < lines.length; z++) {
@@ -227,11 +233,10 @@ public class Base implements Element {
                 loop.setCondition(var);
                 parse(loop, caju, lineDetail, scriptLOOP.toString(), syntax);
                 base.addElement(loop);
-            } else if (line.startsWith(syntax.getFunction()) && line.endsWith(syntax.getFunctionBegin())) {
-                String scriptFUNCDef = line.substring(syntax.getFunction().length(), line.length() - syntax.getFunctionBegin().length()).trim();
+            } else if ((syntaxPosition = syntax.matcherPosition(line, syntax.getFunction())).getStart() == 0) {
+                String scriptFuncDef = syntaxPosition.getGroup();
                 StringBuffer scriptFUNC = new StringBuffer();
-                int loopLevel = 0;
-                int minFuncDef = syntax.getFunction().length() + syntax.getFunctionBegin().length();
+                int funcLevel = 0;
                 for (int z = y + 1; z < lines.length; z++) {
                     y++;
                     String originalFUNCline = lines[z];
@@ -240,31 +245,31 @@ public class Base implements Element {
                     if (_lineDetail != null) {
                         scriptFUNCline = _lineDetail.getContent().trim();
                     }
-                    if (scriptFUNCline.length() > minFuncDef && scriptFUNCline.startsWith(syntax.getFunction()) && scriptFUNCline.endsWith(syntax.getFunctionBegin())) {
-                        loopLevel++;
+                    if (syntax.matcherPosition(scriptFUNCline, syntax.getFunction()).getStart() == 0) {
+                        funcLevel++;
                     } else if (isStatementBegins(scriptFUNCline, syntax)) {
-                        loopLevel++;
-                    } else if (scriptFUNCline.equals(syntax.getFunctionEnd()) || isStatementEnds(scriptFUNCline, syntax)) {
-                        if (loopLevel == 0) {
+                        funcLevel++;
+                    } else if (isStatementEnds(scriptFUNCline, syntax)) {
+                        if (funcLevel == 0) {
                             break;
                         }
-                        loopLevel--;
+                        funcLevel--;
                     }
                     scriptFUNC.append(originalFUNCline + CajuScript.SUBLINE_LIMITER);
                 }
                 Function func = new Function(lineDetail, syntax);
-                func.setDefinition(scriptFUNCDef);
+                func.setDefinition(scriptFuncDef);
                 parse(func, caju, lineDetail, scriptFUNC.toString(), syntax);
                 caju.setFunc(func.getName(), func);
-            } else if (line.startsWith(syntax.getTry()) && line.endsWith(syntax.getTryBegin())) {
-                String scriptTRYCATCHerrorVar = line.substring(syntax.getTry().length(), line.length() - syntax.getTryBegin().length()).trim();
+            } else if ((syntaxPosition = syntax.matcherPosition(line, syntax.getTry())).getStart() == 0) {
+                String scriptTRYCATCHerrorVar = syntaxPosition.getGroup();
                 StringBuffer scriptTRY = new StringBuffer();
                 StringBuffer scriptCATCH = new StringBuffer();
                 StringBuffer scriptFINALLY = new StringBuffer();
                 boolean isTry = true;
                 boolean isCatch = false;
                 boolean isFinally = false;
-                int loopLevel = 0;
+                int tryLevel = 0;
                 for (int z = y + 1; z < lines.length; z++) {
                     y++;
                     String originalTRYCATCHline = lines[z];
@@ -273,23 +278,23 @@ public class Base implements Element {
                     if (_lineDetail != null) {
                         scriptTRYCATCHline = _lineDetail.getContent().trim();
                     }
-                    if (scriptTRYCATCHline.equals(syntax.getTryCatch()) && loopLevel == 0) {
+                    if (tryLevel == 0 && syntax.matcherPosition(scriptTRYCATCHline, syntax.getTryCatch()).getStart() == 0) {
                         isTry = false;
                         isCatch = true;
                         isFinally = false;
                         continue;
-                    } else if (scriptTRYCATCHline.equals(syntax.getTryFinally()) && loopLevel == 0) {
+                    } else if (tryLevel == 0 && syntax.matcherPosition(scriptTRYCATCHline, syntax.getTryFinally()).getStart() == 0) {
                         isTry = false;
                         isCatch = false;
                         isFinally = true;
                         continue;
                     } else if (isStatementBegins(scriptTRYCATCHline, syntax)) {
-                        loopLevel++;
+                        tryLevel++;
                     } else if (isStatementEnds(scriptTRYCATCHline, syntax)) {
-                        if (loopLevel == 0) {
+                        if (tryLevel == 0) {
                             break;
                         }
-                        loopLevel--;
+                        tryLevel--;
                     }
                     if (isTry) {
                         scriptTRY.append(originalTRYCATCHline + CajuScript.SUBLINE_LIMITER);
@@ -313,28 +318,29 @@ public class Base implements Element {
                 tryCatch.setCatch(_catch);
                 tryCatch.setFinally(_finally);
                 base.addElement(tryCatch);
-            } else if (line.indexOf(syntax.getOperatorEqual()) > -1) {
+            } else if ((syntaxPosition = syntax.matcherPosition(line, syntax.getOperatorEqual())).getStart() > 0) {
                 try {
-                    int p = line.indexOf(syntax.getOperatorEqual());
+                    int p = syntaxPosition.getStart();
                     String keys = line.substring(0, p);
-                    String value = line.substring(p + 1, line.length());
-                    String action = "";
-                    if (keys.endsWith("" + syntax.getOperatorAddition())
-                        || keys.endsWith("" + syntax.getOperatorSubtraction())
-                        || keys.endsWith("" + syntax.getOperatorMultiplication())
-                        || keys.endsWith("" + syntax.getOperatorDivision())
-                        || keys.endsWith("" + syntax.getOperatorModules())) {
-                        action = keys.substring(keys.length() - 1);
-                        p--;
+                    String value = line.substring(syntaxPosition.getEnd(), line.length());
+                    
+                    SyntaxPosition syntaxPositionOperator = syntax.lastOperatorMathematic(keys);
+                    if (syntaxPositionOperator.getEnd() == keys.length()) {
+                        p = syntaxPositionOperator.getStart();
                     }
                     String[] allKeys = keys.substring(0, p).replaceAll(" ", "").split(",");
                     for (String key : allKeys) {
-                        if (!action.equals("")) {
-                            value = key + " " + action + "(" + value + ")";
-                        }
                         Variable var = new Variable(lineDetail, syntax);
                         var.setKey(key);
-                        var.setValue(evalValue(var, caju, lineDetail, syntax, value));
+                        if (syntaxPositionOperator.getOperator() != null) {
+                            Command v = new Command(lineDetail, syntax);
+                            v.setCommand(key);
+                            Operation operation = new Operation(lineDetail, syntax);
+                            operation.setCommands(v, syntaxPositionOperator.getOperator(), evalValue(base, caju, lineDetail, syntax, value));
+                            var.setValue(operation);
+                        } else {
+                            var.setValue(evalValue(base, caju, lineDetail, syntax, value));
+                        }
                         base.addElement(var);
                     }
                 } catch (CajuScriptException e) {
@@ -342,18 +348,20 @@ public class Base implements Element {
                 } catch (Exception e) {
                     throw CajuScriptException.create(caju, caju.getContext(), "Incorrect definition", e);
                 }
-            } else if (line.startsWith(syntax.getImport())) {
-                String path = line.substring(syntax.getImport().length()).trim();
+            } else if ((syntaxPosition = syntax.matcherPosition(line, syntax.getImport())).getStart() == 0) {
+                String path = line.substring(syntaxPosition.getEnd()).trim();
                 Import i = new Import(lineDetail, syntax);
                 i.setPath(path);
                 base.addElement(i);
-            } else if (line.startsWith(syntax.getBreak()) && !line.startsWith(syntax.getContinue())) {
+            } else if ((syntaxPosition = syntax.matcherPosition(line, syntax.getContinue())).getStart() == -1
+                    && (syntaxPosition = syntax.matcherPosition(line, syntax.getBreak())).getStart() == 0) {
                 Break b = new Break(lineDetail, syntax);
-                b.setLabel(line.substring(syntax.getBreak().length()).trim());
+                b.setLabel(line.substring(syntaxPosition.getEnd()).trim());
                 base.addElement(b);
-            } else if (line.startsWith(syntax.getContinue())) {
+            } else if ((syntaxPosition = syntax.matcherPosition(line, syntax.getBreak())).getStart() == -1
+                    && (syntaxPosition = syntax.matcherPosition(line, syntax.getContinue())).getStart() == 0) {
                 Continue c = new Continue(lineDetail, syntax);
-                c.setLabel(line.substring(syntax.getContinue().length()).trim());
+                c.setLabel(line.substring(syntaxPosition.getEnd()).trim());
                 base.addElement(c);
             } else {
                 if (!line.equals("")) {
@@ -371,20 +379,25 @@ public class Base implements Element {
         return null;
     }
     private boolean isStatementBegins(String line, Syntax syntax) {
-        int minIfDef = syntax.getIf().length() + syntax.getIfBegin().length();
-        int minLoopDef = syntax.getLoop().length() + syntax.getLoopBegin().length();
-        int minTryDef = syntax.getTry().length() + syntax.getTryBegin().length();
-        if (line.length() > minIfDef && line.startsWith(syntax.getIf()) && line.endsWith(syntax.getIfBegin()) && !line.startsWith(syntax.getElseIf()) && !line.equals(syntax.getElse())) {
+        if (syntax.matcherPosition(line, syntax.getIf()).getStart() == 0) {
             return true;
-        } else if (line.length() > minLoopDef && line.startsWith(syntax.getLoop()) && line.endsWith(syntax.getLoopBegin())) {
+        } else if (syntax.matcherPosition(line, syntax.getLoop()).getStart() == 0) {
             return true;
-        } else if (line.length() > minTryDef && line.startsWith(syntax.getTry()) && line.endsWith(syntax.getTryBegin()) && !line.equals(syntax.getTryCatch())) {
+        } else if (syntax.matcherPosition(line, syntax.getTry()).getStart() == 0) {
+            return true;
+        } else if (syntax.matcherPosition(line, syntax.getFunction()).getStart() == 0) {
             return true;
         }
         return false;
     }
     private boolean isStatementEnds(String line, Syntax syntax) {
-        if (line.equals(syntax.getIfEnd()) || line.equals(syntax.getLoopEnd()) || line.equals(syntax.getTryEnd())) {
+        if (syntax.matcherEquals(line, syntax.getIfEnd())) {
+            return true;
+        } else if (syntax.matcherEquals(line, syntax.getLoopEnd())) {
+            return true;
+        } else if (syntax.matcherEquals(line, syntax.getTryEnd())) {
+            return true;
+        } else if (syntax.matcherEquals(line, syntax.getFunctionEnd())) {
             return true;
         }
         return false;
@@ -392,52 +405,73 @@ public class Base implements Element {
     private Element condition(Element base, CajuScript caju, LineDetail lineDetail, Syntax syntax, String script) throws CajuScriptException {
         try {
             script = script.trim();
-            int s1 = script.indexOf(syntax.getOperatorAnd());
-            int s2 = script.indexOf(syntax.getOperatorOr());
+            SyntaxPosition syntaxPositionAnd = syntax.matcherPosition(script, syntax.getOperatorAnd());
+            SyntaxPosition syntaxPositionOr = syntax.matcherPosition(script, syntax.getOperatorOr());
+            int s1 = syntaxPositionAnd.getStart();
+            int s2 = syntaxPositionOr.getStart();
             s1 = s1 == -1 ? Integer.MAX_VALUE : s1;
             s2 = s2 == -1 ? Integer.MAX_VALUE : s2;
             int min1 = Math.min(s1, s2);
             if (s1 < Integer.MAX_VALUE && min1 == s1) {
                 Operation o = new Operation(lineDetail, syntax);
-                o.setCommands(condition(base, caju, lineDetail, syntax, script.substring(0, s1)), syntax.getOperatorAnd(), condition(base, caju, lineDetail, syntax, script.substring(s1 + 1)));
+                o.setCommands(condition(base, caju, lineDetail, syntax, script.substring(0, syntaxPositionAnd.getStart())), Operation.Operator.AND, condition(base, caju, lineDetail, syntax, script.substring(syntaxPositionAnd.getEnd())));
                 return o;
             } else if (s2 < Integer.MAX_VALUE && min1 == s2) {
                 Operation o = new Operation(lineDetail, syntax);
-                o.setCommands(condition(base, caju, lineDetail, syntax, script.substring(0, s2)), syntax.getOperatorOr(), condition(base, caju, lineDetail, syntax, script.substring(s2 + 1)));
+                o.setCommands(condition(base, caju, lineDetail, syntax, script.substring(0, syntaxPositionOr.getStart())), Operation.Operator.OR, condition(base, caju, lineDetail, syntax, script.substring(syntaxPositionOr.getEnd())));
                 return o;
             } else if (!script.equals("")) {
-                int cs1 = script.indexOf(syntax.getOperatorEqual());
-                int cs2 = script.indexOf(syntax.getOperatorNotEqual());
-                int cs3 = script.indexOf(syntax.getOperatorGreaterEqual());
-                int cs4 = script.indexOf(syntax.getOperatorLessEqual());
-                int cs5 = script.indexOf(syntax.getOperatorGreater());
-                int cs6 = script.indexOf(syntax.getOperatorLess());
+                SyntaxPosition syntaxPosition1 = syntax.matcherPosition(script, syntax.getOperatorEqual());
+                SyntaxPosition syntaxPosition2 = syntax.matcherPosition(script, syntax.getOperatorNotEqual());
+                SyntaxPosition syntaxPosition3 = syntax.matcherPosition(script, syntax.getOperatorGreaterEqual());
+                SyntaxPosition syntaxPosition4 = syntax.matcherPosition(script, syntax.getOperatorGreaterEqual());
+                SyntaxPosition syntaxPosition5 = syntax.matcherPosition(script, syntax.getOperatorGreater());
+                SyntaxPosition syntaxPosition6 = syntax.matcherPosition(script, syntax.getOperatorLess());
+                int cs1 = syntaxPosition1.getStart();
+                int cs2 = syntaxPosition2.getStart();
+                int cs3 = syntaxPosition3.getStart();
+                int cs4 = syntaxPosition4.getStart();
+                int cs5 = syntaxPosition5.getStart();
+                int cs6 = syntaxPosition6.getStart();
                 if (cs3 > -1 || cs4 > -1) {
                     cs1 = -1;
                 }
                 int max = Math.max(cs1, Math.max(cs2, Math.max(cs3, Math.max(cs4, Math.max(cs5, cs6)))));
                 if (max > -1) {
-                    int len = max == cs3 || max == cs4 ? 2 : 1;
+                    int end = -1;
+                    if (cs1 > -1) {
+                        end = syntaxPosition1.getEnd();
+                    } else if (cs2 > -1) {
+                        end = syntaxPosition2.getEnd();
+                    } else if (cs3 > -1) {
+                        end = syntaxPosition3.getEnd();
+                    } else if (cs4 > -1) {
+                        end = syntaxPosition4.getEnd();
+                    } else if (cs5 > -1) {
+                        end = syntaxPosition5.getEnd();
+                    } else if (cs6 > -1) {
+                        end = syntaxPosition6.getEnd();
+                    }
                     Element e1 = evalValue(base, caju, lineDetail, syntax, script.substring(0, max));
-                    Element e2 = evalValue(base, caju, lineDetail, syntax, script.substring(max + len));
+                    Element e2 = evalValue(base, caju, lineDetail, syntax, script.substring(end));
                     Operation o = new Operation(lineDetail, syntax);
                     if (cs1 > -1) {
-                        o.setCommands(e1, syntax.getOperatorEqual(), e2);
+                        o.setCommands(e1, Operation.Operator.EQUAL, e2);
                         return o;
                     } else if (cs2 > -1) {
-                        o.setCommands(e1, syntax.getOperatorNotEqual(), e2);
+                        o.setCommands(e1, Operation.Operator.NOT_EQUAL, e2);
                         return o;
                     } else if (cs3 > -1) {
-                        o.setCommands(e1, syntax.getOperatorGreaterEqual(), e2);
+                        o.setCommands(e1, Operation.Operator.GREATER_EQUAL, e2);
                         return o;
                     } else if (cs4 > -1) {
-                        o.setCommands(e1, syntax.getOperatorLessEqual(), e2);
+                        o.setCommands(e1, Operation.Operator.LESS_EQUAL, e2);
                         return o;
                     } else if (cs5 > -1) {
-                        o.setCommands(e1, syntax.getOperatorGreater(), e2);
+                        o.setCommands(e1, Operation.Operator.GREATER, e2);
                         return o;
                     } else if (cs6 > -1) {
-                        o.setCommands(e1, syntax.getOperatorLess(), e2);
+                        o.setCommands(e1, Operation.Operator.LESS, e2);
                         return o;
                     }
                 } else {
@@ -454,71 +488,26 @@ public class Base implements Element {
     private Element evalValue(Element base, CajuScript caju, LineDetail lineDetail, Syntax syntax, String script) throws CajuScriptException {
         return evalValueGroup(base, caju, lineDetail, syntax, script);
     }
+    
     private Element evalValueSingle(CajuScript caju, LineDetail lineDetail, Syntax syntax, String script) throws CajuScriptException {
         try {
-            script = script.trim();
-            String scriptSign = script;
-            boolean startWithSign = false;
-            if (script.startsWith(syntax.getOperatorSubtraction() + "")
-                || script.startsWith(syntax.getOperatorAddition() + "")) {
-                startWithSign = true;
-                scriptSign = script.substring(1);
-            }
-            int s1 = scriptSign.indexOf(syntax.getOperatorAddition());
-            int s2 = scriptSign.indexOf(syntax.getOperatorSubtraction());
-            int s3 = scriptSign.indexOf(syntax.getOperatorMultiplication());
-            int s4 = scriptSign.indexOf(syntax.getOperatorDivision());
-            int s5 = scriptSign.indexOf(syntax.getOperatorModules());
-            s1 = s1 == -1 ? Integer.MAX_VALUE : s1;
-            s2 = s2 == -1 ? Integer.MAX_VALUE : s2;
-            s3 = s3 == -1 ? Integer.MAX_VALUE : s3;
-            s4 = s4 == -1 ? Integer.MAX_VALUE : s4;
-            s5 = s5 == -1 ? Integer.MAX_VALUE : s5;
-            int min1 = Math.min(s1, Math.min(s2, Math.min(s3, Math.min(s4, s5))));
-            if (min1 > -1 && min1 < Integer.MAX_VALUE) {
-                if (startWithSign) {
-                    if (min1 == s1) {
-                        s1++;
-                    } else if (min1 == s2) {
-                        s2++;
-                    } else if (min1 == s3) {
-                        s3++;
-                    } else if (min1 == s4) {
-                        s4++;
-                    } else if (min1 == s5) {
-                        s5++;
-                    }
-                    min1++;
+            script = script.trim();            
+            SyntaxPosition firstOperator = syntax.firstOperatorMathematic(script);
+            if (firstOperator.getStart() > -1 && !syntax.matcherEquals(script, syntax.getNumber())) {
+                if (firstOperator.getStart() == 0) {
+                    firstOperator = syntax.firstOperatorMathematic(script.substring(firstOperator.getEnd()));
                 }
-                char[] scriptChars = script.toCharArray();
-                int min2 = Math.min(s3, Math.min(s4, s5));
-                String allOperators = syntax.getAllCalculatorOperators();
-                if (min2 > min1 && min2 < Integer.MAX_VALUE) {
-                    String script1 = "";
-                    String operator1 = "";
-                    String scriptValue1 = "";
-                    String operator = scriptChars[min2] + "";
-                    String scriptValue2 = "";
-                    String operator2 = "";
-                    String script2 = "";
-                    for (int x = min2 - 2; x > 0; x--) {
-                        if (allOperators.indexOf(scriptChars[x]) > -1) {
-                            script1 = script.substring(0, x);
-                            operator1 = scriptChars[x] + "";
-                            for (int y = min2 + 1; y < scriptChars.length; y++) {
-                                if (allOperators.indexOf(scriptChars[y]) > -1) {
-                                    operator2 = scriptChars[y] + "";
-                                    script2 = script.substring(y + 1);
-                                    break;
-                                } else {
-                                    scriptValue2 += scriptChars[y];
-                                }
-                            }
-                            break;
-                        } else {
-                            scriptValue1 += scriptChars[x];
-                        }
-                    }
+                SyntaxPosition priorityOperator = syntax.firstOperator(script, syntax.getOperatorMultiplication(), syntax.getOperatorDivision(), syntax.getOperatorModules());
+                if (priorityOperator.getStart() > firstOperator.getStart()) {
+                    SyntaxPosition syntaxOperator1 = syntax.lastOperatorMathematic(script.substring(0, priorityOperator.getStart()));
+                    String script1 = syntaxOperator1.getStart() > -1 ? script.substring(0, syntaxOperator1.getStart()) : "";
+                    Operator operator1 = syntaxOperator1.getOperator();
+                    String scriptValue1 = script.substring(0, priorityOperator.getStart()).substring(0, syntaxOperator1.getEnd());
+                    Operation.Operator operator = priorityOperator.getOperator();
+                    SyntaxPosition syntaxOperator2 = syntax.firstOperatorMathematic(script.substring(priorityOperator.getEnd()));
+                    String scriptValue2 = script.substring(priorityOperator.getEnd(), syntaxOperator2.getStart() > -1 ? syntaxOperator2.getStart() : script.length());
+                    Operator operator2 = syntaxOperator2.getOperator();
+                    String script2 = syntaxOperator2.getEnd() > -1 ? script.substring(syntaxOperator2.getEnd()) : "";
                     Command c1 = new Command(lineDetail, syntax);
                     c1.setCommand(scriptValue1);
                     Command c2 = new Command(lineDetail, syntax);
@@ -529,7 +518,7 @@ public class Base implements Element {
                         return o;
                     }
                     Element e1 = o;
-                    if (!operator1.equals("")) {
+                    if (operator1 != null) {
                         Operation o1 = new Operation(lineDetail, syntax);
                         o1.setCommands(evalValueSingle(caju, lineDetail, syntax, script1), operator1, o);
                         if (operator2.equals("")) {
@@ -542,27 +531,23 @@ public class Base implements Element {
                     return o2;
                 }
                 Command value1 = new Command(lineDetail, syntax);
-                value1.setCommand(script.substring(0, min1));
+                value1.setCommand(script.substring(0, firstOperator.getStart()));
                 Element value2 = null;
-                String scriptValue2 = "";
-                for (int x = min1 + 1; x < scriptChars.length; x++) {
-                    scriptValue2 += scriptChars[x];
-                    if (allOperators.indexOf(scriptChars[x]) > -1) {
-                        Command c = new Command(lineDetail, syntax);
-                        c.setCommand(scriptValue2.substring(0, scriptValue2.length() - 1));
-                        Operation o = new Operation(lineDetail, syntax);
-                        o.setCommands(c, ""+ scriptChars[x], evalValueSingle(caju, lineDetail, syntax, script.substring(x + 1)));
-                        value2 = o;
-                        break;
-                    }
+                SyntaxPosition value2Operator = syntax.firstOperatorMathematic(script.substring(firstOperator.getEnd()));
+                if (value2Operator.getStart() > -1) {
+                    Command c = new Command(lineDetail, syntax);
+                    c.setCommand(script.substring(firstOperator.getEnd(), firstOperator.getEnd() + value2Operator.getStart()));
+                    Operation o = new Operation(lineDetail, syntax);
+                    o.setCommands(c, value2Operator.getOperator(), evalValueSingle(caju, lineDetail, syntax, script.substring(firstOperator.getEnd() + value2Operator.getEnd())));
+                    value2 = o;
                 }
                 if (value2 == null) {
                     Command c = new Command(lineDetail, syntax);
-                    c.setCommand(script.substring(min1 + 1));
+                    c.setCommand(script.substring(firstOperator.getEnd()));
                     value2 = c;
                 }
                 Operation operation = new Operation(lineDetail, syntax);
-                operation.setCommands(value1, scriptChars[min1] + "", value2);
+                operation.setCommands(value1, firstOperator.getOperator(), value2);
                 return operation;
             } else {
                 Command cmd = new Command(lineDetail, syntax);
@@ -576,125 +561,71 @@ public class Base implements Element {
         }
     }
     private Element evalValueGroup(Element base, CajuScript caju, LineDetail lineDetail, Syntax syntax, String script) throws CajuScriptException {
-        if (script.indexOf('(') > -1) {
-            try {
-                String allOperators = syntax.getAllOperators();
-                char[] scriptChars = script.toCharArray();
-                String scriptGroup = "";
-                String scriptGroupFunc = "";
-                int groupType = 0;
-                for (int x = 0; x < scriptChars.length; x++) {
-                    if (scriptChars[x] == '(') {
-                        scriptGroup = "";
-                        scriptGroupFunc = "";
-                        groupType = 0;
-                        for (int y = x - 1; y >= 0; y--) {
-                            if ((allOperators + "(),").indexOf(scriptChars[y]) > -1) {
-                                break;
-                            }
-                            if (scriptChars[y] != ' ') {
-                                groupType = 1;
-                            }
-                            scriptGroupFunc = scriptChars[y] + scriptGroupFunc;
+        if (staticVarsGroupCounter == Integer.MAX_VALUE) {
+            staticVarsGroupCounter = 0;
+        }
+        SyntaxPosition syntaxPosition = null;
+        if ((syntaxPosition = syntax.matcherPosition(script, syntax.getFunctionCall())).getStart() > -1) {
+            String varKey = CajuScript.CAJU_VARS_GROUP + staticVarsGroupCounter;
+            staticVarsGroupCounter++;
+            Variable var = new Variable(lineDetail, syntax);
+            var.setKey(varKey);
+            Command c = new Command(lineDetail, syntax);
+            SyntaxPosition syntaxParameterBegin = syntax.matcherPosition(syntaxPosition.getGroup(), syntax.getFunctionCallParametersBegin());
+            SyntaxPosition syntaxParameterEnd = syntax.matcherPosition(syntaxPosition.getGroup(), syntax.getFunctionCallParametersEnd());
+            String cmd = syntaxPosition.getGroup();
+            if (syntaxParameterBegin.getStart() > -1 && syntaxParameterBegin.getStart() < syntaxParameterEnd.getStart()) {
+                String params = syntaxPosition.getGroup().substring(syntaxParameterBegin.getEnd(), syntaxParameterEnd.getStart());
+                cmd = cmd.substring(0, syntaxParameterBegin.getEnd());
+                while(true) {
+                    SyntaxPosition syntaxPositionParam = syntax.matcherPosition(params, syntax.getFunctionCallParametersSeparator());
+                    int lenParamSeparatorStart = syntaxPositionParam.getStart();
+                    int lenParamSeparatorEnd = syntaxPositionParam.getEnd();
+                    if (lenParamSeparatorEnd == -1) {
+                        lenParamSeparatorStart = params.length();
+                        lenParamSeparatorEnd = params.length();
+                    }
+                    
+                    if (!params.trim().equals("")) {
+                        if (staticVarsGroupCounter == Integer.MAX_VALUE) {
+                            staticVarsGroupCounter = 0;
                         }
-                    } else if (scriptChars[x] == ')') {
-                        String varKey = CajuScript.CAJU_VARS_GROUP + staticVarsGroupCounter;
+                        String varParamKey = CajuScript.CAJU_VARS_GROUP + staticVarsGroupCounter;
                         staticVarsGroupCounter++;
-                        String valueScript = scriptGroup;
-                        if (!scriptGroupFunc.trim().equals("")
-                            && scriptGroupFunc.indexOf(syntax.getOperatorAnd()) == -1
-                            && scriptGroupFunc.indexOf(syntax.getOperatorOr()) == -1
-                            && scriptGroupFunc.indexOf(syntax.getOperatorEqual()) == -1
-                            && scriptGroupFunc.indexOf(syntax.getOperatorNotEqual()) == -1
-                            && scriptGroupFunc.indexOf(syntax.getOperatorGreater()) == -1
-                            && scriptGroupFunc.indexOf(syntax.getOperatorGreaterEqual()) == -1
-                            && scriptGroupFunc.indexOf(syntax.getOperatorLess()) == -1
-                            && scriptGroupFunc.indexOf(syntax.getOperatorLessEqual()) == -1) {
-                            String scriptParams = scriptGroup;
-                            if (!scriptGroup.trim().equals("")) {
-                                scriptParams = "";
-                                String[] params = scriptGroup.split(",");
-                                for (int k = 0; k < params.length; k++) {
-                                    if (k > 0) {
-                                        scriptParams += ",";
-                                    }
-                                    String varParamKey = CajuScript.CAJU_VARS_PARAMETER + staticVarsParameterCounter;
-                                    staticVarsParameterCounter++;
-                                    Variable var = new Variable(lineDetail, syntax);
-                                    var.setKey(varParamKey);
-                                    var.setValue(evalValueSingle(caju, lineDetail, syntax, params[k]));
-                                    base.addElement(var);
-                                    scriptParams += varParamKey;
-                                }
-                            }
-                            valueScript = scriptGroupFunc + "(" + scriptParams + ")";
-                        }
-                        Variable var = new Variable(lineDetail, syntax);
-                        var.setKey(varKey);
-                        if (scriptGroup.indexOf(syntax.getOperatorAnd()) > -1
-                            || scriptGroup.indexOf(syntax.getOperatorOr()) > -1
-                            || scriptGroup.indexOf(syntax.getOperatorEqual()) > -1
-                            || scriptGroup.indexOf(syntax.getOperatorNotEqual()) > -1
-                            || scriptGroup.indexOf(syntax.getOperatorGreater()) > -1
-                            || scriptGroup.indexOf(syntax.getOperatorGreaterEqual()) > -1
-                            || scriptGroup.indexOf(syntax.getOperatorLess()) > -1
-                            || scriptGroup.indexOf(syntax.getOperatorLessEqual()) > -1) {
-                            groupType = 0;
-                            var.setValue(condition(base, caju, lineDetail, syntax, scriptGroup));
+                        Variable varParam = new Variable(lineDetail, syntax);
+                        varParam.setKey(varParamKey);
+                        varParam.setValue(evalValueGroup(base, caju, lineDetail, syntax, params.substring(0, lenParamSeparatorStart)));
+                        base.addElement(varParam);
+                        if (syntaxPositionParam.getStart() == -1) {
+                            cmd += varParamKey;
                         } else {
-                            Element e = null;
-                            if (groupType == 0) {
-                                e = evalValueSingle(caju, lineDetail, syntax, valueScript);
-                            } else {
-                                Command c = new Command(lineDetail, syntax);
-                                c.setCommand(valueScript);
-                                e = c;
-                            }
-                            var.setValue(e);
+                            cmd += varParamKey + params.substring(lenParamSeparatorStart, lenParamSeparatorEnd);
                         }
-                        base.addElement(var);
-                        if (groupType == 0) {
-                            scriptGroupFunc = "";
-                        }
-                        script = script.replace(scriptGroupFunc + "(" + scriptGroup + ")", varKey);
-                        if (script.indexOf('(') > -1) {
-                            return evalValueGroup(base, caju, lineDetail, syntax, script);
-                        } else {
-                            if (script.indexOf(syntax.getOperatorAnd()) > -1
-                                || script.indexOf(syntax.getOperatorOr()) > -1
-                                || script.indexOf(syntax.getOperatorEqual()) > -1
-                                || script.indexOf(syntax.getOperatorNotEqual()) > -1
-                                || script.indexOf(syntax.getOperatorGreater()) > -1
-                                || script.indexOf(syntax.getOperatorGreaterEqual()) > -1
-                                || script.indexOf(syntax.getOperatorLess()) > -1
-                                || script.indexOf(syntax.getOperatorLessEqual()) > -1) {
-                                return condition(base, caju, lineDetail, syntax, script);
-                            } else {
-                                return evalValueSingle(caju, lineDetail, syntax, script);
-                            }
-                        }
-                    } else {
-                        scriptGroup += scriptChars[x];
+                        
+                        params = params.substring(lenParamSeparatorEnd);
+                    }
+                    if (syntaxPositionParam.getStart() == -1) {
+                        break;
                     }
                 }
-            } catch (CajuScriptException e) {
-                throw e;
-            } catch (Exception e) {
-                throw CajuScriptException.create(caju, caju.getContext(), "Sintax error", e);
+                cmd += syntaxPosition.getGroup().substring(syntaxParameterEnd.getStart());
             }
-            throw CajuScriptException.create(caju, caju.getContext(), "Sintax error");
+            c.setCommand(cmd);
+            var.setValue(c);
+            base.addElement(var);
+            return evalValueGroup(base, caju, lineDetail, syntax, script.replace((CharSequence)syntaxPosition.getGroup(), (CharSequence)varKey));
+        } else if ((syntaxPosition = syntax.matcherPosition(script, syntax.getGroup())).getStart() > -1) {
+            String varKey = CajuScript.CAJU_VARS_GROUP + staticVarsGroupCounter;
+            staticVarsGroupCounter++;
+            Variable var = new Variable(lineDetail, syntax);
+            var.setKey(varKey);
+            var.setValue(evalValue(base, caju, lineDetail, syntax, syntaxPosition.getGroup()));
+            base.addElement(var);
+            return evalValueGroup(base, caju, lineDetail, syntax, script.replace((CharSequence)syntaxPosition.getAllContent(), (CharSequence)varKey));
         } else {
-            if (script.indexOf(syntax.getOperatorAnd()) > -1
-                || script.indexOf(syntax.getOperatorOr()) > -1
-                || script.indexOf(syntax.getOperatorEqual()) > -1
-                || script.indexOf(syntax.getOperatorNotEqual()) > -1
-                || script.indexOf(syntax.getOperatorGreater()) > -1
-                || script.indexOf(syntax.getOperatorGreaterEqual()) > -1
-                || script.indexOf(syntax.getOperatorLess()) > -1
-                || script.indexOf(syntax.getOperatorLessEqual()) > -1) {
+            if ((syntaxPosition = syntax.firstOperatorConditional(script)).getStart() > -1
+                || (syntaxPosition = syntax.firstOperatorLogical(script)).getStart() > -1) {
                 return condition(base, caju, lineDetail, syntax, script);
-            } else {
-                
             }
             return evalValueSingle(caju, lineDetail, syntax, script);
         }

@@ -73,6 +73,7 @@ public class Command extends Base {
             value = new Value(caju, context, getSyntax(), command);
         } else if (value.isCommand() || isCommand) {
             isCommand = true;
+            value.setContext(context);
             value.setCommand(command);
         }
         return value;
@@ -83,6 +84,7 @@ public class Command extends Base {
         for (Context context : contexts) {
             contexts.remove(context);
         }
+        contexts.clear();
         contexts = null;
         value = null;
     }
