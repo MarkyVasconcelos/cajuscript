@@ -210,7 +210,6 @@ public class Value implements Cloneable {
                     Context funcContext = new Context();
                     script = script.substring(path.length());
                     Object[] _values = invokeValues(script, scriptCommand);
-                    //script = script.substring(_values[values.length].toString().length());
                     scriptCommand.setClassPath(path);
                     value = func.invoke(cajuScript, funcContext, scriptCommand.getParams()).getValue();
                 } else if (val != null) {
@@ -247,15 +246,10 @@ public class Value implements Cloneable {
                     }
                     break;
                 case NATIVE_OBJECT_ROOT:
-                    //Value valueObjRoot = cajuScript.getVar(scriptCommand.getObject());
                     value = invokeNative(scriptCommand.getValue().getValue() == null ? null : scriptCommand.getValue().getValue(), scriptCommand.getScript(), scriptCommand);
                     break;
                 case NATIVE_OBJECT:
-                    //Value valueObj = context.getVar(scriptCommand.getObject());
                     String _script = scriptCommand.getScript();
-                    //if (valueObj != null) {
-                    //    _script = scriptCommand.getScript().substring(scriptCommand.getObject().length());
-                    //}
                     if (scriptCommand.getValue() != null) {
                         SyntaxPosition syntaxPathSeparator = syntax.matcherPosition(_script, syntax.getFunctionCallPathSeparator());
                         _script = _script.substring(syntaxPathSeparator.getEnd());
@@ -484,7 +478,7 @@ public class Value implements Cloneable {
         try {
             Class c = null;
             String cName = "";
-            if (scriptCommand.getClassReference() == null || scriptCommand.getMethod() == null || scriptCommand.getConstructor() == null || scriptCommand.getParamName().equals("")) {
+            if (scriptCommand.getClassReference() == null || (scriptCommand.getMethod() == null && scriptCommand.getConstructor() == null && scriptCommand.getParamName().equals(""))) {
                 if (script == null || script.equals("")) {
                     return value;
                 }
