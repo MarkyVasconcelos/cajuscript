@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import org.cajuscript.parser.Function;
+import org.cajuscript.parser.Base;
 /**
  * The core of the <code>CajuScript</code> language.
  * <p>Sample:</p>
@@ -97,6 +98,9 @@ public class CajuScript {
     private LineDetail runningLine = new LineDetail(0, "");
     private Syntax syntax = new Syntax();
     private Map<String, Syntax> syntaxs = new HashMap<String, Syntax>();
+    private static Map<String, String> cacheScripts = new HashMap<String, String>();
+    private static Map<String, Base> cacheParsers = new HashMap<String, Base>();
+    private static Map<String, Context> cacheStaticContexts = new HashMap<String, Context>();
     /**
      * Create a newly instance of Caju Script. The variables caju and array
      * are initialized.
@@ -197,6 +201,7 @@ public class CajuScript {
      * @throws org.cajuscript.CajuScriptException Errors ocurred on script execution.
      */
     public Value eval(String script, Syntax syntax) throws CajuScriptException {
+        String originalScript = script;
         if (script.equals("")) {
             return null;
         }
@@ -214,24 +219,50 @@ public class CajuScript {
         boolean isString1 = false;
         boolean isString2 = false;
         int lineNumber = 0;
+        String cacheId = "";
+        boolean config = true;
         lines: for (String line : lines) {
             line = line.trim();
             lineNumber++;
-            if (lineNumber == 1) {
-                if (line.trim().startsWith("caju.syntax")) {
-                    int endSyntaxLine = line.indexOf(SUBLINE_LIMITER) == -1 ? line.length() : line.indexOf(SUBLINE_LIMITER);
-                    String syntaxName = line.substring(0, endSyntaxLine).replace('\t', ' ');
-                    syntaxName = syntaxName.trim().substring(syntaxName.lastIndexOf(' ') + 1);
-                    Syntax _syntax = getSyntax(syntaxName);
-                    Syntax __syntax = getGlobalSyntax(syntaxName);
-                    if (_syntax != null) {
-                        syntax = _syntax;
-                        continue;
-                    } else if (__syntax != null) {
-                        syntax = __syntax;
-                        continue;
+            if (config) {
+                while (true) {
+                    int lineLimiter = line.indexOf(SUBLINE_LIMITER);
+                    String configLine = line;
+                    if (lineLimiter > -1) {
+                        configLine = configLine.substring(0, lineLimiter);
+                    }
+                    configLine = configLine.replace('\t', ' ').trim();
+                    if (configLine.startsWith("caju.syntax")) {
+                        String syntaxName = configLine.substring(configLine.lastIndexOf(' ') + 1);
+                        Syntax _syntax = getSyntax(syntaxName);
+                        Syntax __syntax = getGlobalSyntax(syntaxName);
+                        if (_syntax != null) {
+                            syntax = _syntax;
+                        } else if (__syntax != null) {
+                            syntax = __syntax;
+                        } else {
+                            throw CajuScriptException.create(this, context, "Syntax \""+ syntaxName +"\" not found.");
+                        }
+                    } else if (configLine.startsWith("caju.cache")) {
+                        cacheId = configLine.substring(configLine.lastIndexOf(' ') + 1);
+                        Base cacheParser = cacheParsers.get(cacheId);
+                        String cacheScript = cacheScripts.get(cacheId);
+                        if (cacheParser != null && cacheScript.equals(originalScript)) {
+                            Context staticContexts = cacheStaticContexts.get(cacheId);
+                            Set<String> keys = staticContexts.getAllKeys(true);
+                            for (String key : keys) {
+                                context.setVar(key, staticContexts.getVar(key));
+                            }
+                            return cacheParser.execute(this, context);
+                        }
                     } else {
-                        throw CajuScriptException.create(this, context, "Syntax \""+ syntaxName +"\" not found.");
+                        config = false;
+                        break;
+                    }
+                    if (lineLimiter > -1) {
+                        line = line.substring(lineLimiter + 1);
+                    } else {
+                        line = "";
                     }
                 }
             }
@@ -322,6 +353,16 @@ public class CajuScript {
         script = scriptBuffer.toString();
         org.cajuscript.parser.Base base = new org.cajuscript.parser.Base(new LineDetail(-1, ""), syntax);
         base.parse(this, script, syntax);
+        if (!cacheId.equals("")) {
+            Context staticContexts = new Context();
+            Set<String> keys = context.getAllKeys(true);
+            for (String key : keys) {
+                staticContexts.setVar(key, context.getVar(key));
+            }
+            cacheScripts.put(cacheId, originalScript);
+            cacheParsers.put(cacheId, base);
+            cacheStaticContexts.put(cacheId, staticContexts);
+        }
         return base.execute(this, context);
     }
     private int endLineIndex(String line, Syntax syntax) {
@@ -670,17 +711,17 @@ public class CajuScript {
         syntaxJ.setBreak(Pattern.compile("break"));
         globalSyntaxs.put("CajuJava", syntaxJ);
         Syntax syntaxB = new Syntax();
-        syntaxB.setIf(Pattern.compile("if\\s*([\\s+|[\\s*\\(]].+[\\s+|[\\)]])\\s*"));
-        syntaxB.setElseIf(Pattern.compile("elseif\\s*([\\s+|[\\s*\\(]].+[\\s+|[\\)]])\\s*"));
+        syntaxB.setIf(Pattern.compile("if\\s*([\\s+|[\\s*\\(]].+)\\s*"));
+        syntaxB.setElseIf(Pattern.compile("elseif\\s*([\\s+|[\\s*\\(]].+)\\s*"));
         syntaxB.setElse(Pattern.compile("else"));
         syntaxB.setIfEnd(Pattern.compile("end"));
-        syntaxB.setLoop(Pattern.compile("while\\s*([\\s+|[\\s*\\(]].+[\\s+|[\\)]])\\s*"));
+        syntaxB.setLoop(Pattern.compile("while\\s*([\\s+|[\\s*\\(]].+)\\s*"));
         syntaxB.setLoopEnd(Pattern.compile("end"));
-        syntaxB.setTry(Pattern.compile("try\\s*([\\s+|[\\s*\\(]].+[\\s+|[\\)]])\\s*"));
+        syntaxB.setTry(Pattern.compile("try\\s*([\\s+|[\\s*\\(]].+)\\s*"));
         syntaxB.setTryCatch(Pattern.compile("catch"));
         syntaxB.setTryFinally(Pattern.compile("finally"));
         syntaxB.setTryEnd(Pattern.compile("end"));
-        syntaxB.setFunction(Pattern.compile("function\\s*([\\s+|[\\s*\\(]].+[\\s+|[\\)]])\\s*"));
+        syntaxB.setFunction(Pattern.compile("function\\s*([\\s+|[\\s*\\(]].+)\\s*"));
         syntaxB.setFunctionEnd(Pattern.compile("end"));
         syntaxB.setReturn(Pattern.compile("return"));
         syntaxB.setImport(Pattern.compile("import\\s+"));
