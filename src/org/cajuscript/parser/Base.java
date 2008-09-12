@@ -571,11 +571,28 @@ public class Base implements Element {
             Variable var = new Variable(lineDetail, syntax);
             var.setKey(varKey);
             Command c = new Command(lineDetail, syntax);
-            SyntaxPosition syntaxParameterBegin = syntax.matcherPosition(syntaxPosition.getGroup(), syntax.getFunctionCallParametersBegin());
-            SyntaxPosition syntaxParameterEnd = syntax.matcherPosition(syntaxPosition.getGroup(), syntax.getFunctionCallParametersEnd());
             String cmd = syntaxPosition.getGroup();
+            String functionName = cmd.substring(0, syntax.matcherPosition(cmd, syntax.getFunctionCallParametersBegin()).getStart());
+            SyntaxPosition syntaxFixOperator = syntax.lastOperatorLogical(functionName);
+            if (syntaxFixOperator.getEnd() > -1) {
+                syntaxPosition.setStart(syntaxPosition.getStart() + syntaxFixOperator.getEnd());
+                cmd = cmd.substring(syntaxFixOperator.getEnd());
+            }
+            syntaxFixOperator = syntax.lastOperatorConditional(functionName);
+            if (syntaxFixOperator.getEnd() > -1) {
+                syntaxPosition.setStart(syntaxPosition.getStart() + syntaxFixOperator.getEnd());
+                cmd = cmd.substring(syntaxFixOperator.getEnd());
+            }
+            syntaxFixOperator = syntax.lastOperatorMathematic(functionName);
+            if (syntaxFixOperator.getEnd() > -1) {
+                syntaxPosition.setStart(syntaxPosition.getStart() + syntaxFixOperator.getEnd());
+                cmd = cmd.substring(syntaxFixOperator.getEnd());
+            }
+            String cmdBase = cmd;
+            SyntaxPosition syntaxParameterBegin = syntax.matcherPosition(cmdBase, syntax.getFunctionCallParametersBegin());
+            SyntaxPosition syntaxParameterEnd = syntax.matcherPosition(cmdBase, syntax.getFunctionCallParametersEnd());
             if (syntaxParameterBegin.getStart() > -1 && syntaxParameterBegin.getStart() < syntaxParameterEnd.getStart()) {
-                String params = syntaxPosition.getGroup().substring(syntaxParameterBegin.getEnd(), syntaxParameterEnd.getStart());
+                String params = cmdBase.substring(syntaxParameterBegin.getEnd(), syntaxParameterEnd.getStart());
                 cmd = cmd.substring(0, syntaxParameterBegin.getEnd());
                 while(true) {
                     SyntaxPosition syntaxPositionParam = syntax.matcherPosition(params, syntax.getFunctionCallParametersSeparator());
@@ -608,12 +625,12 @@ public class Base implements Element {
                         break;
                     }
                 }
-                cmd += syntaxPosition.getGroup().substring(syntaxParameterEnd.getStart());
+                cmd += cmdBase.substring(syntaxParameterEnd.getStart());
             }
             c.setCommand(cmd);
             var.setValue(c);
             base.addElement(var);
-            return evalValueGroup(base, caju, lineDetail, syntax, script.replace((CharSequence)syntaxPosition.getGroup(), (CharSequence)varKey));
+            return evalValueGroup(base, caju, lineDetail, syntax, script.replace((CharSequence)cmdBase, (CharSequence)varKey));
         } else if ((syntaxPosition = syntax.matcherPosition(script, syntax.getGroup())).getStart() > -1) {
             String varKey = CajuScript.CAJU_VARS_GROUP + staticVarsGroupCounter;
             staticVarsGroupCounter++;

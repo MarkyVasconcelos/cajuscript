@@ -118,7 +118,7 @@ public class Syntax {
     private Pattern label = Pattern.compile("\\:");
     private Pattern[] comments = new Pattern[]{Pattern.compile("\\\\"), Pattern.compile("\\-\\s*\\-"), Pattern.compile("\\/\\s*\\/")};
     private Pattern group = Pattern.compile("\\(([[^\\(\\)]|[.]]*)\\)");
-    private Pattern functionCall = Pattern.compile("[\\w|\\s|\\.]*[\\w]+[\\w|\\s|\\.]*\\([[^\\(\\)]|[.]]*\\)");
+    private Pattern functionCall = Pattern.compile("[\\w]+[\\w|\\.|\\s]*\\([[^\\(\\)]|[.]]*\\)");
     private Pattern functionCallPathSeparator = Pattern.compile("\\.");
     private Pattern functionCallParametersBegin = Pattern.compile("\\(");
     private Pattern functionCallParametersSeparator = Pattern.compile("\\,");
@@ -784,6 +784,27 @@ public class Syntax {
     }
 
     public SyntaxPosition lastOperator(String script, Pattern... patterns) {
+        SyntaxPosition syntaxPositionFinal = new SyntaxPosition(this, Pattern.compile(""));
+        while (true) {
+            SyntaxPosition syntaxPosition = new SyntaxPosition(this, Pattern.compile(""));
+            String spaces = "";
+            for (int i = 0; i < patterns.length; i++) {
+                syntaxPosition = matcherPosition(script, patterns[i]);
+                if (syntaxPosition.getStart() != -1) {
+                    for (int k = syntaxPosition.getStart(); k < syntaxPosition.getEnd(); k++) {
+                        spaces += " ";
+                    }
+                    break;
+                }
+            }
+            if (syntaxPosition.getStart() != -1) {
+                script = script.substring(0, syntaxPosition.getStart()) + spaces + script.substring(syntaxPosition.getEnd());
+                syntaxPositionFinal = syntaxPosition;
+            } else {
+                return syntaxPositionFinal;
+            }
+        }
+        /*
         SyntaxPosition[] syntaxPositions = new SyntaxPosition[patterns.length];
         for (int i = 0; i < patterns.length; i++) {
             syntaxPositions[i] = matcherPosition(script, patterns[i]);
@@ -795,5 +816,6 @@ public class Syntax {
             }
         }
         return last;
+        */
     }
 }
