@@ -1,7 +1,7 @@
 package org.cajuscript.math;
 
 /**
- * To do calcs withe classes, like:
+ * To do calcs with classes, like:
  * <pre>
  * package cajuscript_test;
  * public class Vector2D implements org.cajuscript.math.Operable<Vector2D> {
