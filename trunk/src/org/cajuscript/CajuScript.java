@@ -62,7 +62,7 @@ public class CajuScript {
     /**
      * Core version.
      */
-    public static final String VERSION = "0.2";
+    public static final String VERSION = "0.3";
     /**
      * Language version.
      */
@@ -693,7 +693,7 @@ public class CajuScript {
     static {
         Syntax syntaxJ = new Syntax();
         syntaxJ.setIf(Pattern.compile("if\\s*([\\s+|[\\s*\\(]].+)\\{"));
-        syntaxJ.setElseIf(Pattern.compile("\\}else\\s+if\\s*([\\s+|[\\s*\\(]].+)\\{"));
+        syntaxJ.setElseIf(Pattern.compile("\\}\\s*else\\s+if\\s*([\\s+|[\\s*\\(]].+)\\{"));
         syntaxJ.setElse(Pattern.compile("\\}\\s*else\\s*\\{"));
         syntaxJ.setIfEnd(Pattern.compile("\\}"));
         syntaxJ.setLoop(Pattern.compile("while\\s*([\\s+|[\\s*\\(]].+)\\{"));
@@ -706,7 +706,7 @@ public class CajuScript {
         syntaxJ.setFunctionEnd(Pattern.compile("\\}"));
         syntaxJ.setReturn(Pattern.compile("return"));
         syntaxJ.setImport(Pattern.compile("import\\s+"));
-        syntaxJ.setRootContext(Pattern.compile("root."));
+        syntaxJ.setRootContext(Pattern.compile("root\\."));
         syntaxJ.setContinue(Pattern.compile("continue"));
         syntaxJ.setBreak(Pattern.compile("break"));
         globalSyntaxs.put("CajuJava", syntaxJ);
@@ -725,7 +725,7 @@ public class CajuScript {
         syntaxB.setFunctionEnd(Pattern.compile("end"));
         syntaxB.setReturn(Pattern.compile("return"));
         syntaxB.setImport(Pattern.compile("import\\s+"));
-        syntaxB.setRootContext(Pattern.compile("root."));
+        syntaxB.setRootContext(Pattern.compile("root\\."));
         syntaxB.setContinue(Pattern.compile("continue"));
         syntaxB.setBreak(Pattern.compile("break"));
         globalSyntaxs.put("CajuBasic", syntaxB);

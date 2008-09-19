@@ -207,11 +207,9 @@ public class Value implements Cloneable {
                 }
                 if (func != null) {
                     scriptCommand = new ScriptCommand(script, ScriptCommand.Type.FUNCTION);
-                    Context funcContext = new Context();
                     script = script.substring(path.length());
-                    Object[] _values = invokeValues(script, scriptCommand);
+                    invokeValues(script, scriptCommand);
                     scriptCommand.setClassPath(path);
-                    value = func.invoke(cajuScript, funcContext, scriptCommand.getParams()).getValue();
                 } else if (val != null) {
                     String _script = script;
                     if (syntaxPathSeparator.getStart() == -1) {
@@ -837,6 +835,10 @@ public class Value implements Cloneable {
     
 }
 
+/**
+ * To cache data from commands executed.
+ * @author eduveks
+ */
 class ScriptCommand {
     /**
      * Type of script commands.
@@ -857,7 +859,7 @@ class ScriptCommand {
     private Method method = null;
     private ScriptCommand nextScriptCommand = null;
     /**
-     * Create new script command with script and type.
+     * Create new script command with an script and type.
      * @param script Script.
      * @param type Type.
      */
@@ -924,90 +926,158 @@ class ScriptCommand {
         this.method = method;
         this.params = params;
     }
-
+    /**
+     * Set newly instance configuration.
+     * @param classPath Class path.
+     * @param constructor Constructor.
+     * @param params Parameters.
+     */
     public void setNewInstance(String classPath, Constructor constructor, Value[] params) {
         this.classPath = classPath;
         this.constructor = constructor;
         this.params = params;
     }
 
+    /**
+     * Get class reference.
+     * @return Class reference.
+     */
     public Class getClassReference() {
         return classReference;
     }
 
+    /**
+     * Set class reference.
+     * @param classReference Class reference.
+     */
     public void setClassReference(Class classReference) {
         this.classReference = classReference;
     }
 
+    /**
+     * Get constructor.
+     * @return Constructor.
+     */
     public Constructor getConstructor() {
         return constructor;
     }
 
+    /**
+     * Set constructor.
+     * @param constructor Constructor.
+     */
     public void setConstructor(Constructor constructor) {
         this.constructor = constructor;
     }
 
+    /**
+     * Get function.
+     * @return Function.
+     */
     public String getFunction() {
         return function;
     }
 
+    /**
+     * Set function.
+     * @param function Function.
+     */
     public void setFunction(String function) {
         this.function = function;
     }
 
+    /**
+     * Get method.
+     * @return Method.
+     */
     public Method getMethod() {
         return method;
     }
 
+    /**
+     * Set method.
+     * @param method Method.
+     */
     public void setMethod(Method method) {
         this.method = method;
     }
 
+    /**
+     * Get parameters.
+     * @return Parameters.
+     */
     public Value[] getParams() {
         return params;
     }
 
+    /**
+     * Set parameters.
+     * @param params Parameters.
+     */
     public void setParams(Value[] params) {
         this.params = params;
     }
 
+    /**
+     * Get class path.
+     * @return Class path.
+     */
     public String getClassPath() {
         return classPath;
     }
 
+    /**
+     * Set class path.
+     * @param classPath Class path.
+     */
     public void setClassPath(String classPath) {
         this.classPath = classPath;
     }
 
+    /**
+     * Get value.
+     * @return Value.
+     */
     public Value getValue() {
         return value;
     }
 
+    /**
+     * Set value.
+     * @param value Value.
+     */
     public void setValue(Value value) {
         this.value = value;
     }
-    
-    /*
-    public String getObject() {
-        return object;
-    }
 
-    public void setObject(String object) {
-        this.object = object;
-    }
-    */
+    /**
+     * Get next script command. Used if have others script commands in sequence.
+     * @return Script command.
+     */
     public ScriptCommand getNextScriptCommand() {
         return nextScriptCommand;
     }
 
+    /**
+     * Set next script command. Used if have others script commands in sequence.
+     * @param nextScriptCommand Script command.
+     */
     public void setNextScriptCommand(ScriptCommand nextScriptCommand) {
         this.nextScriptCommand = nextScriptCommand;
     }
 
+    /**
+     * Get parameter name.
+     * @return Script Parameter name.
+     */
     public String getParamName() {
         return paramName;
     }
 
+    /**
+     * Set parameter name.
+     * @param paramName Parameter name.
+     */
     public void setParamName(String paramName) {
         this.paramName = paramName;
     }
