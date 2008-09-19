@@ -27,27 +27,24 @@ import org.cajuscript.parser.Operation.Operator;
  * <p>Java Basic style:</p>
  * <p><blockquote><pre>
  *      Syntax syntaxJ = new Syntax();
- *      syntaxJ.setIf("if ");
- *      syntaxJ.setIfBegin("{");
- *      syntaxJ.setElseIf("} else if ");
- *      syntaxJ.setElseIfBegin("{");
- *      syntaxJ.setElse("} else {");
- *      syntaxJ.setIfEnd("}");
- *      syntaxJ.setLoop("while ");
- *      syntaxJ.setLoopBegin("{");
- *      syntaxJ.setLoopEnd("}");
- *      syntaxJ.setTry("try ");
- *      syntaxJ.setTryBegin("{");
- *      syntaxJ.setTryCatch("} catch {");
- *      syntaxJ.setTryEnd("}");
- *      syntaxJ.setFunction("function ");
- *      syntaxJ.setFunctionBegin("{");
- *      syntaxJ.setFunctionEnd("}");
- *      syntaxJ.setReturn("return");
- *      syntaxJ.setImport("import ");
- *      syntaxJ.setRootContext("root.");
- *      syntaxJ.setContinue("continue");
- *      syntaxJ.setBreak("break");
+ *      syntaxJ.setIf(Pattern.compile("if\\s*([\\s+|[\\s*\\(]].+)\\{"));
+ *      syntaxJ.setElseIf(Pattern.compile("\\}\\s*else\\s+if\\s*([\\s+|[\\s*\\(]].+)\\{"));
+ *      syntaxJ.setElse(Pattern.compile("\\}\\s*else\\s*\\{"));
+ *      syntaxJ.setIfEnd(Pattern.compile("\\}"));
+ *      syntaxJ.setLoop(Pattern.compile("while\\s*([\\s+|[\\s*\\(]].+)\\{"));
+ *      syntaxJ.setLoopEnd(Pattern.compile("\\}"));
+ *      syntaxJ.setTry(Pattern.compile("try\\s*([\\s+|[\\s*\\(]].+)\\{"));
+ *      syntaxJ.setTryCatch(Pattern.compile("\\}\\s*catch\\s*\\{"));
+ *      syntaxJ.setTryFinally(Pattern.compile("\\}\\s*finally\\s*\\{"));
+ *      syntaxJ.setTryEnd(Pattern.compile("\\}"));
+ *      syntaxJ.setFunction(Pattern.compile("function\\s*([\\s+|[\\s*\\(]].+)\\{"));
+ *      syntaxJ.setFunctionEnd(Pattern.compile("\\}"));
+ *      syntaxJ.setReturn(Pattern.compile("return"));
+ *      syntaxJ.setImport(Pattern.compile("import\\s+"));
+ *      syntaxJ.setRootContext(Pattern.compile("root\\."));
+ *      syntaxJ.setContinue(Pattern.compile("continue"));
+ *      syntaxJ.setBreak(Pattern.compile("break"));
+ *      globalSyntaxs.put("CajuJava", syntaxJ);
  *      // Registering:
  *      CajuScript.addGlobalSyntax("CajuJava", syntaxJ);
  *      // To use set the first line of script: caju.syntax CajuJava
@@ -55,27 +52,23 @@ import org.cajuscript.parser.Operation.Operator;
  * <p>Syntax Basic style:</p>
  * <p><blockquote><pre>
  *      Syntax syntaxB = new Syntax();
- *      syntaxB.setIf("if ");
- *      syntaxB.setIfBegin("");
- *      syntaxB.setElseIf("elseif ");
- *      syntaxB.setElseIfBegin("");
- *      syntaxB.setElse("else");
- *      syntaxB.setIfEnd("end");
- *      syntaxB.setLoop("while ");
- *      syntaxB.setLoopBegin("");
- *      syntaxB.setLoopEnd("end");
- *      syntaxB.setTry("try ");
- *      syntaxB.setTryBegin("");
- *      syntaxB.setTryCatch("catch");
- *      syntaxB.setTryEnd("end");
- *      syntaxB.setFunction("function ");
- *      syntaxB.setFunctionBegin("");
- *      syntaxB.setFunctionEnd("end");
- *      syntaxB.setReturn("return");
- *      syntaxB.setImport("import ");
- *      syntaxB.setRootContext("root.");
- *      syntaxB.setContinue("continue");
- *      syntaxB.setBreak("break");
+ *      syntaxB.setIf(Pattern.compile("if\\s*([\\s+|[\\s*\\(]].+)\\s*"));
+ *      syntaxB.setElseIf(Pattern.compile("elseif\\s*([\\s+|[\\s*\\(]].+)\\s*"));
+ *      syntaxB.setElse(Pattern.compile("else"));
+ *      syntaxB.setIfEnd(Pattern.compile("end"));
+ *      syntaxB.setLoop(Pattern.compile("while\\s*([\\s+|[\\s*\\(]].+)\\s*"));
+ *      syntaxB.setLoopEnd(Pattern.compile("end"));
+ *      syntaxB.setTry(Pattern.compile("try\\s*([\\s+|[\\s*\\(]].+)\\s*"));
+ *      syntaxB.setTryCatch(Pattern.compile("catch"));
+ *      syntaxB.setTryFinally(Pattern.compile("finally"));
+ *      syntaxB.setTryEnd(Pattern.compile("end"));
+ *      syntaxB.setFunction(Pattern.compile("function\\s*([\\s+|[\\s*\\(]].+)\\s*"));
+ *      syntaxB.setFunctionEnd(Pattern.compile("end"));
+ *      syntaxB.setReturn(Pattern.compile("return"));
+ *      syntaxB.setImport(Pattern.compile("import\\s+"));
+ *      syntaxB.setRootContext(Pattern.compile("root\\."));
+ *      syntaxB.setContinue(Pattern.compile("continue"));
+ *      syntaxB.setBreak(Pattern.compile("break"));
  *      // Registering:
  *      CajuScript.addGlobalSyntax("CajuBasic", syntaxB);
  *      // To use set the first line of script: caju.syntax CajuBasic
@@ -132,7 +125,9 @@ public class Syntax {
     }
 
     /**
-     * Get If syntax. Default "". Sample: "if ".
+     * Get If. Default "([^\\?]+)\\?".
+     * Basic: "if\\s*([\\s+|[\\s*\\(]].+)\\s*".
+     * Java: "if\\s*([\\s+|[\\s*\\(]].+)\\{".
      * @return If.
      */
     public Pattern getIf() {
@@ -140,7 +135,9 @@ public class Syntax {
     }
 
     /**
-     * Get If end syntax. Default "?". Sample: "end", "}".
+     * Get If end. Default "\\?".
+     * Basic: "end".
+     * Java: "\\}".
      * @return If end.
      */
     public Pattern getIfEnd() {
@@ -148,15 +145,19 @@ public class Syntax {
     }
 
     /**
-     * Get ElseIF syntax. Default "?". Sample: "elseif ", "} else if "
-     * @return ElseIF.
+     * Get Else If. Default "\\?\\s*(.+)\\s*\\?".
+     * Basic: "elseif\\s*([\\s+|[\\s*\\(]].+)\\s*".
+     * Java: "\\}\\s*else\\s+if\\s*([\\s+|[\\s*\\(]].+)\\{".
+     * @return Else If.
      */
     public Pattern getElseIf() {
         return elseIfStart;
     }
 
     /**
-     * Get Else syntax. Default "??". Sample: "else", "} else {"
+     * Get Else. Default "\\?\\s*\\?".
+     * Basic: "else".
+     * Java: "\\}\\s*else\\s*\\{".
      * @return Else.
      */
     public Pattern getElse() {
@@ -164,7 +165,9 @@ public class Syntax {
     }
 
     /**
-     * Get Loop syntax. Default "". Sample: "while ".
+     * Get Loop. Default "([^\\@]+)\\@".
+     * Basic: "while\\s*([\\s+|[\\s*\\(]].+)\\s*".
+     * Java: "while\\s*([\\s+|[\\s*\\(]].+)\\{".
      * @return Loop.
      */
     public Pattern getLoop() {
@@ -172,7 +175,9 @@ public class Syntax {
     }
 
     /**
-     * Get Loop end syntax. Default "@". Sample: "end", "}".
+     * Get Loop end. Default "\\@".
+     * Basic: "end".
+     * Java: "\\}".
      * @return Loop end.
      */
     public Pattern getLoopEnd() {
@@ -180,7 +185,9 @@ public class Syntax {
     }
 
     /**
-     * Get Function syntax. Default "". Sample: "function ".
+     * Get Function. Default "([^\\#]+)\\s*(.+)\\s*\\#".
+     * Basic: "function\\s*([\\s+|[\\s*\\(]].+)\\s*".
+     * Java: "function\\s*([\\s+|[\\s*\\(]].+)\\{".
      * @return Function.
      */
     public Pattern getFunction() {
@@ -188,7 +195,9 @@ public class Syntax {
     }
 
     /**
-     * Get Function end syntax. Default "#". Sample: "end", "}".
+     * Get Function end. Default "\\#".
+     * Basic: "end".
+     * Java: "\\}".
      * @return Function end.
      */
     public Pattern getFunctionEnd() {
@@ -196,7 +205,9 @@ public class Syntax {
     }
 
     /**
-     * Get Try syntax. Default "". Sample: "try ".
+     * Get Try. Default "([^\\^]+)\\^".
+     * Basic: "try\\s*([\\s+|[\\s*\\(]].+)\\s*".
+     * Java: "try\\s*([\\s+|[\\s*\\(]].+)\\{".
      * @return Try.
      */
     public Pattern getTry() {
@@ -204,7 +215,9 @@ public class Syntax {
     }
 
     /**
-     * Get Try end syntax. Default "^". Sample: "end", "}".
+     * Get Try end. Default "\\^".
+     * Basic: "end".
+     * Java: "\\}".
      * @return Try end.
      */
     public Pattern getTryEnd() {
@@ -212,7 +225,9 @@ public class Syntax {
     }
 
     /**
-     * Get Catch syntax. Default "^^". Sample: "catch", "} catch {".
+     * Get Catch. Default "\\^\\s*\\^".
+     * Basic: "catch".
+     * Java: "\\}\\s*catch\\s*\\{".
      * @return Catch.
      */
     public Pattern getTryCatch() {
@@ -220,7 +235,9 @@ public class Syntax {
     }
 
     /**
-     * Get Finally syntax. Default "^~^". Sample: "finally", "} finally {".
+     * Get Finally. Default "\\^\\s*\\~\\s*\\^".
+     * Basic: "finally".
+     * Java: "\\}\\s*finally\\s*\\{".
      * @return Finally.
      */
     public Pattern getTryFinally() {
@@ -228,7 +245,9 @@ public class Syntax {
     }
 
     /**
-     * Get Import syntax. Default "$". Sample: "import ", "using ".
+     * Get Import. Default "\\$".
+     * Basic: "import\\s+".
+     * Java: "import\\s+".
      * @return Import.
      */
     public Pattern getImport() {
@@ -236,15 +255,19 @@ public class Syntax {
     }
 
     /**
-     * Get Null syntax. Default "$". Sample: "null", "nil".
-     * @return Import.
+     * Get Null. Default "\\$".
+     * Basic: "null".
+     * Java: "null".
+     * @return Null.
      */
     public Pattern getNull() {
         return _null;
     }
 
     /**
-     * Get Return syntax. Default "~". Sample: "return ".
+     * Get Return. Default "\\~".
+     * Basic: "return".
+     * Java: "return".
      * @return Return.
      */
     public Pattern getReturn() {
@@ -252,7 +275,9 @@ public class Syntax {
     }
 
     /**
-     * Get Break syntax. Default "!!". Sample: "break".
+     * Get Break. Default "\\!\\s*\\!".
+     * Basic: "break".
+     * Java: "break".
      * @return Break.
      */
     public Pattern getBreak() {
@@ -260,7 +285,9 @@ public class Syntax {
     }
 
     /**
-     * Get Continue syntax. Default "..". Sample: "continue".
+     * Get Continue. Default "\\.\\s*\\.".
+     * Basic: "continue".
+     * Java: "continue".
      * @return Continue.
      */
     public Pattern getContinue() {
@@ -268,7 +295,9 @@ public class Syntax {
     }
 
     /**
-     * Get Root Context syntax. Default: ".".
+     * Get Root context. Default: "\\.".
+     * Basic: "root\\.".
+     * Java: "root\\.".
      * @return Root context.
      */
     public Pattern getRootContext() {
@@ -276,7 +305,7 @@ public class Syntax {
     }
 
     /**
-     * Get Addition operator syntax. Default: "+".
+     * Get Addition operator. Default: "\\+".
      * @return Addition operator.
      */
     public Pattern getOperatorAddition() {
@@ -284,7 +313,7 @@ public class Syntax {
     }
 
     /**
-     * Get Subtraction operator syntax. Default: "-".
+     * Get Subtraction operator. Default: "\\-".
      * @return Subtraction operator.
      */
     public Pattern getOperatorSubtraction() {
@@ -292,7 +321,7 @@ public class Syntax {
     }
 
     /**
-     * Get Multiplication operator syntax. Default: "*".
+     * Get Multiplication operator. Default: "\\*".
      * @return Multiplication operator.
      */
     public Pattern getOperatorMultiplication() {
@@ -300,7 +329,7 @@ public class Syntax {
     }
 
     /**
-     * Get Division operator syntax. Default: "/".
+     * Get Division operator. Default: "\\/".
      * @return Division operator.
      */
     public Pattern getOperatorDivision() {
@@ -308,7 +337,7 @@ public class Syntax {
     }
 
     /**
-     * Get Modules operator syntax. Default: "%".
+     * Get Modules operator. Default: "\\%".
      * @return Modules operator.
      */
     public Pattern getOperatorModules() {
@@ -316,7 +345,7 @@ public class Syntax {
     }
 
     /**
-     * Get And operator syntax. Default: "&".
+     * Get And operator. Default: "\\&".
      * @return And operator.
      */
     public Pattern getOperatorAnd() {
@@ -324,7 +353,7 @@ public class Syntax {
     }
 
     /**
-     * Get Or operator syntax. Default: "|".
+     * Get Or operator. Default: "\\|".
      * @return Or operator.
      */
     public Pattern getOperatorOr() {
@@ -332,7 +361,7 @@ public class Syntax {
     }
 
     /**
-     * Get Equal operator syntax. Default: "=".
+     * Get Equal operator. Default: "\\=".
      * @return Equal operator.
      */
     public Pattern getOperatorEqual() {
@@ -340,7 +369,7 @@ public class Syntax {
     }
 
     /**
-     * Get Not Equal operator syntax. Default: "!".
+     * Get Not Equal operator. Default: "\\!".
      * @return Not Equal operator.
      */
     public Pattern getOperatorNotEqual() {
@@ -348,7 +377,7 @@ public class Syntax {
     }
 
     /**
-     * Get Less operator syntax. Default: "&lt;".
+     * Get Less operator. Default: "\\&lt;".
      * @return Less operator.
      */
     public Pattern getOperatorLess() {
@@ -356,7 +385,7 @@ public class Syntax {
     }
 
     /**
-     * Get Greater operator syntax. Default: "&gt;".
+     * Get Greater operator. Default: "\\&gt;".
      * @return Greater operator.
      */
     public Pattern getOperatorGreater() {
@@ -364,7 +393,7 @@ public class Syntax {
     }
 
     /**
-     * Get Less Equal operator syntax. Default: "&lt;=".
+     * Get Less Equal operator. Default: "\\&lt;\\s*\\=".
      * @return Less Equal operator.
      */
     public Pattern getOperatorLessEqual() {
@@ -372,19 +401,23 @@ public class Syntax {
     }
 
     /**
-     * Get Greater Equal operator syntax. Default: "&gt;=".
+     * Get Greater Equal operator. Default: "\\&gt;\\s*\\=".
      * @return Greater Equal operator.
      */
     public Pattern getOperatorGreaterEqual() {
         return operatorGreaterEqual;
     }
 
+    /**
+     * Get valid number. Default: "\\-*\\d+[\\.\\d+]*"
+     * @return Valid number.
+     */
     public Pattern getNumber() {
         return number;
     }
     
     /**
-     * Get Label signal. Default: ":".
+     * Get label signal. Default: "\\:".
      * @return Label signal.
      */
     public Pattern getLabel() {
@@ -392,39 +425,65 @@ public class Syntax {
     }
 
     /**
-     * Get Comments. Default: "\", "--", "//".
+     * Get comments. Default: "\\\\", "\\-\\s*\\-", "\\/\\s*\\/".
      * @return Comments.
      */
     public Pattern[] getComments() {
         return comments;
     }
 
+    /**
+     * Get command group. Default: "\\(([[^\\(\\)]|[.]]*)\\)".
+     * @return Command group.
+     */
     public Pattern getGroup() {
         return group;
     }
 
+    /**
+     * Get function call. Default: "[\\w]+[\\w|\\.|\\s]*\\([[^\\(\\)]|[.]]*\\)".
+     * @return Function call.
+     */
     public Pattern getFunctionCall() {
         return functionCall;
     }
 
+    /**
+     * Get function call path separator. Default: "\\.".
+     * @return Function call path separator.
+     */
     public Pattern getFunctionCallPathSeparator() {
         return functionCallPathSeparator;
     }
 
+    /**
+     * Get function call parameters begin. Default: "\\(".
+     * @return Function call parameters begin.
+     */
     public Pattern getFunctionCallParametersBegin() {
         return functionCallParametersBegin;
     }
 
+    /**
+     * Get function call parameters end. Default: "\\)".
+     * @return Function call parameters end.
+     */
     public Pattern getFunctionCallParametersEnd() {
         return functionCallParametersEnd;
     }
 
+    /**
+     * Get function call parameters separator. Default "\\,".
+     * @return Function call parameters separator.
+     */
     public Pattern getFunctionCallParametersSeparator() {
         return functionCallParametersSeparator;
     }
 
     /**
-     * Set If syntax. Default "". Sample: "if ".
+     * Set If. Default "([^\\?]+)\\?".
+     * Basic: "if\\s*([\\s+|[\\s*\\(]].+)\\s*".
+     * Java: "if\\s*([\\s+|[\\s*\\(]].+)\\{".
      * @param ifStart If.
      */
     public void setIf(Pattern ifStart) {
@@ -432,7 +491,9 @@ public class Syntax {
     }
 
     /**
-     * Set If end syntax. Default "?". Sample: "end", "}".
+     * Set If end. Default "\\?".
+     * Basic: "end".
+     * Java: "\\}".
      * @param ifEnd If end.
      */
     public void setIfEnd(Pattern ifEnd) {
@@ -440,15 +501,19 @@ public class Syntax {
     }
 
     /**
-     * Set ElseIF syntax. Default "?". Sample: "elseif ", "} else if "
-     * @param elseIfStart ElseIF.
+     * Set Else If. Default "\\?\\s*(.+)\\s*\\?".
+     * Basic: "elseif\\s*([\\s+|[\\s*\\(]].+)\\s*".
+     * Java: "\\}\\s*else\\s+if\\s*([\\s+|[\\s*\\(]].+)\\{".
+     * @param elseIfStart Else If.
      */
     public void setElseIf(Pattern elseIfStart) {
         this.elseIfStart = elseIfStart;
     }
 
     /**
-     * Set Else syntax. Default "??". Sample: "else", "} else {"
+     * Set Else. Default "\\?\\s*\\?".
+     * Basic: "else".
+     * Java: "\\}\\s*else\\s*\\{".
      * @param elseStart Else.
      */
     public void setElse(Pattern elseStart) {
@@ -456,7 +521,9 @@ public class Syntax {
     }
 
     /**
-     * Set Loop syntax. Default "". Sample: "while ".
+     * Set Loop. Default "([^\\@]+)\\@".
+     * Basic: "while\\s*([\\s+|[\\s*\\(]].+)\\s*".
+     * Java: "while\\s*([\\s+|[\\s*\\(]].+)\\{".
      * @param loopStart Loop.
      */
     public void setLoop(Pattern loopStart) {
@@ -464,7 +531,9 @@ public class Syntax {
     }
 
     /**
-     * Set Loop end syntax. Default "@". Sample: "}", "end".
+     * Set Loop end. Default "\\@".
+     * Basic: "end".
+     * Java: "\\}".
      * @param loopEnd Loop end.
      */
     public void setLoopEnd(Pattern loopEnd) {
@@ -472,7 +541,9 @@ public class Syntax {
     }
 
     /**
-     * Set Function syntax. Default "". Sample: "function ".
+     * Set Function. Default "([^\\#]+)\\s*(.+)\\s*\\#".
+     * Basic: "function\\s*([\\s+|[\\s*\\(]].+)\\s*".
+     * Java: "function\\s*([\\s+|[\\s*\\(]].+)\\{".
      * @param functionStart Function.
      */
     public void setFunction(Pattern functionStart) {
@@ -480,7 +551,9 @@ public class Syntax {
     }
 
     /**
-     * Set Function end syntax. Default "#". Sample: "end", "}".
+     * Set Function end. Default "\\#".
+     * Basic: "end".
+     * Java: "\\}".
      * @param functionEnd Function end.
      */
     public void setFunctionEnd(Pattern functionEnd) {
@@ -488,7 +561,9 @@ public class Syntax {
     }
 
     /**
-     * Set Try syntax. Default "". Sample: "try ".
+     * Set Try. Default "([^\\^]+)\\^".
+     * Basic: "try\\s*([\\s+|[\\s*\\(]].+)\\s*".
+     * Java: "try\\s*([\\s+|[\\s*\\(]].+)\\{".
      * @param tryStart Try.
      */
     public void setTry(Pattern tryStart) {
@@ -496,7 +571,9 @@ public class Syntax {
     }
 
     /**
-     * Set Try end syntax. Default "^". Sample: "}", "end".
+     * Set Try end. Default "\\^".
+     * Basic: "end".
+     * Java: "\\}".
      * @param tryEnd Try end.
      */
     public void setTryEnd(Pattern tryEnd) {
@@ -504,7 +581,9 @@ public class Syntax {
     }
 
     /**
-     * Set Catch syntax. Default "^^". Sample: "catch", "} catch {".
+     * Set Catch. Default "\\^\\s*\\^".
+     * Basic: "catch".
+     * Java: "\\}\\s*catch\\s*\\{".
      * @param catchStart Catch.
      */
     public void setTryCatch(Pattern catchStart) {
@@ -512,7 +591,9 @@ public class Syntax {
     }
 
     /**
-     * Set Finally syntax. Default "^~^". Sample: "finally", "} finally {".
+     * Set Finally. Default "\\^\\s*\\~\\s*\\^".
+     * Basic: "finally".
+     * Java: "\\}\\s*finally\\s*\\{".
      * @param finallyStart Finally.
      */
     public void setTryFinally(Pattern finallyStart) {
@@ -520,7 +601,9 @@ public class Syntax {
     }
 
     /**
-     * Set Import syntax. Default "$". Sample: "import ", "using ".
+     * Set Import. Default "\\$".
+     * Basic: "import\\s+".
+     * Java: "import\\s+".
      * @param i Import.
      */
     public void setImport(Pattern i) {
@@ -528,15 +611,19 @@ public class Syntax {
     }
 
     /**
-     * Set Null syntax. Default "$". Sample: "null", "nil".
-     * @param n Import.
+     * Set Null. Default "\\$".
+     * Basic: "null".
+     * Java: "null".
+     * @param n Null.
      */
     public void setNull(Pattern n) {
         this._null = n;
     }
 
     /**
-     * Set Return syntax. Default "~". Sample: "return ".
+     * Set Return. Default "\\~".
+     * Basic: "return".
+     * Java: "return".
      * @param r Return.
      */
     public void setReturn(Pattern r) {
@@ -544,7 +631,9 @@ public class Syntax {
     }
 
     /**
-     * Set Break syntax. Default "!!". Sample: "break".
+     * Set Break. Default "\\!\\s*\\!".
+     * Basic: "break".
+     * Java: "break".
      * @param b Break.
      */
     public void setBreak(Pattern b) {
@@ -552,7 +641,9 @@ public class Syntax {
     }
 
     /**
-     * Set Continue syntax. Default "..". Sample: "continue".
+     * Set Continue. Default "\\.\\s*\\.".
+     * Basic: "continue".
+     * Java: "continue".
      * @param c Continue.
      */
     public void setContinue(Pattern c) {
@@ -560,7 +651,9 @@ public class Syntax {
     }
 
     /**
-     * Set Root Context syntax. Default: ".".
+     * Set Root context. Default: "\\.".
+     * Basic: "root\\.".
+     * Java: "root\\.".
      * @param c Root Context.
      */
     public void setRootContext(Pattern c) {
@@ -568,7 +661,7 @@ public class Syntax {
     }
 
     /**
-     * Set Addition operator syntax. Default: "+".
+     * Set Addition operator. Default: "\\+".
      * @param operatorAddition Addition operator.
      */
     public void setOperatorAddition(Pattern operatorAddition) {
@@ -576,7 +669,7 @@ public class Syntax {
     }
 
     /**
-     * Set Subtraction operator syntax. Default: "-".
+     * Set Subtraction operator. Default: "\\-".
      * @param operatorSubtraction Subtraction operator.
      */
     public void setOperatorSubtraction(Pattern operatorSubtraction) {
@@ -584,7 +677,7 @@ public class Syntax {
     }
 
     /**
-     * Set Multiplication operator syntax. Default: "*".
+     * Set Multiplication operator. Default: "\\*".
      * @param operatorMultiplication Multiplication operator.
      */
     public void setOperatorMultiplication(Pattern operatorMultiplication) {
@@ -592,7 +685,7 @@ public class Syntax {
     }
 
     /**
-     * Set Division operator syntax. Default: "/".
+     * Set Division operator. Default: "\\/".
      * @param operatorDivision Division operator.
      */
     public void setOperatorDivision(Pattern operatorDivision) {
@@ -600,7 +693,7 @@ public class Syntax {
     }
 
     /**
-     * Set Modules operator syntax. Default: "%".
+     * Set Modules operator. Default: "\\%".
      * @param operatorModules Modules operator.
      */
     public void setOperatorModules(Pattern operatorModules) {
@@ -608,7 +701,7 @@ public class Syntax {
     }
 
     /**
-     * Set And operator syntax. Default: "&".
+     * Set And operator. Default: "\\&".
      * @param operatorAnd And operator.
      */
     public void setOperatorAnd(Pattern operatorAnd) {
@@ -616,7 +709,7 @@ public class Syntax {
     }
 
     /**
-     * Set Or operator syntax. Default: "|".
+     * Set Or operator. Default: "\\|".
      * @param operatorOr Or operator.
      */
     public void setOperatorOr(Pattern operatorOr) {
@@ -624,7 +717,7 @@ public class Syntax {
     }
 
     /**
-     * Set Equal operator syntax. Default: "=".
+     * Set Equal operator. Default: "\\=".
      * @param operatorEqual Equal operator.
      */
     public void setOperatorEqual(Pattern operatorEqual) {
@@ -632,7 +725,7 @@ public class Syntax {
     }
 
     /**
-     * Set Not Equal operator syntax. Default: "!".
+     * Set Not Equal operator. Default: "\\!".
      * @param operatorNotEqual Not Equal operator.
      */
     public void setOperatorNotEqual(Pattern operatorNotEqual) {
@@ -640,7 +733,7 @@ public class Syntax {
     }
 
     /**
-     * Set Less operator syntax. Default: "&lt;".
+     * Set Less operator. Default: "\\&lt;".
      * @param operatorLess Less operator.
      */
     public void setOperatorLess(Pattern operatorLess) {
@@ -648,7 +741,7 @@ public class Syntax {
     }
 
     /**
-     * Set Greater operator syntax. Default: "&gt;".
+     * Set Greater operator. Default: "\\&gt;".
      * @param operatorGreater Greater operator.
      */
     public void setOperatorGreater(Pattern operatorGreater) {
@@ -656,7 +749,7 @@ public class Syntax {
     }
 
     /**
-     * Set Less Equal operator syntax. Default: "&lt;=".
+     * Set Less Equal operator. Default: "\\&lt;\\s*\\=".
      * @param operatorLessEqual Less Equal operator.
      */
     public void setOperatorLessEqual(Pattern operatorLessEqual) {
@@ -664,19 +757,23 @@ public class Syntax {
     }
 
     /**
-     * Set Greater Equal operator syntax. Default: "&gt;=".
+     * Set Greater Equal operator. Default: "\\&gt;\\s*\\=".
      * @param operatorGreaterEqual Greater Equal operator.
      */
     public void setOperatorGreaterEqual(Pattern operatorGreaterEqual) {
         this.operatorGreaterEqual = operatorGreaterEqual;
     }
 
+    /**
+     * Set valid number. Default: "\\-*\\d+[\\.\\d+]*"
+     * @param number Valid number.
+     */
     public void setNumber(Pattern number) {
         this.number = number;
     }
 
     /**
-     * Set Label signal. Default: ":".
+     * Set label signal. Default: "\\:".
      * @param label Label signal.
      */
     public void setLabel(Pattern label) {
@@ -684,37 +781,67 @@ public class Syntax {
     }
 
     /**
-     * Set Comments. Default: "\", "--", "//".
+     * Set comments. Default: "\\\\", "\\-\\s*\\-", "\\/\\s*\\/".
      * @param comments Comments.
      */
     public void setComments(Pattern[] comments) {
         this.comments = comments;
     }
 
+    /**
+     * Set command group. Default: "\\(([[^\\(\\)]|[.]]*)\\)".
+     * @param group Command group.
+     */
     public void setGroup(Pattern group) {
         this.group = group;
     }
 
+    /**
+     * Set function call. Default: "[\\w]+[\\w|\\.|\\s]*\\([[^\\(\\)]|[.]]*\\)".
+     * @param functionCall Function call.
+     */
     public void setFunctionCall(Pattern functionCall) {
         this.functionCall = functionCall;
     }
 
+    /**
+     * Set function call path separator. Default: "\\.".
+     * @param functionCallPathSeparator Function call path separator.
+     */
     public void setFunctionCallPathSeparator(Pattern functionCallPathSeparator) {
         this.functionCallPathSeparator = functionCallPathSeparator;
     }
 
+    /**
+     * Set function call parameters begin. Default: "\\(".
+     * @param functionCallParametersBegin Function call parameters begin.
+     */
     public void setFunctionCallParametersBegin(Pattern functionCallParametersBegin) {
         this.functionCallParametersBegin = functionCallParametersBegin;
     }
 
+    /**
+     * Set function call parameters end. Default: "\\)".
+     * @param functionCallParametersEnd Function call parameters end.
+     */
     public void setFunctionCallParametersEnd(Pattern functionCallParametersEnd) {
         this.functionCallParametersEnd = functionCallParametersEnd;
     }
 
+    /**
+     * Set function call parameters separator. Default "\\,".
+     * @param functionCallParametersSeparator Function call parameters separator.
+     */
     public void setFunctionCallParametersSeparator(Pattern functionCallParametersSeparator) {
         this.functionCallParametersSeparator = functionCallParametersSeparator;
     }
 
+    /**
+     * Matcher position.
+     * @param line Command line.
+     * @param pattern Pattern.
+     * @return Position.
+     */
     public SyntaxPosition matcherPosition(String line, Pattern pattern) {
         Matcher matcher = pattern.matcher(line);
         if (matcher.find()) {
@@ -736,39 +863,80 @@ public class Syntax {
         }
     }
 
+    /**
+     * Matcher equals.
+     * @param line Command line.
+     * @param pattern Pattern.
+     * @return Is equals.
+     */
     public boolean matcherEquals(String line, Pattern pattern) {
         Matcher matcher = pattern.matcher(line);
         return matcher.matches();
     }
 
+    /**
+     * Find the first logical operator.
+     * @param script Script where find the operator.
+     * @return Position.
+     */
     public SyntaxPosition firstOperatorLogical(String script) {
         return firstOperator(script, getOperatorAnd(), getOperatorOr());
     }
 
+    /**
+     * Find the last logical operator.
+     * @param script Script where find the operator.
+     * @return Position.
+     */
     public SyntaxPosition lastOperatorLogical(String script) {
         return lastOperator(script, getOperatorAnd(), getOperatorOr());
     }
 
+    /**
+     * Find the first conditional operator.
+     * @param script Script where find the operator.
+     * @return Position.
+     */
     public SyntaxPosition firstOperatorConditional(String script) {
         return firstOperator(script, getOperatorEqual(), getOperatorNotEqual(),
                 getOperatorGreater(), getOperatorLess(), getOperatorGreaterEqual(), getOperatorLessEqual());
     }
 
+    /**
+     * Find the last conditional operator.
+     * @param script Script where find the operator.
+     * @return Position.
+     */
     public SyntaxPosition lastOperatorConditional(String script) {
         return lastOperator(script, getOperatorEqual(), getOperatorNotEqual(),
                 getOperatorGreater(), getOperatorLess(), getOperatorGreaterEqual(), getOperatorLessEqual());
     }
-
+    
+    /**
+     * Find the first mathematic operator.
+     * @param script Script where find the operator.
+     * @return Position.
+     */
     public SyntaxPosition firstOperatorMathematic(String script) {
         return firstOperator(script, getOperatorAddition(), getOperatorSubtraction(),
                 getOperatorMultiplication(), getOperatorDivision(), getOperatorModules());
     }
 
+    /**
+     * Find the last mathematic operator.
+     * @param script Script where find the operator.
+     * @return Position.
+     */
     public SyntaxPosition lastOperatorMathematic(String script) {
         return lastOperator(script, getOperatorAddition(), getOperatorSubtraction(),
                 getOperatorMultiplication(), getOperatorDivision(), getOperatorModules());
     }
 
+    /**
+     * Find the first operator.
+     * @param script Script where find the operator.
+     * @return Position.
+     */
     public SyntaxPosition firstOperator(String script, Pattern... patterns) {
         SyntaxPosition[] syntaxPositions = new SyntaxPosition[patterns.length];
         for (int i = 0; i < patterns.length; i++) {
@@ -783,6 +951,11 @@ public class Syntax {
         return first;
     }
 
+    /**
+     * Find the last operator.
+     * @param script Script where find the operator.
+     * @return Position.
+     */
     public SyntaxPosition lastOperator(String script, Pattern... patterns) {
         SyntaxPosition syntaxPositionFinal = new SyntaxPosition(this, Pattern.compile(""));
         while (true) {
@@ -804,18 +977,5 @@ public class Syntax {
                 return syntaxPositionFinal;
             }
         }
-        /*
-        SyntaxPosition[] syntaxPositions = new SyntaxPosition[patterns.length];
-        for (int i = 0; i < patterns.length; i++) {
-            syntaxPositions[i] = matcherPosition(script, patterns[i]);
-        }
-        SyntaxPosition last = new SyntaxPosition(this, Pattern.compile(""));
-        for (int i = 0; i < syntaxPositions.length; i++) {
-            if (syntaxPositions[i].getStart() > -1 && (syntaxPositions[i].getStart() > last.getStart())) {
-                last = syntaxPositions[i];
-            }
-        }
-        return last;
-        */
     }
 }
