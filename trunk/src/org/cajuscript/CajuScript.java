@@ -101,6 +101,7 @@ public class CajuScript {
     private static Map<String, String> cacheScripts = new HashMap<String, String>();
     private static Map<String, Base> cacheParsers = new HashMap<String, Base>();
     private static Map<String, Context> cacheStaticContexts = new HashMap<String, Context>();
+    private static long staticVarsStringCounter = 1;
     /**
      * Create a newly instance of Caju Script. The variables caju and array
      * are initialized.
@@ -221,6 +222,9 @@ public class CajuScript {
         int lineNumber = 0;
         String cacheId = "";
         boolean config = true;
+        Context staticContexts = null;
+        Base cacheParser = null;
+        String cacheScript = null;
         lines: for (String line : lines) {
             line = line.trim();
             lineNumber++;
@@ -245,26 +249,32 @@ public class CajuScript {
                         }
                     } else if (configLine.startsWith("caju.cache")) {
                         cacheId = configLine.substring(configLine.lastIndexOf(' ') + 1);
-                        Base cacheParser = cacheParsers.get(cacheId);
-                        String cacheScript = cacheScripts.get(cacheId);
-                        if (cacheParser != null && cacheScript.equals(originalScript)) {
-                            Context staticContexts = cacheStaticContexts.get(cacheId);
-                            Set<String> keys = staticContexts.getAllKeys(true);
-                            for (String key : keys) {
-                                context.setVar(key, staticContexts.getVar(key));
-                            }
-                            return cacheParser.execute(this, context);
+                        cacheParser = cacheParsers.get(cacheId);
+                        cacheScript = cacheScripts.get(cacheId);
+                        if (cacheParser != null && originalScript.equals(cacheScript)) {
+                            staticContexts = cacheStaticContexts.get(cacheId);
+                        } else if (!cacheId.equals("")) {
+                            staticContexts = new Context();
                         }
                     } else {
-                        config = false;
-                        break;
+                        if (!configLine.equals("")) {
+                            config = false;
+                            break;
+                        }
                     }
                     if (lineLimiter > -1) {
                         line = line.substring(lineLimiter + 1);
                     } else {
-                        line = "";
+                        continue lines;
                     }
                 }
+            }
+            if (!config && cacheParser != null && originalScript.equals(cacheScript)) {
+                Set<String> keys = staticContexts.getAllKeys(true);
+                for (String key : keys) {
+                    context.setVar(key, staticContexts.getVar(key));
+                }
+                return cacheParser.execute(this, context);
             }
             if (isString1 || isString2) {
                 setRunningLine(new LineDetail(lineNumber, previousLine));
@@ -291,13 +301,20 @@ public class CajuScript {
                         if (cO != '\\' && !isString2) {
                             if (isString1) {
                                 isString1 = false;
-                                context.setVar(staticStringKey, new Value(this, getContext(), syntax, "'" + staticStringValue + "'"));
+                                context.setVar(staticStringKey, new Value(this, null, null, "'" + staticStringValue + "'"));
+                                if (staticContexts != null) {
+                                    staticContexts.setVar(staticStringKey, new Value(this, null, null, "'" + staticStringValue + "'"));
+                                }
                                 line = line.replace((CharSequence)("'" + staticStringValue + "'"), staticStringKey); 
                                 staticStringKey = "";
                                 staticStringValue = "";
                             } else {
                                 isString1 = true;
-                                staticStringKey = CAJU_VARS_STATIC_STRING + context.getVars().size();
+                                if (staticVarsStringCounter == Long.MAX_VALUE) {
+                                    staticVarsStringCounter = 0;
+                                }
+                                staticStringKey = CAJU_VARS_STATIC_STRING + staticVarsStringCounter;
+                                staticVarsStringCounter++;
                             }
                         } else if (isString2 || cO == '\\') {
                             staticStringValue += c;
@@ -307,13 +324,20 @@ public class CajuScript {
                         if (cO != '\\' && !isString1) {
                             if (isString2) {
                                 isString2 = false;
-                                context.setVar(staticStringKey, new Value(this, getContext(), syntax, "\"" + staticStringValue + "\""));
+                                context.setVar(staticStringKey, new Value(this, null, null, "\"" + staticStringValue + "\""));
+                                if (staticContexts != null) {
+                                    staticContexts.setVar(staticStringKey, new Value(this, null, null, "\"" + staticStringValue + "\""));
+                                }
                                 line = line.replace((CharSequence)("\"" + staticStringValue + "\""), staticStringKey); 
                                 staticStringKey = "";
                                 staticStringValue = "";
                             } else {
                                 isString2 = true;
-                                staticStringKey = CAJU_VARS_STATIC_STRING + context.getVars().size();
+                                if (staticVarsStringCounter == Long.MAX_VALUE) {
+                                    staticVarsStringCounter = 0;
+                                }
+                                staticStringKey = CAJU_VARS_STATIC_STRING + staticVarsStringCounter;
+                                staticVarsStringCounter++;
                             }
                         } else if (isString1 || cO == '\\') {
                             staticStringValue += c;
@@ -354,11 +378,6 @@ public class CajuScript {
         org.cajuscript.parser.Base base = new org.cajuscript.parser.Base(new LineDetail(-1, ""), syntax);
         base.parse(this, script, syntax);
         if (!cacheId.equals("")) {
-            Context staticContexts = new Context();
-            Set<String> keys = context.getAllKeys(true);
-            for (String key : keys) {
-                staticContexts.setVar(key, context.getVar(key));
-            }
             cacheScripts.put(cacheId, originalScript);
             cacheParsers.put(cacheId, base);
             cacheStaticContexts.put(cacheId, staticContexts);
@@ -704,6 +723,7 @@ public class CajuScript {
         syntaxJ.setTryEnd(Pattern.compile("\\}"));
         syntaxJ.setFunction(Pattern.compile("function\\s*([\\s+|[\\s*\\(]].+)\\{"));
         syntaxJ.setFunctionEnd(Pattern.compile("\\}"));
+        syntaxJ.setNull(Pattern.compile("null"));
         syntaxJ.setReturn(Pattern.compile("return"));
         syntaxJ.setImport(Pattern.compile("import\\s+"));
         syntaxJ.setRootContext(Pattern.compile("root\\."));
@@ -723,6 +743,7 @@ public class CajuScript {
         syntaxB.setTryEnd(Pattern.compile("end"));
         syntaxB.setFunction(Pattern.compile("function\\s*([\\s+|[\\s*\\(]].+)\\s*"));
         syntaxB.setFunctionEnd(Pattern.compile("end"));
+        syntaxB.setNull(Pattern.compile("null"));
         syntaxB.setReturn(Pattern.compile("return"));
         syntaxB.setImport(Pattern.compile("import\\s+"));
         syntaxB.setRootContext(Pattern.compile("root\\."));
