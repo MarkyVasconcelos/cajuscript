@@ -37,7 +37,7 @@ public class Base implements Element {
     protected List<Element> elements = new ArrayList<Element>();
     protected LineDetail baseLineDetail = null;
     protected Syntax baseSyntax = null;
-    private static int staticVarsGroupCounter = 1;
+    private static long staticVarsGroupCounter = 0;
     /**
      * Base
      * @param line Line detail
@@ -561,7 +561,7 @@ public class Base implements Element {
         }
     }
     private Element evalValueGroup(Element base, CajuScript caju, LineDetail lineDetail, Syntax syntax, String script) throws CajuScriptException {
-        if (staticVarsGroupCounter == Integer.MAX_VALUE) {
+        if (staticVarsGroupCounter == Long.MAX_VALUE) {
             staticVarsGroupCounter = 0;
         }
         SyntaxPosition syntaxPosition = null;
@@ -604,7 +604,7 @@ public class Base implements Element {
                     }
                     
                     if (!params.trim().equals("")) {
-                        if (staticVarsGroupCounter == Integer.MAX_VALUE) {
+                        if (staticVarsGroupCounter == Long.MAX_VALUE) {
                             staticVarsGroupCounter = 0;
                         }
                         String varParamKey = CajuScript.CAJU_VARS_GROUP + staticVarsGroupCounter;

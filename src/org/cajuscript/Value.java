@@ -84,8 +84,6 @@ public class Value implements Cloneable {
             script = script.trim();
             if (script.equals("")) {
                 return;
-            } else if (script.equals(syntax.getNull())) {
-                value = null;
             } else if ((script.startsWith("'") && script.endsWith("'"))
                         || (script.startsWith("\"") && script.endsWith("\""))) {
                 script = script.replace((CharSequence)"\\t", (CharSequence)"\t");
@@ -96,6 +94,8 @@ public class Value implements Cloneable {
                 type = Type.STRING;
                 valueString = script.substring(1, script.length() - 1);
                 value = valueString;
+            } else if (syntax.matcherEquals(script, syntax.getNull())) {
+                value = null;
             } else {
                 try {
                     loadNumberValue(script, true);
@@ -606,7 +606,15 @@ public class Value implements Cloneable {
                         }
                         script = script.substring(paramName.length());
                         if (value != null) {
-                            return invokeNative(value.getClass().getField(paramName).get(value), script, scriptCommand);
+                            scriptCommand.setParamName(paramName);
+                            ScriptCommand sc = new ScriptCommand(script, ScriptCommand.Type.NATIVE_OBJECT);
+                            Object oParam = c.getField(paramName).get(value);
+                            sc.setClassReference(oParam.getClass());
+                            sc.setClassPath(oParam.getClass().getName());
+                            Object o = invokeNative(oParam, script, sc);
+                            scriptCommand.setNextScriptCommand(sc);
+                            return o;
+                            //return invokeNative(value.getClass().getField(paramName).get(value), script, scriptCommand);
                         }
                         if (paramName.equals("class")) {
                             return invokeNative(c, script, scriptCommand);

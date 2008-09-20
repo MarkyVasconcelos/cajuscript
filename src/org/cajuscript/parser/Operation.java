@@ -224,7 +224,7 @@ public class Operation extends Base {
                     }
                 }
                 if (v1.getValue() == null || v2.getValue() == null) {
-                    v.setValue(new Boolean(v1.getValue() != v2.getValue()));
+                    v.setValue(new Boolean(v1.getValue() == v2.getValue()));
                 } else {
                     v.setValue(new Boolean(v1.getValue().equals(v2.getValue())));
                 }
