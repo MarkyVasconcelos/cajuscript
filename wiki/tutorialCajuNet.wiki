@@ -29,26 +29,24 @@ Here is a lite example how to do it
 
 {{{
   String value = "1";
-        long times = 100000;
-            long time = System.DateTime.Now.Ticks;
+  long times = 100000;
+  long time = System.DateTime.Now.Ticks;
 
-            // Loop test           
-            org.cajuscript.CajuScript caju = new org.cajuscript.CajuScript();
-            caju.eval("x = 0; x < " + times + " @ x = x + " + value + "; @");
-            System.Console.WriteLine("CajuScript: " + ((System.DateTime.Now.Ticks - time) / TimeSpan.TicksPerMillisecond)
- + "ms - " + caju.get("x"));
+  // Loop test           
+  org.cajuscript.CajuScript caju = new org.cajuscript.CajuScript();
+  caju.eval("x = 0; x < " + times + " @ x = x + " + value + "; @");
+  System.Console.WriteLine("CajuScript: " + ((System.DateTime.Now.Ticks - time) / TimeSpan.TicksPerMillisecond) + "ms - " + caju.get("x"));
+  // String test
+  org.cajuscript.CajuScriptEngine cajue = new org.cajuscript.CajuScriptEngine();
+  String javaHello = "Java: Hello!";
+  cajue.put("javaHello", javaHello);
+  String script = "$java.lang;";
+  script += "System.out.println(javaHello);";
+  script += "cajuHello = 'Caju: Hi!';";
+  cajue.eval(script);
+  System.Console.WriteLine(cajue.get("cajuHello"));
 
-            // String test
-            org.cajuscript.CajuScriptEngine cajue = new org.cajuscript.CajuScriptEngine();
-            String javaHello = "Java: Hello!";
-            cajue.put("javaHello", javaHello);
-            String script = "$java.lang;";
-            script += "System.out.println(javaHello);";
-            script += "cajuHello = 'Caju: Hi!';";
-            cajue.eval(script);
-            System.Console.WriteLine(cajue.get("cajuHello"));
-
-            System.Console.ReadLine();
+  System.Console.ReadLine();
 }}}
 
 For more details in compiling with ikvmc just go to http://www.ikvm.net/userguide/ikvmc.html
