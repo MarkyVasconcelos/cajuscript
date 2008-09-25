@@ -1,4 +1,4 @@
-#summary Change Log
+#summary Change log.
 
 *VERSION 0.3*
 
