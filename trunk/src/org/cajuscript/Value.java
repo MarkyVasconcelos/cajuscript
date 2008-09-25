@@ -21,6 +21,8 @@ package org.cajuscript;
 
 import java.lang.reflect.*;
 import org.cajuscript.parser.Function;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 /**
  * All values of variables of the CajuScript are instance this class.
@@ -104,6 +106,11 @@ public class Value implements Cloneable {
                 script = script.replace((CharSequence)"\\n", (CharSequence)"\n");
                 script = script.replace((CharSequence)"\\\"", (CharSequence)"\"");
                 script = script.replace((CharSequence)"\\'", (CharSequence)"'");
+                java.util.regex.Pattern p = java.util.regex.Pattern.compile("\\\\u[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]");
+                java.util.regex.Matcher m = p.matcher(script);
+                while (m.find()) {
+                    script = script.replace((CharSequence)m.group(), (CharSequence)Character.toString((char)Integer.valueOf(m.group().substring(2), 16).intValue()));
+                }
                 type = Type.STRING;
                 valueString = script.substring(1, script.length() - 1);
                 value = valueString;
