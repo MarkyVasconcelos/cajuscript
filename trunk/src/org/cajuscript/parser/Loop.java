@@ -15,7 +15,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with CajuScript.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.cajuscript.parser;
 
@@ -23,7 +23,6 @@ import org.cajuscript.CajuScript;
 import org.cajuscript.Context;
 import org.cajuscript.Value;
 import org.cajuscript.Syntax;
-import org.cajuscript.SyntaxPosition;
 import org.cajuscript.CajuScriptException;
 
 /**
@@ -33,14 +32,15 @@ import org.cajuscript.CajuScriptException;
 public class Loop extends Base {
     private Element condition = null;
     private String label = "";
+    
     /**
      * Create new Loop.
      * @param line Line detail.
-     * @param syntax Syntax style.
      */
-    public Loop(LineDetail line, Syntax syntax) {
-        super(line, syntax);
+    public Loop(LineDetail line) {
+        super(line);
     }
+    
     /**
      * Get condition.
      * @return Element of condition.
@@ -48,6 +48,7 @@ public class Loop extends Base {
     public Element getCondition() {
         return condition;
     }
+    
     /**
      * Set condition.
      * @param condition Element of condition.
@@ -55,6 +56,7 @@ public class Loop extends Base {
     public void setCondition(Element condition) {
         this.condition = condition;
     }
+    
     /**
      * Get Label.
      * @return Label.
@@ -62,6 +64,7 @@ public class Loop extends Base {
     public String getLabel() {
         return label;
     }
+    
     /**
      * Set Label.
      * @param label Label.
@@ -69,17 +72,20 @@ public class Loop extends Base {
     public void setLabel(String label) {
         this.label = label;
     }
+    
     /**
      * Executed this element and all childs elements.
-     * @param caju CajuScript instance
+     * @param caju CajuScript
+     * @param context Context
+     * @param syntax Syntax
      * @return Value returned by execution
      * @throws org.cajuscript.CajuScriptException Errors ocurred on execution
      */
     @Override
-    public Value execute(CajuScript caju, Context context) throws CajuScriptException {
+    public Value execute(CajuScript caju, Context context, Syntax syntax) throws CajuScriptException {
         caju.setRunningLine(getLineDetail());
         loop: while (true) {
-            Object conditionValue = condition.execute(caju, context).getValue();
+            Object conditionValue = condition.execute(caju, context, syntax).getValue();
             boolean finalValue = false;
             if (conditionValue instanceof Boolean) {
                 finalValue = ((Boolean)conditionValue).booleanValue();
@@ -94,7 +100,7 @@ public class Loop extends Base {
             }
             if (finalValue) {
                 for (Element element : elements) {
-                    Value v = element.execute(caju, context);
+                    Value v = element.execute(caju, context, syntax);
                     if (v != null && canElementReturn(element)) {
                         if (element instanceof Break) {
                             break loop;
@@ -129,10 +135,5 @@ public class Loop extends Base {
             }
         }
         return null;
-    }
-    
-    @Override
-    protected void finalize() throws Throwable {
-        condition = null;
     }
 }

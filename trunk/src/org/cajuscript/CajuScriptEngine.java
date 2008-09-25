@@ -15,8 +15,10 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with CajuScript.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
+
 package org.cajuscript;
+
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptContext;
@@ -30,6 +32,7 @@ import java.util.Set;
 import javax.script.Invocable;
 import javax.script.SimpleBindings;
 import java.util.List;
+
 /**
  * <code>CajuScriptEngine</code> is the standard for execute scripts and 
  * transports of objects between Java and CajuScript.
@@ -72,15 +75,18 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
      * returned from functions.
      */
     public static final String CAJU_VARS_FUNC_RETURN = CajuScript.CAJU_VARS + "_func_return_";
+    
     /**
      * Prefix of the variables created automaticaly to defined the values for 
      * parameters of functions.
      */
     public static final String CAJU_VARS_FUNC_PARAM = CajuScript.CAJU_VARS + "_func_param_";
+    
     /**
      * Equals the ScriptContext.ENGINE_SCOPE
      */
     public static final int ENGINE_SCOPE = ScriptContext.ENGINE_SCOPE;
+    
     /**
      * Equals the ScriptContext.GLOBAL_SCOPE
      */
@@ -88,6 +94,7 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
     private ScriptContext context;
     private InterfaceImplementor implementor;
     private CajuScript caju;
+    
     /**
      * Create a new CajuScriptEngine.<br/>
      * <br/>
@@ -105,6 +112,7 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
         context = new SimpleScriptContext();
         implementor = new InterfaceImplementor(this);
     }
+    
     /**
      * Script on CajuScript to be executed.<br/>
      * <br/>
@@ -120,6 +128,7 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
     public Object eval(String script, ScriptContext context) throws ScriptException {
         return runScript(script, context);
     }
+    
     /**
      * Execute script in a Reader, can be files.<br/>
      * <br/>
@@ -139,6 +148,7 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
     public Object eval(Reader reader, ScriptContext context) throws ScriptException {
         return runScript(readAll(reader), context);
     }
+    
     /**
      * Execute script in an string.<br/>
      * <br/>
@@ -153,6 +163,7 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
     public Object eval(String script) throws ScriptException {
         return eval(script, context);
     }
+    
     /**
      * Execute script in an file.<br/>
      * <br/>
@@ -171,6 +182,7 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
     public Object eval(Reader reader) throws ScriptException {
         return eval(reader, context);
     }
+    
     /**
      * Script on CajuScript to be executed.<br/>
      * <br/>
@@ -186,6 +198,7 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
     public Object eval(String script, Bindings bindings) throws ScriptException {
         return runScript(script, bindings);
     }
+    
     /**
      * Execute script in an file.<br/>
      * <br/>
@@ -205,6 +218,7 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
     public Object eval(Reader reader , Bindings bindings) throws ScriptException {
         return runScript(readAll(reader), bindings);
     }
+    
     /**
      * Send object of Java to CajuScript.<br/>
      * <br/>
@@ -220,6 +234,7 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
     public void put(String key, Object value) {
         context.setAttribute(key, value, SimpleScriptContext.ENGINE_SCOPE);
     }
+    
     /**
      * Catch objects of CajuScript to Java.<br/>
      * <br/>
@@ -244,6 +259,7 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
             return result;
         }
     }
+    
     /**
      * Get Bindings.
      * @param scope Scope.
@@ -252,6 +268,7 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
     public Bindings getBindings(int scope) {
         return context.getBindings(scope);
     }
+    
     /**
      * Set Binding.
      * @param bindings Binding.
@@ -260,6 +277,7 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
     public void setBindings(Bindings bindings, int scope) {
         context.setBindings(bindings, scope);
     }
+    
     /**
      * Load a new Binding.
      * @return New Binding.
@@ -267,6 +285,7 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
     public Bindings createBindings() {
         return new SimpleBindings();
     }
+    
     /**
      * The context.
      * @return Current context.
@@ -274,6 +293,7 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
     public ScriptContext getContext() {
         return context;
     }
+    
     /**
      * Define the context.
      * @param context Context.
@@ -281,6 +301,7 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
     public void setContext(ScriptContext context) {
         this.context = context;
     }
+    
     /**
      * Newly instance of the CajuScript Engine Factory.
      * @return Intanse of the CajuScript Engine Factory.
@@ -288,6 +309,7 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
     public ScriptEngineFactory getFactory() {
         return new CajuScriptEngineFactory();
     }
+    
     /**
      * Invoke Java method on CajuScript.
      * @param thiz Object with the method to invoke.
@@ -308,6 +330,7 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
         Object returnObject = invokeFunction(funcObjectName + "." + name, args);
         return returnObject;
     }
+    
     /**
      * Invoke a CajuScript function.
      * @param name Function name.
@@ -341,6 +364,7 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
             throw new ScriptException(e);
         }
     }
+    
     /**
      * Get interface.
      * @param clasz Class.
@@ -353,6 +377,7 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
             return null;
         }
     }
+    
     /**
      * Get Interface.
      * @param thiz Object.
@@ -369,6 +394,7 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
             return null;
         }
     }
+    
     /**
      * Get the CajuScript instance.
      * @return CajuScript.
@@ -376,6 +402,7 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
     public CajuScript getCajuScript() {
         return caju;
     }
+    
     /**
      * Set the CajuScript instance.
      * @param caju CajuScript.
@@ -383,6 +410,7 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
     public void setCajuScript(CajuScript caju) {
         this.caju = caju;
     }
+    
     /**
      * Load script engine manager with CajuScript.
      * @param mgr Script engine manager to be loaded.
@@ -390,11 +418,6 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
      */
     public static ScriptEngineManager loadScriptEngineManager(ScriptEngineManager mgr) {
         return CajuScriptEngineFactory.loadScriptEngineManager(mgr);
-    }
-    
-    @Override
-    protected void finalize() throws Throwable {
-        caju = null;
     }
     
     private void loadBindings(ScriptContext context) throws ScriptException {

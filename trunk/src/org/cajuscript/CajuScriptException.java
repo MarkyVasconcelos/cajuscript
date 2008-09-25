@@ -15,7 +15,8 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with CajuScript.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
+
 package org.cajuscript;
 
 /**
@@ -29,6 +30,7 @@ public class CajuScriptException extends Exception {
     public CajuScriptException() {
 	super();
     }
+    
     /**
      * Newly exception.
      * @param message Message.
@@ -36,6 +38,7 @@ public class CajuScriptException extends Exception {
     public CajuScriptException(String message) {
 	super(message);
     }
+    
     /**
      * Newly exception.
      * @param cause More exceptions.
@@ -43,6 +46,7 @@ public class CajuScriptException extends Exception {
     public CajuScriptException(Throwable cause) {
         super(cause);
     }
+    
     /**
      * Newly exception.
      * @param message Message.
@@ -51,6 +55,7 @@ public class CajuScriptException extends Exception {
     public CajuScriptException(String message, Throwable cause) {
         super(message, cause);
     }
+    
     /**
      * Create an newly exception.
      * @param caju CajuScript instance.
@@ -61,6 +66,7 @@ public class CajuScriptException extends Exception {
     public static CajuScriptException create(CajuScript caju, Context context, String message) throws CajuScriptException {
         return create(caju, context, message, null);
     }
+    
     /**
      * Create an newly exception.
      * @param caju CajuScript instance.
@@ -72,6 +78,7 @@ public class CajuScriptException extends Exception {
     public static CajuScriptException create(CajuScript caju, Context context, String message, Throwable cause) throws CajuScriptException {
         return new CajuScriptException(message + " > " + caju.getRunningLine().getNumber() + ": " + formatScript(caju, context, caju.getRunningLine().getContent()), cause);
     }
+    
     private static String formatScript(CajuScript caju, Context context, String script) {
         for (String key : caju.getAllKeys(true)) {
             if (key.startsWith(CajuScript.CAJU_VARS)) {

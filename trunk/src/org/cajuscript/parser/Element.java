@@ -15,7 +15,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with CajuScript.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.cajuscript.parser;
 
@@ -36,31 +36,35 @@ public interface Element {
      * @param element Element
      */
     public void addElement(Element element);
+    
     /**
      * Remove child element.
      * @param element Element
      */
     public void removeElement(Element element);
+    
     /**
      * Elements
      * @return All child elements
      */
     public List<Element> getElements();
+    
     /**
      * Get line detail.
      * @return Line detail
      */
     public LineDetail getLineDetail();
+    
     /**
-     * Get syntax style.
-     * @return Syntax style
+     * Cleaning forced in memory allocation.
      */
-    public Syntax getSyntax();
+    public void clear();
+    
     /**
      * Executed this element and all childs elements.
      * @param caju CajuScript instance
      * @return Value returned by execution
      * @throws org.cajuscript.CajuScriptException Errors ocurred on execution
      */
-    public Value execute(CajuScript caju, Context context) throws CajuScriptException;  
+    public Value execute(CajuScript caju, Context context, Syntax syntax) throws CajuScriptException;  
 }

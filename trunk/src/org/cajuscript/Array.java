@@ -15,8 +15,10 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with CajuScript.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
+
 package org.cajuscript;
+
 /**
  * To create a new Array, get the size, get a value or set a value.
  * <p>CajuScript:</p>
@@ -47,6 +49,7 @@ public class Array {
      * Initializes a newly created <code>Array</code>
      */
     public Array() {}
+    
     /**
      * Create a new array.
      * <p>CajuScript:</p>
@@ -91,6 +94,7 @@ public class Array {
         }
         return java.lang.reflect.Array.newInstance(Class.forName(type), size);
     }
+    
     /**
      * Get the size of array.
      * @param array The array.
@@ -99,6 +103,7 @@ public class Array {
     public static int size(Object array) {
         return java.lang.reflect.Array.getLength(array);
     }
+    
     /**
      * Get the value in determined position.
      * @param array The array.
@@ -108,6 +113,7 @@ public class Array {
     public static Object get(Object array, int i) {
         return java.lang.reflect.Array.get(array, i);
     }
+    
     /**
      * Defining the value in specific position.
      * @param array The array for be affected.

@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with CajuScript.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.cajuscript;
 
 import java.util.regex.Pattern;
@@ -32,6 +33,7 @@ public class SyntaxPosition {
     private String group = "";
     private String allContent = "";
     private Operator operator = null;
+    
     /**
      * Newly instance to save useful data to manipulate dynamically the sintax.
      * @param syntax Current syntax.
@@ -66,6 +68,7 @@ public class SyntaxPosition {
             operator = Operator.MODULES;
         }
     }
+    
     /**
      * Get end of text that was caught from the matcher pattern.
      * @return End index.
@@ -73,6 +76,7 @@ public class SyntaxPosition {
     public int getEnd() {
         return end;
     }
+    
     /**
      * Set end of text that was caught from the matcher pattern.
      * @param end End index.

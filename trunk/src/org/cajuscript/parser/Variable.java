@@ -15,7 +15,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with CajuScript.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.cajuscript.parser;
 
@@ -33,14 +33,15 @@ import org.cajuscript.CajuScriptException;
 public class Variable extends Base {
     private String key = "";
     private Element value = null;
+    
     /**
      * Create new Variable.
      * @param line Line detail
-     * @param syntax Syntax style
      */
-    public Variable(LineDetail line, Syntax syntax) {
-        super(line, syntax);
+    public Variable(LineDetail line) {
+        super(line);
     }
+    
     /**
      * Get variable key.
      * @return Key
@@ -48,6 +49,7 @@ public class Variable extends Base {
     public String getKey() {
         return key;
     }
+    
     /**
      * Set variable key.
      * @param key Key
@@ -55,6 +57,7 @@ public class Variable extends Base {
     public void setKey(String key) {
         this.key = key;
     }
+    
     /**
      * Get variable value.
      * @return Element of value
@@ -62,6 +65,7 @@ public class Variable extends Base {
     public Element getValue() {
         return value;
     }
+    
     /**
      * Set variable value.
      * @param value Element of value
@@ -69,24 +73,21 @@ public class Variable extends Base {
     public void setValue(Element value) {
         this.value = value;
     }
+    
     /**
-     * Executed this element and all childs elements.
-     * @param caju CajuScript instance
+     * Executed this element.
+     * @param caju CajuScript
+     * @param context Context
+     * @param syntax Syntax
      * @return Value returned by execution
      * @throws org.cajuscript.CajuScriptException Errors ocurred on execution
      */
     @Override
-    public Value execute(CajuScript caju, Context context) throws CajuScriptException {
-        if (key.equals("__caju_param_2")) {
-            context.toString();
-        }
+    public Value execute(CajuScript caju, Context context, Syntax syntax) throws CajuScriptException {
         caju.setRunningLine(getLineDetail());
-        for (Element element : elements) {
-            element.execute(caju, context);
-        }
-        Value v = value.execute(caju, context);
+        Value v = value.execute(caju, context, syntax);
         if (!key.equals("")) {
-            SyntaxPosition syntaxPosition = getSyntax().matcherPosition(key, getSyntax().getRootContext());
+            SyntaxPosition syntaxPosition = syntax.matcherPosition(key, syntax.getRootContext());
             if (syntaxPosition.getStart() == 0) {
                 caju.setVar(key.substring(syntaxPosition.getEnd()), v);
             } else {
@@ -94,10 +95,5 @@ public class Variable extends Base {
             }
         }
         return v;
-    }
-    
-    @Override
-    protected void finalize() throws Throwable {
-        value = null;
     }
 }

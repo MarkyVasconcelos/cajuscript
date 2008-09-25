@@ -16,11 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with CajuScript.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.cajuscript;
 
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
-import org.cajuscript.parser.Operation.Operator;
 
 /**
  * Script syntax.

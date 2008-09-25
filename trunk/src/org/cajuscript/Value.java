@@ -15,10 +15,13 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with CajuScript.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
+
 package org.cajuscript;
+
 import java.lang.reflect.*;
 import org.cajuscript.parser.Function;
+
 /**
  * All values of variables of the CajuScript are instance this class.
  * <p>CajuScript:</p>
@@ -37,9 +40,15 @@ import org.cajuscript.parser.Function;
  * @author eduveks
  */
 public class Value implements Cloneable {
+    /**
+     * Types of values.
+     */
     public static enum Type {
         NULL, NUMBER, STRING, OBJECT
     }
+    /**
+     * Types of numbers.
+     */
     public static enum TypeNumber {
         INTEGER, LONG, DOUBLE, FLOAT
     }
@@ -58,6 +67,9 @@ public class Value implements Cloneable {
     private Syntax syntax = null;
     private String flag = "";
     private ScriptCommand scriptCommand = null;
+    private Object[] paramsValues = null;
+    private Object[] paramsFinal = null;
+    
     /**
      * Create a new value.
      * @param caju CajuScript.
@@ -69,6 +81,7 @@ public class Value implements Cloneable {
         this.context = context;
         this.syntax = syntax;
     }
+    
     /**
      * Create a new value using a script.
      * @param caju Instance of the CajuScript.
@@ -123,6 +136,7 @@ public class Value implements Cloneable {
             throw CajuScriptException.create(caju, context, "Invalid value: "+ script, e);
         }
     }
+    
     /**
      * Get context.
      * @return Context.
@@ -130,6 +144,7 @@ public class Value implements Cloneable {
     public Context getContext() {
         return context;
     }
+    
     /**
      * Set context.
      * @param context Context.
@@ -137,6 +152,7 @@ public class Value implements Cloneable {
     public void setContext(Context context) {
         this.context = context;
     }
+    
     /**
      * Get syntax.
      * @return Syntax.
@@ -144,6 +160,7 @@ public class Value implements Cloneable {
     public Syntax getSyntax() {
         return syntax;
     }
+    
     /**
      * Set syntax.
      * @param syntax Syntax.
@@ -151,6 +168,7 @@ public class Value implements Cloneable {
     public void setSyntax(Syntax syntax) {
         this.syntax = syntax;
     }
+    
     /**
      * If value is command type.
      * @return Is command or not.
@@ -158,6 +176,7 @@ public class Value implements Cloneable {
     public boolean isCommand() {
         return _isCommand;
     }
+    
     /**
      * Get command.
      * @return Command.
@@ -165,7 +184,7 @@ public class Value implements Cloneable {
     public String getCommand() {
         return command;
     }
-    public static Context Xcontext = null;
+    
     /**
      * Set command.
      * @param script Command script.
@@ -260,7 +279,7 @@ public class Value implements Cloneable {
                 case FUNCTION:
                     Context funcContext = new Context();
                     Function func = cajuScript.getFunc(scriptCommand.getClassPath());
-                    value = func.invoke(cajuScript, funcContext, scriptCommand.getParams()).getValue();
+                    value = func.invoke(cajuScript, funcContext, syntax, scriptCommand.getParams()).getValue();
                     break;
                 default:
                     break;
@@ -280,6 +299,7 @@ public class Value implements Cloneable {
         setValue(value);
         _isCommand = true;
     }
+    
     /**
      * Get value in string.
      * @return String value.
@@ -287,6 +307,7 @@ public class Value implements Cloneable {
     public String getStringValue() {
         return valueString;
     }
+    
     /**
      * Get value in number.
      * @return Number value.
@@ -305,6 +326,7 @@ public class Value implements Cloneable {
                 return 0d;
         }
     }
+    
     /**
      * Get value in integer.
      * @return Integer value.
@@ -312,6 +334,7 @@ public class Value implements Cloneable {
     public int getNumberIntegerValue() {
         return valueNumberInteger;
     }
+    
     /**
      * Get value in long.
      * @return Long value.
@@ -319,6 +342,7 @@ public class Value implements Cloneable {
     public long getNumberLongValue() {
         return valueNumberLong;
     }
+    
     /**
      * Get value in float.
      * @return Float value.
@@ -326,6 +350,7 @@ public class Value implements Cloneable {
     public float getNumberFloatValue() {
         return valueNumberFloat;
     }
+    
     /**
      * Get value in double.
      * @return Double value.
@@ -333,6 +358,7 @@ public class Value implements Cloneable {
     public double getNumberDoubleValue() {
         return valueNumberDouble;
     }
+    
     /**
      * Get the object of value.
      * @return Value.
@@ -340,6 +366,7 @@ public class Value implements Cloneable {
     public Object getValue() {
         return value;
     }
+    
     /**
      * Define the value.
      * @param value Objet to be the value.
@@ -372,6 +399,7 @@ public class Value implements Cloneable {
             valueNumberDouble = 0;
         }
     }
+    
     /**
      * Get the type internal of value.
      * Types: Type.NULL = 0, Type.NUMBER = 1, Type.STRING = 2, Type.OBJECT = 3.
@@ -380,6 +408,7 @@ public class Value implements Cloneable {
     public Type getType() {
         return type;
     }
+    
     /**
      * Get the type internal of number value.
      * Types: TypeNumber.INTEGER = 1, TypeNumber.LONG = 2, TypeNumber.FLOAT = 3, TypeNumber.DOUBLE = 4.
@@ -388,6 +417,7 @@ public class Value implements Cloneable {
     public TypeNumber getTypeNumber() {
         return typeNumber;
     }
+    
     /**
      * Get flag definition.
      * @return Information.
@@ -395,6 +425,7 @@ public class Value implements Cloneable {
     public String getFlag() {
         return flag;
     }
+    
     /**
      * Set flag definition.
      * @param flag Information.
@@ -402,6 +433,7 @@ public class Value implements Cloneable {
     public void setFlag(String flag) {
         this.flag = flag;
     }
+    
     /**
      * Get value in string.
      * @return Value in string.
@@ -413,6 +445,7 @@ public class Value implements Cloneable {
         }
         return value.toString();
     }
+    
     private void loadNumberValue(Object o, boolean loadValue) throws Exception {
         if (o instanceof Integer) {
             valueNumberInteger = ((Integer)o).intValue();
@@ -472,6 +505,7 @@ public class Value implements Cloneable {
             }
         }
     }
+    
     private Object invokeNative(Object value, String script, ScriptCommand scriptCommand) throws CajuScriptException {
         try {
             Class c = null;
@@ -656,6 +690,7 @@ public class Value implements Cloneable {
             throw CajuScriptException.create(cajuScript, context, e.getMessage(), e);
         }
     }
+    
     private boolean foundMethod(Object[] values, Class[] cx, boolean allowAutoPrimitiveCast, ScriptCommand scriptCommand) {
         int count = 0;
         for (int x = 0; x < values.length; x++) {
@@ -685,6 +720,7 @@ public class Value implements Cloneable {
             return false;
         }
     }
+    
     private Object invokeConstructor(Class c, Object[] values, String script, ScriptCommand scriptCommand) throws Exception {
         if (scriptCommand.getConstructor() != null) {
             return scriptCommand.getConstructor().newInstance(getParams(values, scriptCommand.getConstructor().getParameterTypes(), scriptCommand));
@@ -715,6 +751,7 @@ public class Value implements Cloneable {
         }
         throw new Exception("Constructor \""+ c.getName() +"\" cannot be invoked");
     }
+    
     private Object invokeMethod(Class c, Object o, String name, Object[] values, String script, ScriptCommand scriptCommand) throws Exception {
         if (scriptCommand.getMethod() != null) {
             return scriptCommand.getMethod().invoke(o, getParams(values, scriptCommand.getMethod().getParameterTypes(), scriptCommand));
@@ -760,6 +797,7 @@ public class Value implements Cloneable {
         }
         throw new Exception("Method \""+ name +"\" cannot be invoked");
     }
+    
     private Object[] invokeValues(String script, ScriptCommand scriptCommand) throws CajuScriptException {
         if (scriptCommand.getParams() != null) {
             Value[] paramsVal = scriptCommand.getParams();
@@ -796,8 +834,7 @@ public class Value implements Cloneable {
         scriptCommand.setParams(paramsVal);
         return values;
     }
-    Object[] paramsValues = null;
-    Object[] paramsFinal = null;
+    
     private Object[] getParams(Object[] values, Class[] cx, ScriptCommand scriptCommand) throws Exception {
         if (values.equals(paramsValues)) {
             return paramsFinal;
@@ -817,6 +854,7 @@ public class Value implements Cloneable {
         paramsFinal = params;
         return params;
     }
+    
     /**
      * Clone.
      * @return Object cloned.
@@ -829,18 +867,6 @@ public class Value implements Cloneable {
             throw new Error("Cannot clone this object.");
         }
     }
-    /**
-     * Finalize.
-     * @throws java.lang.Throwable Exception.
-     */
-    @Override
-    protected void finalize() throws Throwable {
-        value = null;
-        cajuScript = null;
-        context = null;
-        syntax = null;
-    }
-    
 }
 
 /**
@@ -866,6 +892,7 @@ class ScriptCommand {
     private Constructor constructor = null;
     private Method method = null;
     private ScriptCommand nextScriptCommand = null;
+    
     /**
      * Create new script command with an script and type.
      * @param script Script.
@@ -875,6 +902,7 @@ class ScriptCommand {
         this.script = script;
         this.type = type;
     }
+    
     /**
      * Get the script.
      * @return Script.
@@ -882,6 +910,7 @@ class ScriptCommand {
     public String getScript() {
         return script;
     }
+    
     /**
      * Set the script.
      * @param script Script.
@@ -889,6 +918,7 @@ class ScriptCommand {
     public void setScript(String script) {
         this.script = script;
     }
+    
     /**
      * Get the type of command.
      * @return Type.
@@ -896,6 +926,7 @@ class ScriptCommand {
     public Type getType() {
         return type;
     }
+    
     /**
      * Set the type of command.
      * @param type Type.
@@ -903,6 +934,7 @@ class ScriptCommand {
     public void setType(Type type) {
         this.type = type;
     }
+    
     /**
      * Set function configuration.
      * @param function Function name.
@@ -912,6 +944,7 @@ class ScriptCommand {
         this.function = function;
         this.params = params;
     }
+    
     /**
      * Set static method configuration.
      * @param classPath Class path.
@@ -923,6 +956,7 @@ class ScriptCommand {
         this.method = method;
         this.params = params;
     }
+    
     /**
      * Set method configuration.
      * @param object Name of object.
@@ -934,6 +968,7 @@ class ScriptCommand {
         this.method = method;
         this.params = params;
     }
+    
     /**
      * Set newly instance configuration.
      * @param classPath Class path.

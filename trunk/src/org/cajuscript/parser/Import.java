@@ -15,7 +15,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with CajuScript.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.cajuscript.parser;
 
@@ -31,14 +31,15 @@ import org.cajuscript.CajuScriptException;
  */
 public class Import extends Base {
     private String path = "";
+    
     /**
      * Create new Import.
      * @param line Line detail
-     * @param syntax Syntax style
      */
-    public Import(LineDetail line, Syntax syntax) {
-        super(line, syntax);
+    public Import(LineDetail line) {
+        super(line);
     }
+    
     /**
      * Get path to be imported.
      * @return Path
@@ -46,6 +47,7 @@ public class Import extends Base {
     public String getPath() {
         return path;
     }
+    
     /**
      * Set path to be imported.
      * @param p Path
@@ -53,17 +55,20 @@ public class Import extends Base {
     public void setPath(String p) {
         path = p;
     }
+    
     /**
      * Executed this element and all childs elements.
-     * @param caju CajuScript instance
+     * @param caju CajuScript
+     * @param context Context
+     * @param syntax Syntax
      * @return Value returned by execution
      * @throws org.cajuscript.CajuScriptException Errors ocurred on execution
      */
     @Override
-    public Value execute(CajuScript caju, Context context) throws CajuScriptException {
+    public Value execute(CajuScript caju, Context context, Syntax syntax) throws CajuScriptException {
         caju.setRunningLine(getLineDetail());
         for (Element element : elements) {
-            element.execute(caju, context);
+            element.execute(caju, context, syntax);
         }
         if (path.startsWith(CajuScript.CAJU_VARS)) {
             caju.evalFile(context.getVar(path).toString());
