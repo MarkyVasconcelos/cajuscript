@@ -75,7 +75,7 @@ public class Variable extends Base {
     }
     
     /**
-     * Executed this element.
+     * Executed this element and all childs elements.
      * @param caju CajuScript
      * @param context Context
      * @param syntax Syntax
@@ -85,6 +85,9 @@ public class Variable extends Base {
     @Override
     public Value execute(CajuScript caju, Context context, Syntax syntax) throws CajuScriptException {
         caju.setRunningLine(getLineDetail());
+        for (Element element : elements) {
+            element.execute(caju, context, syntax);
+        }
         Value v = value.execute(caju, context, syntax);
         if (!key.equals("")) {
             SyntaxPosition syntaxPosition = syntax.matcherPosition(key, syntax.getRootContext());
