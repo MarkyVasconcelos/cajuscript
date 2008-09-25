@@ -120,9 +120,6 @@ public class TryCatch extends Base {
     @Override
     public Value execute(CajuScript caju, Context context, Syntax syntax) throws CajuScriptException {
         caju.setRunningLine(getLineDetail());
-        for (Element element : elements) {
-            element.execute(caju, context, syntax);
-        }
         Value errorValue = context.getVar(errorValueKey);
         if (errorValue != null) {
             errorValue.setValue(null);
