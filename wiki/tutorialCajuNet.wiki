@@ -1,11 +1,8 @@
 #summary How to use cajuscript in .NET
 
-= Introduction =
+= CajuScript .Net =
 
 This tutorial will try to explain how to use cajuscript in .NET
-
-
-= Details =
 
 First you have to download IKVM.NET from here
 
