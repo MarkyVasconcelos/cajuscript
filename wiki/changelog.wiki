@@ -4,11 +4,14 @@
 
   * Syntax customizable with regular expression.
   * Java calls performance in loops was increased.
-  * Bug recursive functions solved.
   * Bug with generics solved.
   * Suport to especial character encoding like Java with "\uXXX".
   * Many others bugs been solved.
 
+*VERSION 0.2.1*
+
+  * Bug recursive functions solved.
+  * A lot of bugs solved.
 
 *VERSION 0.2*
 
