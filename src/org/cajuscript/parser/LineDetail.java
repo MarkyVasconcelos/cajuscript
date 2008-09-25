@@ -15,7 +15,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with CajuScript.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.cajuscript.parser;
 
@@ -23,9 +23,10 @@ package org.cajuscript.parser;
  * Line detail.
  * @author eduveks
  */
-public class LineDetail {
+public class LineDetail implements java.io.Serializable {
     private String content = "";
     private int number = 0;
+    
     /**
      * Create new line detail.
      * @param n Line number
@@ -35,6 +36,7 @@ public class LineDetail {
         content = c;
         number = n;
     }
+    
     /**
      * Get line content
      * @return Content
@@ -42,6 +44,7 @@ public class LineDetail {
     public String getContent() {
         return content;
     }
+    
     /**
      * Get line number
      * @return Number
@@ -49,6 +52,7 @@ public class LineDetail {
     public int getNumber() {
         return number;
     }
+    
     /**
      * Set line content
      * @param content Content
@@ -56,6 +60,7 @@ public class LineDetail {
     public void setContent(String content) {
         this.content = content;
     }
+    
     /**
      * Set line number
      * @param number Number

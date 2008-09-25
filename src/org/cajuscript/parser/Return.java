@@ -15,7 +15,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with CajuScript.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.cajuscript.parser;
 
@@ -31,14 +31,15 @@ import org.cajuscript.CajuScriptException;
  */
 public class Return extends Base {
     private Element value = null;
+    
     /**
      * Create new Return.
      * @param line Line detail
-     * @param syntax Syntax style
      */
-    public Return(LineDetail line, Syntax syntax) {
-        super(line, syntax);
+    public Return(LineDetail line) {
+        super(line);
     }
+    
     /**
      * Get value to be returned.
      * @return Element of the value
@@ -46,6 +47,7 @@ public class Return extends Base {
     public Element getValue() {
         return value;
     }
+    
     /**
      * Set value to be returned.
      * @param v Element of the value
@@ -53,26 +55,21 @@ public class Return extends Base {
     public void setValue(Element v) {
         value = v;
     }
+    
     /**
-     * Executed this element and all childs elements.
-     * @param caju CajuScript instance
+     * Executed this element.
+     * @param caju CajuScript
+     * @param context Context
+     * @param syntax Syntax
      * @return Value returned by execution
      * @throws org.cajuscript.CajuScriptException Errors ocurred on execution
      */
     @Override
-    public Value execute(CajuScript caju, Context context) throws CajuScriptException {
+    public Value execute(CajuScript caju, Context context, Syntax syntax) throws CajuScriptException {
         caju.setRunningLine(getLineDetail());
-        for (Element element : elements) {
-            element.execute(caju, context);
-        }
         if (value != null) {
-            return value.execute(caju, context);
+            return value.execute(caju, context, syntax);
         }
-        return new Value(caju, context, getSyntax());
-    }
-    
-    @Override
-    protected void finalize() throws Throwable {
-        value = null;
+        return new Value(caju, context, syntax);
     }
 }

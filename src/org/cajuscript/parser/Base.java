@@ -15,7 +15,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with CajuScript.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.cajuscript.parser;
 
@@ -33,20 +33,19 @@ import org.cajuscript.parser.Operation.Operator;
  * Base to do script parse.
  * @author eduveks
  */
-public class Base implements Element {
+public class Base implements Element, java.io.Serializable, Cloneable {
     protected List<Element> elements = new ArrayList<Element>();
     protected LineDetail baseLineDetail = null;
-    protected Syntax baseSyntax = null;
     private static long staticVarsGroupCounter = 0;
+    
     /**
      * Base
      * @param line Line detail
-     * @param syntax Syntax style
      */
-    public Base(LineDetail line, Syntax syntax) {
+    public Base(LineDetail line) {
         this.baseLineDetail = line;
-        this.baseSyntax = syntax;
     }
+    
     /**
      * Elements
      * @return All child elements
@@ -54,6 +53,7 @@ public class Base implements Element {
     public List<Element> getElements() {
         return elements;
     }
+    
     /**
      * Append child element.
      * @param element Element
@@ -61,6 +61,7 @@ public class Base implements Element {
     public void addElement(Element element) {
         elements.add(element);
     }
+    
     /**
      * Remove child element.
      * @param element Element
@@ -68,6 +69,7 @@ public class Base implements Element {
     public void removeElement(Element element) {
         elements.remove(element);
     }
+    
     /**
      * Get line detail.
      * @return Line detail
@@ -75,13 +77,7 @@ public class Base implements Element {
     public LineDetail getLineDetail() {
         return baseLineDetail;
     }
-    /**
-     * Get syntax.
-     * @return Syntax
-     */
-    public Syntax getSyntax() {
-        return baseSyntax;
-    }
+    
     /**
      * If element can return value.
      * @param element Element
@@ -93,22 +89,26 @@ public class Base implements Element {
         }
         return false;
     }
+    
     /**
      * Executed this element and all childs elements.
-     * @param caju CajuScript instance
+     * @param caju CajuScript
+     * @param context Context
+     * @param syntax Syntax
      * @return Value returned by execution
      * @throws org.cajuscript.CajuScriptException Errors ocurred on execution
      */
-    public Value execute(CajuScript caju, Context context) throws CajuScriptException {
+    public Value execute(CajuScript caju, Context context, Syntax syntax) throws CajuScriptException {
         caju.setRunningLine(getLineDetail());
         for (Element element : elements) {
-            Value v = element.execute(caju, context);
+            Value v = element.execute(caju, context, syntax);
             if (v != null && canElementReturn(element)) {
                 return v;
             }
         }
         return null;
     }
+    
     /**
      * Script parse.
      * @param caju CajuScript instance
@@ -119,6 +119,7 @@ public class Base implements Element {
     public void parse(CajuScript caju, String script, Syntax syntax) throws CajuScriptException {
         parse(null, caju, null, script, syntax);
     }
+    
     private void parse(Element base, CajuScript caju, LineDetail lineDetail, String script, Syntax syntax) throws CajuScriptException {
         if (base == null) {
             base = this;
@@ -139,9 +140,9 @@ public class Base implements Element {
             }
             if ((syntaxPosition = syntax.matcherPosition(line, syntax.getReturn())).getStart() == 0) {
                 if (syntax.matcherEquals(line, syntax.getReturn())) {
-                    base.addElement(new Return(lineDetail, syntax));
+                    base.addElement(new Return(lineDetail));
                 } else {
-                    Return r = new Return(lineDetail, syntax);
+                    Return r = new Return(lineDetail);
                     r.setValue(evalValue(base, caju, lineDetail, syntax, line.substring(syntaxPosition.getEnd())));
                     base.addElement(r);
                 }
@@ -189,14 +190,14 @@ public class Base implements Element {
                     }
                     scriptIF.append(originalIFline + CajuScript.SUBLINE_LIMITER);
                 }
-                IfGroup ifGroup = new IfGroup(lineDetail, syntax);
+                IfGroup ifGroup = new IfGroup(lineDetail);
                 for (int i = 0; i < ifsConditions.size(); i++) {
                     String _ifCondition = ifsConditions.get(i);
                     String _ifContent = ifsStatements.get(i);
                     _ifCondition = _ifCondition.trim();
                     
-                    If _if = new If(lineDetail, syntax);
-                    Variable var = new Variable(lineDetail, syntax);
+                    If _if = new If(lineDetail);
+                    Variable var = new Variable(lineDetail);
                     var.setValue(evalValue(var, caju, lineDetail, syntax, _ifCondition));
                     _if.setCondition(var);
                     parse(_if, caju, lineDetail, _ifContent, syntax);
@@ -226,9 +227,9 @@ public class Base implements Element {
                     }
                     scriptLOOP.append(originalLOOPline + CajuScript.SUBLINE_LIMITER);
                 }
-                Loop loop = new Loop(lineDetail, syntax);
+                Loop loop = new Loop(lineDetail);
                 loop.setLabel(label);
-                Variable var = new Variable(lineDetail, syntax);
+                Variable var = new Variable(lineDetail);
                 var.setValue(evalValue(var, caju, lineDetail, syntax, scriptLOOPCondition));
                 loop.setCondition(var);
                 parse(loop, caju, lineDetail, scriptLOOP.toString(), syntax);
@@ -257,7 +258,7 @@ public class Base implements Element {
                     }
                     scriptFUNC.append(originalFUNCline + CajuScript.SUBLINE_LIMITER);
                 }
-                Function func = new Function(lineDetail, syntax);
+                Function func = new Function(lineDetail);
                 func.setDefinition(scriptFuncDef);
                 parse(func, caju, lineDetail, scriptFUNC.toString(), syntax);
                 caju.setFunc(func.getName(), func);
@@ -304,14 +305,14 @@ public class Base implements Element {
                         scriptFINALLY.append(originalTRYCATCHline + CajuScript.SUBLINE_LIMITER);
                     }
                 }
-                TryCatch tryCatch = new TryCatch(lineDetail, syntax);
-                Variable error = new Variable(lineDetail, syntax);
+                TryCatch tryCatch = new TryCatch(lineDetail);
+                Variable error = new Variable(lineDetail);
                 error.setKey(scriptTRYCATCHerrorVar);
-                Base _try = new Base(lineDetail, syntax);
+                Base _try = new Base(lineDetail);
                 parse(_try, caju, lineDetail, scriptTRY.toString(), syntax);
-                Base _catch = new Base(lineDetail, syntax);
+                Base _catch = new Base(lineDetail);
                 parse(_catch, caju, lineDetail, scriptCATCH.toString(), syntax);
-                Base _finally = new Base(lineDetail, syntax);
+                Base _finally = new Base(lineDetail);
                 parse(_finally, caju, lineDetail, scriptFINALLY.toString(), syntax);
                 tryCatch.setError(error);
                 tryCatch.setTry(_try);
@@ -330,12 +331,12 @@ public class Base implements Element {
                     }
                     String[] allKeys = keys.substring(0, p).replaceAll(" ", "").split(",");
                     for (String key : allKeys) {
-                        Variable var = new Variable(lineDetail, syntax);
+                        Variable var = new Variable(lineDetail);
                         var.setKey(key);
                         if (syntaxPositionOperator.getOperator() != null) {
-                            Command v = new Command(lineDetail, syntax);
+                            Command v = new Command(lineDetail);
                             v.setCommand(key);
-                            Operation operation = new Operation(lineDetail, syntax);
+                            Operation operation = new Operation(lineDetail);
                             operation.setCommands(v, syntaxPositionOperator.getOperator(), evalValue(base, caju, lineDetail, syntax, value));
                             var.setValue(operation);
                         } else {
@@ -350,17 +351,17 @@ public class Base implements Element {
                 }
             } else if ((syntaxPosition = syntax.matcherPosition(line, syntax.getImport())).getStart() == 0) {
                 String path = line.substring(syntaxPosition.getEnd()).trim();
-                Import i = new Import(lineDetail, syntax);
+                Import i = new Import(lineDetail);
                 i.setPath(path);
                 base.addElement(i);
             } else if ((syntaxPosition = syntax.matcherPosition(line, syntax.getContinue())).getStart() == -1
                     && (syntaxPosition = syntax.matcherPosition(line, syntax.getBreak())).getStart() == 0) {
-                Break b = new Break(lineDetail, syntax);
+                Break b = new Break(lineDetail);
                 b.setLabel(line.substring(syntaxPosition.getEnd()).trim());
                 base.addElement(b);
             } else if ((syntaxPosition = syntax.matcherPosition(line, syntax.getBreak())).getStart() == -1
                     && (syntaxPosition = syntax.matcherPosition(line, syntax.getContinue())).getStart() == 0) {
-                Continue c = new Continue(lineDetail, syntax);
+                Continue c = new Continue(lineDetail);
                 c.setLabel(line.substring(syntaxPosition.getEnd()).trim());
                 base.addElement(c);
             } else {
@@ -370,6 +371,7 @@ public class Base implements Element {
             }
         }
     }
+    
     private LineDetail loadLineDetail(String line) {
         if (line.startsWith(">")) {
             int lineNumber = Integer.parseInt(line.substring(1, line.indexOf(":")));
@@ -378,6 +380,7 @@ public class Base implements Element {
         }
         return null;
     }
+    
     private boolean isStatementBegins(String line, Syntax syntax) {
         if (syntax.matcherPosition(line, syntax.getIf()).getStart() == 0) {
             return true;
@@ -390,6 +393,7 @@ public class Base implements Element {
         }
         return false;
     }
+    
     private boolean isStatementEnds(String line, Syntax syntax) {
         if (syntax.matcherEquals(line, syntax.getIfEnd())) {
             return true;
@@ -401,7 +405,8 @@ public class Base implements Element {
             return true;
         }
         return false;
-    }   
+    }
+    
     private Element condition(Element base, CajuScript caju, LineDetail lineDetail, Syntax syntax, String script) throws CajuScriptException {
         try {
             script = script.trim();
@@ -413,11 +418,11 @@ public class Base implements Element {
             s2 = s2 == -1 ? Integer.MAX_VALUE : s2;
             int min1 = Math.min(s1, s2);
             if (s1 < Integer.MAX_VALUE && min1 == s1) {
-                Operation o = new Operation(lineDetail, syntax);
+                Operation o = new Operation(lineDetail);
                 o.setCommands(condition(base, caju, lineDetail, syntax, script.substring(0, syntaxPositionAnd.getStart())), Operation.Operator.AND, condition(base, caju, lineDetail, syntax, script.substring(syntaxPositionAnd.getEnd())));
                 return o;
             } else if (s2 < Integer.MAX_VALUE && min1 == s2) {
-                Operation o = new Operation(lineDetail, syntax);
+                Operation o = new Operation(lineDetail);
                 o.setCommands(condition(base, caju, lineDetail, syntax, script.substring(0, syntaxPositionOr.getStart())), Operation.Operator.OR, condition(base, caju, lineDetail, syntax, script.substring(syntaxPositionOr.getEnd())));
                 return o;
             } else if (!script.equals("")) {
@@ -454,7 +459,7 @@ public class Base implements Element {
                     }
                     Element e1 = evalValue(base, caju, lineDetail, syntax, script.substring(0, max));
                     Element e2 = evalValue(base, caju, lineDetail, syntax, script.substring(end));
-                    Operation o = new Operation(lineDetail, syntax);
+                    Operation o = new Operation(lineDetail);
                     if (cs1 > -1) {
                         o.setCommands(e1, Operation.Operator.EQUAL, e2);
                         return o;
@@ -485,6 +490,7 @@ public class Base implements Element {
             throw CajuScriptException.create(caju, caju.getContext(), "Sintax error", e);
         }
     }
+    
     private Element evalValue(Element base, CajuScript caju, LineDetail lineDetail, Syntax syntax, String script) throws CajuScriptException {
         return evalValueGroup(base, caju, lineDetail, syntax, script);
     }
@@ -508,49 +514,49 @@ public class Base implements Element {
                     String scriptValue2 = script.substring(priorityOperator.getEnd(), syntaxOperator2.getStart() > -1 ? syntaxOperator2.getStart() : script.length());
                     Operator operator2 = syntaxOperator2.getOperator();
                     String script2 = syntaxOperator2.getEnd() > -1 ? script.substring(syntaxOperator2.getEnd()) : "";
-                    Command c1 = new Command(lineDetail, syntax);
+                    Command c1 = new Command(lineDetail);
                     c1.setCommand(scriptValue1);
-                    Command c2 = new Command(lineDetail, syntax);
+                    Command c2 = new Command(lineDetail);
                     c2.setCommand(scriptValue2);
-                    Operation o = new Operation(lineDetail, syntax);
+                    Operation o = new Operation(lineDetail);
                     o.setCommands(c1, operator, c2);
                     if (operator1.equals("") && operator2.equals("")) {
                         return o;
                     }
                     Element e1 = o;
                     if (operator1 != null) {
-                        Operation o1 = new Operation(lineDetail, syntax);
+                        Operation o1 = new Operation(lineDetail);
                         o1.setCommands(evalValueSingle(caju, lineDetail, syntax, script1), operator1, o);
                         if (operator2.equals("")) {
                             return o1;
                         }
                         e1 = o1;
                     }
-                    Operation o2 = new Operation(lineDetail, syntax);
+                    Operation o2 = new Operation(lineDetail);
                     o2.setCommands(e1, operator2, evalValueSingle(caju, lineDetail, syntax, script2));
                     return o2;
                 }
-                Command value1 = new Command(lineDetail, syntax);
+                Command value1 = new Command(lineDetail);
                 value1.setCommand(script.substring(0, firstOperator.getStart()));
                 Element value2 = null;
                 SyntaxPosition value2Operator = syntax.firstOperatorMathematic(script.substring(firstOperator.getEnd()));
                 if (value2Operator.getStart() > -1) {
-                    Command c = new Command(lineDetail, syntax);
+                    Command c = new Command(lineDetail);
                     c.setCommand(script.substring(firstOperator.getEnd(), firstOperator.getEnd() + value2Operator.getStart()));
-                    Operation o = new Operation(lineDetail, syntax);
+                    Operation o = new Operation(lineDetail);
                     o.setCommands(c, value2Operator.getOperator(), evalValueSingle(caju, lineDetail, syntax, script.substring(firstOperator.getEnd() + value2Operator.getEnd())));
                     value2 = o;
                 }
                 if (value2 == null) {
-                    Command c = new Command(lineDetail, syntax);
+                    Command c = new Command(lineDetail);
                     c.setCommand(script.substring(firstOperator.getEnd()));
                     value2 = c;
                 }
-                Operation operation = new Operation(lineDetail, syntax);
+                Operation operation = new Operation(lineDetail);
                 operation.setCommands(value1, firstOperator.getOperator(), value2);
                 return operation;
             } else {
-                Command cmd = new Command(lineDetail, syntax);
+                Command cmd = new Command(lineDetail);
                 cmd.setCommand(script.trim());
                 return cmd;
             }
@@ -560,6 +566,7 @@ public class Base implements Element {
             throw CajuScriptException.create(caju, caju.getContext(), "Sintax error", e);
         }
     }
+    
     private Element evalValueGroup(Element base, CajuScript caju, LineDetail lineDetail, Syntax syntax, String script) throws CajuScriptException {
         if (staticVarsGroupCounter == Long.MAX_VALUE) {
             staticVarsGroupCounter = 0;
@@ -568,9 +575,9 @@ public class Base implements Element {
         if ((syntaxPosition = syntax.matcherPosition(script, syntax.getFunctionCall())).getStart() > -1) {
             String varKey = CajuScript.CAJU_VARS_GROUP + staticVarsGroupCounter;
             staticVarsGroupCounter++;
-            Variable var = new Variable(lineDetail, syntax);
+            Variable var = new Variable(lineDetail);
             var.setKey(varKey);
-            Command c = new Command(lineDetail, syntax);
+            Command c = new Command(lineDetail);
             String cmd = syntaxPosition.getGroup();
             String functionName = cmd.substring(0, syntax.matcherPosition(cmd, syntax.getFunctionCallParametersBegin()).getStart());
             SyntaxPosition syntaxFixOperator = syntax.lastOperatorLogical(functionName);
@@ -609,7 +616,7 @@ public class Base implements Element {
                         }
                         String varParamKey = CajuScript.CAJU_VARS_GROUP + staticVarsGroupCounter;
                         staticVarsGroupCounter++;
-                        Variable varParam = new Variable(lineDetail, syntax);
+                        Variable varParam = new Variable(lineDetail);
                         varParam.setKey(varParamKey);
                         varParam.setValue(evalValueGroup(base, caju, lineDetail, syntax, params.substring(0, lenParamSeparatorStart)));
                         base.addElement(varParam);
@@ -634,7 +641,7 @@ public class Base implements Element {
         } else if ((syntaxPosition = syntax.matcherPosition(script, syntax.getGroup())).getStart() > -1) {
             String varKey = CajuScript.CAJU_VARS_GROUP + staticVarsGroupCounter;
             staticVarsGroupCounter++;
-            Variable var = new Variable(lineDetail, syntax);
+            Variable var = new Variable(lineDetail);
             var.setKey(varKey);
             var.setValue(evalValue(base, caju, lineDetail, syntax, syntaxPosition.getGroup()));
             base.addElement(var);
@@ -648,13 +655,50 @@ public class Base implements Element {
         }
     }
     
-    @Override
-    protected void finalize() throws Throwable {
+    /**
+     * Cleaning forced in memory allocation.
+     */
+    public void clear() {
         for (Element element : elements) {
-            elements.remove(element);
+            element.clear();
         }
-        elements = null;
-        baseLineDetail = null;
-        baseSyntax = null;
+    }
+    
+    /**
+     * Clone parser.
+     * @return Parser cloned.
+     */
+    @Override
+    public Object clone() {
+        try {
+            return super.clone();
+        } catch(CloneNotSupportedException e) {
+            throw new Error ("Cannot clone this object.");
+        }
+    }
+    
+    /**
+     * Clone parser with serialization.
+     * @return Parser cloned.
+     */
+    public Object cloneSerialization() {
+        java.io.ObjectOutputStream oos = null;
+        java.io.ObjectInputStream ois = null;
+        try {
+            java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+            oos = new java.io.ObjectOutputStream(bos);
+            oos.writeObject(this);
+            oos.flush();
+            java.io.ByteArrayInputStream bin = new java.io.ByteArrayInputStream(bos.toByteArray());
+            ois = new java.io.ObjectInputStream(bin);
+            return ois.readObject();
+        } catch(Exception e) {
+            throw new Error ("Cannot clone this object.", e);
+        } finally {
+            try {
+                oos.close();
+                ois.close();
+            } catch(Exception e) { }
+        }
     }
 }

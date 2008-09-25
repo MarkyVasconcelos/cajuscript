@@ -15,8 +15,10 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with CajuScript.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
+
 package org.cajuscript;
+
 import org.cajuscript.parser.LineDetail;
 import java.util.Set;
 import java.util.List;
@@ -26,6 +28,7 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import org.cajuscript.parser.Function;
 import org.cajuscript.parser.Base;
+
 /**
  * The core of the <code>CajuScript</code> language.
  * <p>Sample:</p>
@@ -59,36 +62,44 @@ public class CajuScript {
      * Core name.
      */
     public static final String NAME = "CajuScript";
+    
     /**
      * Core version.
      */
     public static final String VERSION = "0.3";
+    
     /**
      * Language version.
      */
     public static final String LANGUAGE_VERSION = "0.2";
+    
     /**
      * Line Limiter.
      */
     public static final String LINE_LIMITER = "\n";
+    
     /**
      * SubLine Limiter.
      */
     public static final String SUBLINE_LIMITER = ";";
+    
     /**
      * Prefix of the variables created automaticaly.
      */
     public static final String CAJU_VARS = "__caju";
+    
     /**
      * Strings along the code are replaced by statics variables with this name.
      */
     public static final String CAJU_VARS_STATIC_STRING = CAJU_VARS + "_static_string_";
+    
     /**
      * Commands embraced by parenthesis are executed and the value is saved on
      * variables with this name. All parenthesis are replaced by variables with
      * the final value when the line is interpreted.
      */
     public static final String CAJU_VARS_GROUP = CAJU_VARS + "_group_";
+    
     /**
      * Functions parameters are going to variables setting with this name.
      */
@@ -97,11 +108,13 @@ public class CajuScript {
     private Context context = new Context();
     private LineDetail runningLine = new LineDetail(0, "");
     private Syntax syntax = new Syntax();
+    private org.cajuscript.parser.Base parserBase = null;
     private Map<String, Syntax> syntaxs = new HashMap<String, Syntax>();
     private static Map<String, String> cacheScripts = new HashMap<String, String>();
     private static Map<String, Base> cacheParsers = new HashMap<String, Base>();
     private static Map<String, Context> cacheStaticContexts = new HashMap<String, Context>();
     private static long staticVarsStringCounter = 1;
+    
     /**
      * Create a newly instance of Caju Script. The variables caju and array
      * are initialized.
@@ -111,6 +124,7 @@ public class CajuScript {
         context.setVar("caju", toValue(this));
         context.setVar("array", toValue(new Array()));
     }
+    
     /**
      * Add custom syntax for all instances of CajuScript.
      * @param name Syntax name.
@@ -119,6 +133,7 @@ public class CajuScript {
     public static void addGlobalSyntax(String name, Syntax syntax) {
         globalSyntaxs.put(name, syntax);
     }
+    
     /**
      * Get global custom syntax by name.
      * @param name Syntax name.
@@ -127,6 +142,7 @@ public class CajuScript {
     public static Syntax getGlobalSyntax(String name) {
         return globalSyntaxs.get(name);
     }
+    
     /**
      * Get default syntax.
      * @return Syntax.
@@ -134,6 +150,7 @@ public class CajuScript {
     public Syntax getSyntax() {
         return syntax;
     }
+    
     /**
      * Set default syntax.
      * @param s Syntax.
@@ -141,6 +158,7 @@ public class CajuScript {
     public void setSyntax(Syntax s) {
         this.syntax = s;
     }
+    
     /**
      * Add custom syntax.
      * @param name Syntax name.
@@ -149,6 +167,7 @@ public class CajuScript {
     public void addSyntax(String name, Syntax syntax) {
         syntaxs.put(name, syntax);
     }
+    
     /**
      * Get custom syntax by name.
      * @param name Syntax name.
@@ -157,6 +176,7 @@ public class CajuScript {
     public Syntax getSyntax(String name) {
         return syntaxs.get(name);
     }
+    
     /**
      * Get root context.
      * @return Context.
@@ -164,6 +184,7 @@ public class CajuScript {
     public Context getContext() {
         return context;
     }
+    
     /**
      * Set root context.
      * @param c Context.
@@ -171,6 +192,15 @@ public class CajuScript {
     public void setContext(Context c) {
         this.context = c;
     }
+
+    /**
+     * Parser base.
+     * @return Parser base.
+     */
+    public Base getParserBase() {
+        return parserBase;
+    }
+    
     /**
      * Get line detail in execution.
      * @return Line detail.
@@ -178,6 +208,7 @@ public class CajuScript {
     public LineDetail getRunningLine() {
         return runningLine;
     }
+    
     /**
      * Set line detail in execution.
      * @param l Line detail.
@@ -185,6 +216,7 @@ public class CajuScript {
     public void setRunningLine(LineDetail l) {
         runningLine = l;
     }
+    
     /**
      * Script execute.
      * @param script Script to be executed.
@@ -194,6 +226,7 @@ public class CajuScript {
     public Value eval(String script) throws CajuScriptException {
         return eval(script, syntax);
     }
+    
     /**
      * Script execute with specific syntax.
      * @param script Script to be executed.
@@ -274,7 +307,13 @@ public class CajuScript {
                 for (String key : keys) {
                     context.setVar(key, staticContexts.getVar(key));
                 }
-                return cacheParser.execute(this, context);
+                //long time = System.nanoTime();
+                parserBase = cacheParser;
+                //parserBase = (org.cajuscript.parser.Base)cacheParser.cloneSerialization();
+                //System.out.println(System.nanoTime() - time);
+                Value finalValue = parserBase.execute(this, context, syntax);
+                parserBase.clear();
+                return finalValue;
             }
             if (isString1 || isString2) {
                 setRunningLine(new LineDetail(lineNumber, previousLine));
@@ -301,9 +340,9 @@ public class CajuScript {
                         if (cO != '\\' && !isString2) {
                             if (isString1) {
                                 isString1 = false;
-                                context.setVar(staticStringKey, new Value(this, null, null, "'" + staticStringValue + "'"));
+                                context.setVar(staticStringKey, new Value(null, null, null, "'" + staticStringValue + "'"));
                                 if (staticContexts != null) {
-                                    staticContexts.setVar(staticStringKey, new Value(this, null, null, "'" + staticStringValue + "'"));
+                                    staticContexts.setVar(staticStringKey, new Value(null, null, null, "'" + staticStringValue + "'"));
                                 }
                                 line = line.replace((CharSequence)("'" + staticStringValue + "'"), staticStringKey); 
                                 staticStringKey = "";
@@ -324,9 +363,9 @@ public class CajuScript {
                         if (cO != '\\' && !isString1) {
                             if (isString2) {
                                 isString2 = false;
-                                context.setVar(staticStringKey, new Value(this, null, null, "\"" + staticStringValue + "\""));
+                                context.setVar(staticStringKey, new Value(null, null, null, "\"" + staticStringValue + "\""));
                                 if (staticContexts != null) {
-                                    staticContexts.setVar(staticStringKey, new Value(this, null, null, "\"" + staticStringValue + "\""));
+                                    staticContexts.setVar(staticStringKey, new Value(null, null, null, "\"" + staticStringValue + "\""));
                                 }
                                 line = line.replace((CharSequence)("\"" + staticStringValue + "\""), staticStringKey); 
                                 staticStringKey = "";
@@ -375,15 +414,18 @@ public class CajuScript {
             }
         }
         script = scriptBuffer.toString();
-        org.cajuscript.parser.Base base = new org.cajuscript.parser.Base(new LineDetail(-1, ""), syntax);
-        base.parse(this, script, syntax);
+        //long time = System.nanoTime();
+        parserBase = new org.cajuscript.parser.Base(new LineDetail(-1, ""));
+        parserBase.parse(this, script, syntax);
+        //System.out.println(System.nanoTime() - time);
         if (!cacheId.equals("")) {
             cacheScripts.put(cacheId, originalScript);
-            cacheParsers.put(cacheId, base);
+            cacheParsers.put(cacheId, (org.cajuscript.parser.Base)parserBase.cloneSerialization());
             cacheStaticContexts.put(cacheId, staticContexts);
         }
-        return base.execute(this, context);
+        return parserBase.execute(this, context, syntax);
     }
+    
     private int endLineIndex(String line, Syntax syntax) {
         if (line.equals("")) {
             return -1;
@@ -427,6 +469,7 @@ public class CajuScript {
         }
         return -1;
     }
+    
     /**
      * File exucute.
      * @param path File to be executed.
@@ -436,6 +479,7 @@ public class CajuScript {
     public Value evalFile(String path) throws CajuScriptException {
         return evalFile(path, syntax);
     }
+    
     /**
      * File execute with specific syntax.
      * @param path File to be executed.
@@ -462,6 +506,7 @@ public class CajuScript {
             }
         }
     }
+    
     /**
      * Get function.
      * @param key Function name.
@@ -470,6 +515,7 @@ public class CajuScript {
     public Function getFunc(String key) {
         return context.getFunc(key);
     }
+    
     /**
      * Define a function.
      * @param key Function name.
@@ -478,6 +524,7 @@ public class CajuScript {
     public void setFunc(String key, Function func) {
         context.setFunc(key, func);
     }
+    
     /**
      * Get variable value.
      * @param key Variable name.
@@ -486,6 +533,7 @@ public class CajuScript {
     public Value getVar(String key) {
         return context.getVar(key);
     }
+    
     /**
      * Get all name of variables without variables created automaticaly by
      * CajuScript.
@@ -494,6 +542,7 @@ public class CajuScript {
     public Set<String> getAllKeys() {
         return getAllKeys(false);
     }
+    
     /**
      * Get all name of variables including variables created automaticaly by
      * CajuScript if parameter are true.
@@ -503,6 +552,7 @@ public class CajuScript {
     public Set<String> getAllKeys(boolean withCajuVars) {
         return context.getAllKeys(withCajuVars);
     }
+    
     /**
      * Setting new variable.
      * @param key Variable name.
@@ -511,6 +561,7 @@ public class CajuScript {
     public void setVar(String key, Value value) {
         context.setVar(key.trim(), value);
     }
+    
     /**
      * Convert Java objects to CajuScript object to be used like value of variables.
      * @param obj Object to be converted in Value.
@@ -520,6 +571,7 @@ public class CajuScript {
     public Value toValue(Object obj) throws CajuScriptException {
         return toValue(obj, getContext(), getSyntax());
     }
+    
     /**
      * Convert Java objects to CajuScript object to be used like value of variables.
      * @param obj Object to be converted in Value.
@@ -533,6 +585,7 @@ public class CajuScript {
         v.setValue(obj);
         return v;
     }
+    
     /**
      * Defining new variable and setting value from a Java object.
      * @param key Variable name.
@@ -542,6 +595,7 @@ public class CajuScript {
     public void set(String key, Object value) throws CajuScriptException {
         setVar(key.trim(), toValue(value));
     }
+    
     /**
      * Getting value from variables to Java object.
      * @param key Variable name.
@@ -551,6 +605,7 @@ public class CajuScript {
     public Object get(String key) throws CajuScriptException {
         return getVar(key).getValue();
     }
+    
     /**
      * Get list of all imports used by script in execution.
      * @return List of imports defined.
@@ -558,6 +613,7 @@ public class CajuScript {
     public List<String> getImports() {
         return context.getImports();
     }
+    
     /**
      * Define a new import to be used. Only Java package.
      * @param i The content of importing is only Java package.
@@ -565,6 +621,7 @@ public class CajuScript {
     public void addImport(String i) {
         context.addImport(i);
     }
+    
     /**
      * Remove import.
      * @param s Import content to be removed.
@@ -572,6 +629,7 @@ public class CajuScript {
     public void removeImport(String s) {
         context.removeImport(s);
     }
+    
     /**
      * Convert value to type specified.
      * @param value Value to be converted.
@@ -628,6 +686,7 @@ public class CajuScript {
         }
         return Class.forName(type).cast(value);
     }
+    
     /**
      * Generate an exception.
      * @throws org.cajuscript.CajuScriptException Exception generated.
@@ -635,6 +694,7 @@ public class CajuScript {
     public static void error() throws CajuScriptException {
         throw new CajuScriptException();
     }
+    
     /**
      * Generate an exception with custom message.
      * @param msg Message of the exception.
@@ -643,6 +703,7 @@ public class CajuScript {
     public static void error(String msg) throws CajuScriptException {
         throw new CajuScriptException(msg);
     }
+    
     /**
      * If two Object.getClass().getName() are from same type.
      * @param type1 First type, Object.getClass().getName().
@@ -663,6 +724,7 @@ public class CajuScript {
         }
         return false;
     }
+    
     /**
      * If Object.getClass().getName() is from primitive type.
      * @param type Object type, Object.getClass().getName().
@@ -680,6 +742,7 @@ public class CajuScript {
         }
         return false;
     }
+    
     /**
      * If the object is instance of specified class.
      * @param o Object.
@@ -698,6 +761,7 @@ public class CajuScript {
         }
         return false;
     }
+    
     /**
      * Entry point to running.
      * @param args Arguments.
@@ -709,6 +773,7 @@ public class CajuScript {
             caju.evalFile(args[0]);
         }
     }
+    
     static {
         Syntax syntaxJ = new Syntax();
         syntaxJ.setIf(Pattern.compile("if\\s*([\\s+|[\\s*\\(]].+)\\{"));
@@ -750,12 +815,5 @@ public class CajuScript {
         syntaxB.setContinue(Pattern.compile("continue"));
         syntaxB.setBreak(Pattern.compile("break"));
         globalSyntaxs.put("CajuBasic", syntaxB);
-    }
-    
-    @Override
-    protected void finalize() throws Throwable {
-        syntaxs.clear();
-        syntaxs = null;
-        context = null;
     }
 }

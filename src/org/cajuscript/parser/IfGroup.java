@@ -15,7 +15,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with CajuScript.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.cajuscript.parser;
 
@@ -30,25 +30,28 @@ import org.cajuscript.CajuScriptException;
  * @author eduveks
  */
 public class IfGroup extends Base {
+    
     /**
      * Create new IfGroup.
      * @param line Line detail
-     * @param syntax Syntax style
      */
-    public IfGroup(LineDetail line, Syntax syntax) {
-        super(line, syntax);
+    public IfGroup(LineDetail line) {
+        super(line);
     }
+    
     /**
      * Executed this element and all childs elements.
-     * @param caju CajuScript instance
+     * @param caju CajuScript
+     * @param context Context
+     * @param syntax Syntax
      * @return Value returned by execution
      * @throws org.cajuscript.CajuScriptException Errors ocurred on execution
      */
     @Override
-    public Value execute(CajuScript caju, Context context) throws CajuScriptException {
+    public Value execute(CajuScript caju, Context context, Syntax syntax) throws CajuScriptException {
         caju.setRunningLine(getLineDetail());
         for (Element element : elements) {
-            Value v = element.execute(caju, context);
+            Value v = element.execute(caju, context, syntax);
             if (v != null) {
                 if (!v.getFlag().equals("if")) {
                     return v;

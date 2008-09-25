@@ -15,7 +15,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with CajuScript.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.cajuscript.parser;
 
@@ -32,14 +32,15 @@ import org.cajuscript.CajuScriptException;
 public class Function extends Base {
     private String name = "";
     private String[] paramKey = new String[0];
+    
     /**
      * Create new Function.
      * @param line Line detail
-     * @param syntax Syntax style
      */
-    public Function(LineDetail line, Syntax syntax) {
-        super(line, syntax);
+    public Function(LineDetail line) {
+        super(line);
     }
+    
     /**
      * Set the function definition, name and parameters.
      * @param funcDef Function definition
@@ -77,6 +78,7 @@ public class Function extends Base {
             }
         }
     }
+    
     /**
      * Function name.
      * @return Name
@@ -84,6 +86,7 @@ public class Function extends Base {
     public String getName() {
         return name;
     }
+    
     /**
      * Function parameters.
      * @return Parameters
@@ -91,6 +94,7 @@ public class Function extends Base {
     public String[] getParameters() {
         return paramKey;
     }
+    
     /**
      * Run function.
      * @param caju CajuScript instance
@@ -98,28 +102,31 @@ public class Function extends Base {
      * @return Value returned by execution
      * @throws org.cajuscript.CajuScriptException Errors ocurred on execution
      */
-    public Value invoke(CajuScript caju, Context context, Value... paramValue) throws CajuScriptException {
+    public Value invoke(CajuScript caju, Context context, Syntax syntax, Value... paramValue) throws CajuScriptException {
         caju.setRunningLine(getLineDetail());
         for (int x = 0; x < paramValue.length; x++) {
             context.setVar(paramKey[x], paramValue[x]);
         }
         for (Element element : elements) {
-            Value v = element.execute(caju, context);
+            Value v = element.execute(caju, context, syntax);
             if (v != null && canElementReturn(element)) {
                 return v;
             }
         }
-        return new Value(caju, context, getSyntax());
+        return new Value(caju, context, syntax);
     }
+    
     /**
      * This method is never used for functions, method "invoke" can be used to
      * execute a function.
      * @param caju CajuScript instance
-     * @return Value returned by execution
+     * @param context Context
+     * @param syntax Syntax
+     * @return Null value
      * @throws org.cajuscript.CajuScriptException Errors ocurred on execution
      */
     @Override
-    public Value execute(CajuScript caju, Context context) throws CajuScriptException {
+    public Value execute(CajuScript caju, Context context, Syntax syntax) throws CajuScriptException {
         caju.setRunningLine(getLineDetail());
         return null;
     }

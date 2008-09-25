@@ -15,7 +15,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with CajuScript.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.cajuscript.parser;
 
@@ -31,14 +31,15 @@ import org.cajuscript.CajuScriptException;
  */
 public class Break extends Base {
     private String label = "";
+    
     /**
      * Create new Break.
      * @param line Line detail
-     * @param syntax Syntax style
      */
-    public Break(LineDetail line, Syntax syntax) {
-        super(line, syntax);
+    public Break(LineDetail line) {
+        super(line);
     }
+    
     /**
      * Get Label.
      * @return Label.
@@ -46,6 +47,7 @@ public class Break extends Base {
     public String getLabel() {
         return label;
     }
+    
     /**
      * Set Label.
      * @param label Label.
@@ -53,19 +55,19 @@ public class Break extends Base {
     public void setLabel(String label) {
         this.label = label;
     }
+    
     /**
-     * Executed this element and all childs elements.
-     * @param caju CajuScript instance
+     * Executed this element.
+     * @param caju CajuScript
+     * @param context Context
+     * @param syntax Syntax
      * @return Value returned by execution
      * @throws org.cajuscript.CajuScriptException Errors ocurred on execution
      */
     @Override
-    public Value execute(CajuScript caju, Context context) throws CajuScriptException {
+    public Value execute(CajuScript caju, Context context, Syntax syntax) throws CajuScriptException {
         caju.setRunningLine(getLineDetail());
-        for (Element element : elements) {
-            element.execute(caju, context);
-        }
-        Value v = new Value(caju, context, getSyntax());
+        Value v = new Value(caju, context, syntax);
         if (!getLabel().equals("")) {
             v.setFlag("break:"+ getLabel());
         } else {

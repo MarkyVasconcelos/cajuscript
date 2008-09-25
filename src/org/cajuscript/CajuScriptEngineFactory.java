@@ -15,7 +15,8 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with CajuScript.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
+
 package org.cajuscript;
 
 import javax.script.ScriptEngineFactory;
@@ -36,12 +37,14 @@ import java.util.Vector;
  */
 public class CajuScriptEngineFactory implements ScriptEngineFactory {  
     private static CajuScriptEngineFactory INSTANCE = new CajuScriptEngineFactory();
+    
     /**
      * Create a newly instance.<br/>
      */
     public CajuScriptEngineFactory() {
         
     }
+    
     /**
      * Get the engine name.
      * @return Engine name.
@@ -49,6 +52,7 @@ public class CajuScriptEngineFactory implements ScriptEngineFactory {
     public String getEngineName() {
         return "CajuScript";
     }
+    
     /**
      * Get the engine version.
      * @return Engine version.
@@ -56,6 +60,7 @@ public class CajuScriptEngineFactory implements ScriptEngineFactory {
     public String getEngineVersion() {
         return CajuScript.VERSION;
     }
+    
     /**
      * Get all extensions to CajuScript files.
      * @return List of extensions to CajuScript files.
@@ -67,6 +72,7 @@ public class CajuScriptEngineFactory implements ScriptEngineFactory {
         v.add("cjs");
         return v;
     }
+    
     /**
      * Get a list of mime types?
      * @return All mime types to CajuScript.
@@ -77,6 +83,7 @@ public class CajuScriptEngineFactory implements ScriptEngineFactory {
         v.add("text/plain");
         return v;
     }
+    
     /**
      * Get a list of names.
      * @return All names to CajuScript.
@@ -89,6 +96,7 @@ public class CajuScriptEngineFactory implements ScriptEngineFactory {
         v.add("cajuscript");
         return v;
     }
+    
     /**
      * Get the language name.
      * @return Language name.
@@ -96,6 +104,7 @@ public class CajuScriptEngineFactory implements ScriptEngineFactory {
     public String getLanguageName() {
         return CajuScript.NAME;
     }
+    
     /**
      * Get the language version.
      * @return Language version.
@@ -103,6 +112,7 @@ public class CajuScriptEngineFactory implements ScriptEngineFactory {
     public String getLanguageVersion() {
         return CajuScript.LANGUAGE_VERSION;
     }
+    
     /**
      * Parameters of the engine.<br/>
      * Keys:<br/>
@@ -128,6 +138,7 @@ public class CajuScriptEngineFactory implements ScriptEngineFactory {
         }
         return "";
     }
+    
     /**
      * Sintax in CajuScript to call a method.<br/>
      * <br/>
@@ -156,6 +167,7 @@ public class CajuScriptEngineFactory implements ScriptEngineFactory {
         cmd += ")";
         return cmd;
     }
+    
     /**
      * Show a string in output.<br/>
      * <br/>
@@ -170,6 +182,7 @@ public class CajuScriptEngineFactory implements ScriptEngineFactory {
     public String getOutputStatement(String toDisplay) {
         return "java.lang.System.out.println(\"" + toDisplay + "\");";
     }
+    
     /**
      * Not has implemented.
      * @param statements Not has implemented.
@@ -178,6 +191,7 @@ public class CajuScriptEngineFactory implements ScriptEngineFactory {
     public String getProgram(String... statements) {
         return "";
     }
+    
     /**
      * Get a newly instance of the Caju Script Engine.
      * @return New instance of the Caju Script Engine.
@@ -189,6 +203,7 @@ public class CajuScriptEngineFactory implements ScriptEngineFactory {
             throw new Error(e);
         }
     }
+    
     /**
      * Load script engine manager with CajuScript.
      * @param mgr Script engine manager to be loaded.

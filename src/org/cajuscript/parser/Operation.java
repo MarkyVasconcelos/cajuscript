@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with CajuScript.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.cajuscript.parser;
 
 import org.cajuscript.CajuScript;
@@ -30,9 +31,10 @@ import org.cajuscript.CajuScriptException;
  * @author eduveks
  */
 public class Operation extends Base {
-
+    /**
+     * Operators.
+     */
     public static enum Operator {
-
         ADDITION, SUBTRACTION, MULTIPLICATION, DIVISION, MODULES,
         AND, OR, EQUAL, NOT_EQUAL, LESS, GREATER, LESS_EQUAL, GREATER_EQUAL
     }
@@ -41,22 +43,23 @@ public class Operation extends Base {
     private Element firstCommand = null;
     private Element secondCommand = null;
     private Operator operator = null;
-    private java.util.List<Context> contexts = new java.util.ArrayList<Context>();
-    private Value v = null;
+    private String contextsKey;
+    private String valueKey;
 
     /**
      * Create new Operation.
      * @param line Line detail
-     * @param syntax Syntax style
      */
-    public Operation(LineDetail line, Syntax syntax) {
-        super(line, syntax);
+    public Operation(LineDetail line) {
+        super(line);
+        contextsKey = org.cajuscript.CajuScript.CAJU_VARS + "_contexts_" + Integer.toString(this.hashCode());
+        valueKey = org.cajuscript.CajuScript.CAJU_VARS + "_value_" + Integer.toString(this.hashCode());
     }
 
     /**
      * Set commands of this operation
      * @param firstCommand First command
-     * @param action Action
+     * @param operator Operator
      * @param secondCommand Second command
      * @throws org.cajuscript.CajuScriptException Operator is invalid!
      */
@@ -68,23 +71,29 @@ public class Operation extends Base {
 
     /**
      * Executed this element and all childs elements.
-     * @param caju CajuScript instance
+     * @param caju CajuScript
+     * @param context Context
+     * @param syntax Syntax
      * @return Value returned by execution
      * @throws org.cajuscript.CajuScriptException Errors ocurred on execution
      */
     @Override
-    public Value execute(CajuScript caju, Context context) throws CajuScriptException {
+    public Value execute(CajuScript caju, Context context, Syntax syntax) throws CajuScriptException {
         caju.setRunningLine(getLineDetail());
-        for (Element element : elements) {
-            element.execute(caju, context);
+        Value contextsValue = context.getVar(contextsKey);
+        if (contextsValue == null) {
+            contextsValue = caju.toValue(new java.util.ArrayList<Context>());
+            context.setVar(contextsKey, contextsValue);
         }
+        java.util.ArrayList<Context> contexts = (java.util.ArrayList<Context>)contextsValue.getValue();
+        Value v = context.getVar(valueKey);
         if (v == null || !contexts.contains(context)) {
             contexts.add(context);
-            v = new Value(caju, context, getSyntax());
+            v = new Value(caju, context, syntax);
+            context.setVar(valueKey, v);
         }
-        Value v1 = firstCommand.execute(caju, context);
-        Value v2 = secondCommand.execute(caju, context);
-
+        Value v1 = firstCommand.execute(caju, context, syntax);
+        Value v2 = secondCommand.execute(caju, context, syntax);
         switch (operator) {
             case ADDITION:
                 if (v1.getType() == Value.Type.NUMBER && v2.getType() == Value.Type.NUMBER) {
@@ -335,17 +344,5 @@ public class Operation extends Base {
                 break;
         }
         return null;
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        for (Context context : contexts) {
-            contexts.remove(context);
-        }
-        contexts.clear();
-        contexts = null;
-        firstCommand = null;
-        secondCommand = null;
-        v = null;
     }
 }
