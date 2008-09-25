@@ -1,8 +1,7 @@
-#summary One-sentence summary of this page.
+#summary Change Log
 
-*VERSION 0.3.*
+*VERSION 0.3*
 
-*Change log:*
   * Syntax customizable with regular expression.
   * Java calls performance in loops was increased.
   * Bug recursive functions solved.
@@ -11,7 +10,7 @@
   * Many others bugs been solved.
 
 
-*VERSION 0.2*. Change log:
+*VERSION 0.2*
 
   * Very faster (see [testScriptsTester scripts tester])
   * Syntax Customizable ([sampleSyntaxBasic Basic], [sampleSyntaxBasic Java] and [sampleSyntax your syntax])
