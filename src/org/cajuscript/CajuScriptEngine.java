@@ -74,13 +74,13 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
      * Prefix of the variables created automaticaly to catch the values 
      * returned from functions.
      */
-    public static final String CAJU_VARS_FUNC_RETURN = CajuScript.CAJU_VARS + "_func_return_";
+    public static final String CAJU_VARS_FUNC_RETURN = CajuScript.CAJU_VARS.concat("_func_return_");
     
     /**
      * Prefix of the variables created automaticaly to defined the values for 
      * parameters of functions.
      */
-    public static final String CAJU_VARS_FUNC_PARAM = CajuScript.CAJU_VARS + "_func_param_";
+    public static final String CAJU_VARS_FUNC_PARAM = CajuScript.CAJU_VARS.concat("_func_param_");
     
     /**
      * Equals the ScriptContext.ENGINE_SCOPE
@@ -321,13 +321,13 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
      */
     public Object invokeMethod(Object thiz, String name, Object... args) throws ScriptException, NoSuchMethodException {
         String uuid = java.util.UUID.randomUUID().toString().replaceAll("\\-", "_");
-        String funcObjectName = CajuScript.CAJU_VARS + "_" + uuid;
+        String funcObjectName = CajuScript.CAJU_VARS.concat("_").concat(uuid);
         try {
             caju.set(funcObjectName, thiz);
         } catch (Exception e) {
             throw new ScriptException(e);
         }
-        Object returnObject = invokeFunction(funcObjectName + "." + name, args);
+        Object returnObject = invokeFunction(funcObjectName.concat(".").concat(name), args);
         return returnObject;
     }
     
@@ -341,14 +341,14 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
      */
     public Object invokeFunction(String name, Object... args) throws ScriptException, NoSuchMethodException {
         String cmd = "";
-        String uuid = java.util.UUID.randomUUID().toString().replaceAll("\\-", "_");
-        String funcReturnName = CAJU_VARS_FUNC_RETURN + uuid;
-        cmd += funcReturnName + " = ";
-        cmd += name + "(";
+        String uuid = java.util.UUID.randomUUID().toString().replace('-', '_');
+        String funcReturnName = CAJU_VARS_FUNC_RETURN.concat(uuid);
+        cmd = cmd.concat(funcReturnName).concat(" = ");
+        cmd = cmd.concat(name).concat("(");
         if (args != null) {
             for (int i = 0; i < args.length; i++) {
-                String funcParamName = CAJU_VARS_FUNC_PARAM + i +"_" + uuid;
-                cmd += (i > 0 ? "," : "") + funcParamName;
+                String funcParamName = CAJU_VARS_FUNC_PARAM.concat(Integer.toString(i)).concat("_").concat(uuid);
+                cmd = cmd.concat(i > 0 ? "," : "").concat(funcParamName);
                 try {
                     caju.set(funcParamName, args[i]);
                 } catch (Exception e) {
@@ -356,7 +356,7 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
                 }
             }
         }
-        cmd += ");";
+        cmd = cmd.concat(");");
         eval(cmd);
         try {
             return caju.get(funcReturnName);

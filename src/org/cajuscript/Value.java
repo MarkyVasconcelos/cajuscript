@@ -123,13 +123,13 @@ public class Value implements Cloneable {
                     if (script.toLowerCase().equals("true")) {
                         value = new Boolean(true);
                         valueNumberInteger = 1;
-                        valueString = valueNumberInteger + "";
+                        valueString = Integer.toString(valueNumberInteger);
                         type = Type.NUMBER;
                         typeNumber = TypeNumber.INTEGER;
                     } else if (script.toLowerCase().equals("false")) {
                         value = new Boolean(false);
                         valueNumberInteger = 0;
-                        valueString = valueNumberInteger + "";
+                        valueString = Integer.toString(valueNumberInteger);
                         type = Type.NUMBER;
                         typeNumber = TypeNumber.INTEGER;
                     } else {
@@ -140,7 +140,7 @@ public class Value implements Cloneable {
         } catch (CajuScriptException e) {
             throw e;
         } catch (Exception e) {
-            throw CajuScriptException.create(caju, context, "Invalid value: "+ script, e);
+            throw CajuScriptException.create(caju, context, "Invalid value: ".concat(script), e);
         }
     }
     
@@ -299,7 +299,7 @@ public class Value implements Cloneable {
                 if (script.indexOf(' ') > -1 || syntaxParamBegin.getStart() > -1 || syntaxParamEnd.getStart() > -1) {
                     throw CajuScriptException.create(cajuScript, context, "Syntax error");
                 }
-                throw CajuScriptException.create(cajuScript, context, script + " is not defined");
+                throw CajuScriptException.create(cajuScript, context, script.concat(" is not defined"));
             }
             value = v.getValue();
         }
@@ -459,27 +459,27 @@ public class Value implements Cloneable {
             valueNumberLong = (long)valueNumberInteger;
             valueNumberFloat = (float)valueNumberInteger;
             valueNumberDouble = (double)valueNumberInteger;
-            valueString = valueNumberInteger + "";
+            valueString = Integer.toString(valueNumberInteger);
             type = Type.NUMBER;
             typeNumber = TypeNumber.INTEGER;
             return;
         } else if (o instanceof Float) {
             valueNumberFloat = ((Float)o).floatValue();
             valueNumberDouble = (double)valueNumberFloat;
-            valueString = valueNumberFloat + "";
+            valueString = Float.toString(valueNumberFloat);
             type = Type.NUMBER;
             typeNumber = TypeNumber.FLOAT;
             return;
         } else if (o instanceof Long) {
             valueNumberLong = ((Long)o).longValue();
             valueNumberDouble = (double)valueNumberLong;
-            valueString = valueNumberLong + "";
+            valueString = Long.toString(valueNumberLong);
             type = Type.NUMBER;
             typeNumber = TypeNumber.LONG;
             return;
         } else if (o instanceof Double) {
             valueNumberDouble = (float)((Double)o).doubleValue();
-            valueString = valueNumberDouble + "";
+            valueString = Double.toString(valueNumberDouble);
             type = Type.NUMBER;
             typeNumber = TypeNumber.DOUBLE;
             return;
@@ -544,27 +544,27 @@ public class Value implements Cloneable {
                         scriptRest = "";
                     }
                     if (p > 0) {
-                        path += ".";
-                        realPath += ".";
+                        path = path.concat(".");
+                        realPath = realPath.concat(".");
                     }
                     if (realPath.endsWith("..")) {
                         realClassName = path.substring(0, path.lastIndexOf('.') - 1);
-                        throw new Exception("Cannot invoke " + realClassName);
+                        throw new Exception("Cannot invoke ".concat(realClassName));
                     }
                     SyntaxPosition syntaxParameterBegin = syntax.matcherPosition(scriptPart, syntax.getFunctionCallParametersBegin());
                     if (syntaxParameterBegin.getStart() > -1 && value == null) {
                         cName = scriptPart.substring(0, syntaxParameterBegin.getStart());
-                        realPath += cName;
+                        realPath = realPath.concat(cName);
                         cName = cName.trim();
-                        path += cName;
+                        path = path.concat(cName);
                     } else if (syntaxParameterBegin.getStart() > -1 && value != null) {
                         cName = scriptPart.substring(0, syntaxParameterBegin.getStart());
-                        realPath += cName;
+                        realPath = realPath.concat(cName);
                         cName = cName.trim();
-                        path += cName;
+                        path = path.concat(cName);
                     } else {
-                        path += scriptPart.trim();
-                        realPath += scriptPart;
+                        path = path.concat(scriptPart.trim());
+                        realPath = realPath.concat(scriptPart);
                     }
                     if (value == null) {
                         try {
@@ -578,7 +578,7 @@ public class Value implements Cloneable {
                                         } catch (Exception ex) { }
                                     } else {
                                         try {
-                                            c = Class.forName(i + "." + path);
+                                            c = Class.forName(i.concat(".").concat(path));
                                         } catch (Exception ex) { }
                                     }
                                     if (c != null) {
@@ -687,7 +687,7 @@ public class Value implements Cloneable {
                 } else if (!scriptCommand.getParamName().equals("")) {
                     return invokeNative(c.getField(scriptCommand.getParamName()).get(c), script, scriptCommand.getNextScriptCommand());
                 }
-                throw new Exception("Cannot invoke " + scriptCommand.getScript());
+                throw new Exception("Cannot invoke ".concat(scriptCommand.getScript()));
                 //cName = scriptCommand.getClassPath();
                 //scriptPart = scriptCommand.getScript();
             }
@@ -756,7 +756,7 @@ public class Value implements Cloneable {
                 return cn[x].newInstance(getParams(values, cx, scriptCommand));
             }
         }
-        throw new Exception("Constructor \""+ c.getName() +"\" cannot be invoked");
+        throw new Exception("Constructor \"".concat(c.getName()).concat("\" cannot be invoked"));
     }
     
     private Object invokeMethod(Class c, Object o, String name, Object[] values, String script, ScriptCommand scriptCommand) throws Exception {
@@ -802,7 +802,7 @@ public class Value implements Cloneable {
                 }
             }
         }
-        throw new Exception("Method \""+ name +"\" cannot be invoked");
+        throw new Exception("Method \"".concat(name).concat("\" cannot be invoked"));
     }
     
     private Object[] invokeValues(String script, ScriptCommand scriptCommand) throws CajuScriptException {

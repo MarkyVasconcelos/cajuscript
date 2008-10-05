@@ -51,7 +51,7 @@ package org.cajuscript.math;
  * printVector2D('subtract', c)
  * c = a * b
  * printVector2D('multiply', c)
- * c = a / b;" +
+ * c = a / b
  * printVector2D('divide', c)
  * c = a % b
  * printVector2D('module', c)

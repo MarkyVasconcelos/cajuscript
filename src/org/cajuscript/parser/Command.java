@@ -40,8 +40,8 @@ public class Command extends Base {
      */
     public Command(LineDetail line) {
         super(line);
-        contextsKey = org.cajuscript.CajuScript.CAJU_VARS + "_contexts_" + Integer.toString(this.hashCode());
-        valueKey = org.cajuscript.CajuScript.CAJU_VARS + "_value_" + Integer.toString(this.hashCode());
+        contextsKey = org.cajuscript.CajuScript.CAJU_VARS.concat("_contexts_").concat(Integer.toString(this.hashCode()));
+        valueKey = org.cajuscript.CajuScript.CAJU_VARS.concat("_value_").concat(Integer.toString(this.hashCode()));
     }
     
     /**

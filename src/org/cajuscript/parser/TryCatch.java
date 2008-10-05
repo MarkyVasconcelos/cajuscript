@@ -42,7 +42,7 @@ public class TryCatch extends Base {
      */
     public TryCatch(LineDetail line) {
         super(line);
-        errorValueKey = org.cajuscript.CajuScript.CAJU_VARS + "_value_" + Integer.toString(this.hashCode());
+        errorValueKey = org.cajuscript.CajuScript.CAJU_VARS.concat("_value_").concat(Integer.toString(this.hashCode()));
     }
     
     /**

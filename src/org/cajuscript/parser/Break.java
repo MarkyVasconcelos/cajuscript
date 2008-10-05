@@ -69,7 +69,7 @@ public class Break extends Base {
         caju.setRunningLine(getLineDetail());
         Value v = new Value(caju, context, syntax);
         if (!getLabel().equals("")) {
-            v.setFlag("break:"+ getLabel());
+            v.setFlag("break:".concat(getLabel()));
         } else {
             v.setFlag("break");
         }

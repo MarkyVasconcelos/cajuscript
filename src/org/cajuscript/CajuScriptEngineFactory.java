@@ -155,16 +155,16 @@ public class CajuScriptEngineFactory implements ScriptEngineFactory {
     public String getMethodCallSyntax(String obj, String m, String... args) {
         String cmd = "";
         if (obj != null && !obj.equals("")) {
-            cmd += obj + ".";
+            cmd = cmd.concat(obj).concat(".");
         }
-        cmd += m + "(";
+        cmd = cmd.concat(m).concat("(");
         for (int i = 0; i < args.length; i++) {
-            cmd += args[i];
+            cmd = cmd.concat(args[i]);
             if (i < args.length - 1) {
-                cmd += ",";
+                cmd = cmd.concat(",");
             }
         }
-        cmd += ")";
+        cmd = cmd.concat(")");
         return cmd;
     }
     
@@ -180,7 +180,7 @@ public class CajuScriptEngineFactory implements ScriptEngineFactory {
      * @return Command for printing the string in output.
      */
     public String getOutputStatement(String toDisplay) {
-        return "java.lang.System.out.println(\"" + toDisplay + "\");";
+        return "java.lang.System.out.println(\"".concat(toDisplay).concat("\");");
     }
     
     /**

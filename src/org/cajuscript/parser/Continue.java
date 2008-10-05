@@ -69,7 +69,7 @@ public class Continue extends Base {
         caju.setRunningLine(getLineDetail());
         Value v = new Value(caju, context, syntax);
         if (!getLabel().equals("")) {
-            v.setFlag("continue:"+ getLabel());
+            v.setFlag("continue:".concat(getLabel()));
         } else {
             v.setFlag("continue");
         }
