@@ -27,18 +27,19 @@ import java.util.regex.Matcher;
  * <p>Java Basic style:</p>
  * <p><blockquote><pre>
  *      Syntax syntaxJ = new Syntax();
- *      syntaxJ.setIf(Pattern.compile("if\\s*([\\s+|[\\s*\\(]].+)\\{"));
- *      syntaxJ.setElseIf(Pattern.compile("\\}\\s*else\\s+if\\s*([\\s+|[\\s*\\(]].+)\\{"));
+ *      syntaxJ.setIf(Pattern.compile("if\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{"));
+ *      syntaxJ.setElseIf(Pattern.compile("\\}\\s*else\\s+if\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{"));
  *      syntaxJ.setElse(Pattern.compile("\\}\\s*else\\s*\\{"));
  *      syntaxJ.setIfEnd(Pattern.compile("\\}"));
- *      syntaxJ.setLoop(Pattern.compile("while\\s*([\\s+|[\\s*\\(]].+)\\{"));
+ *      syntaxJ.setLoop(Pattern.compile("while\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{"));
  *      syntaxJ.setLoopEnd(Pattern.compile("\\}"));
- *      syntaxJ.setTry(Pattern.compile("try\\s*([\\s+|[\\s*\\(]].+)\\{"));
+ *      syntaxJ.setTry(Pattern.compile("try\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{"));
  *      syntaxJ.setTryCatch(Pattern.compile("\\}\\s*catch\\s*\\{"));
  *      syntaxJ.setTryFinally(Pattern.compile("\\}\\s*finally\\s*\\{"));
  *      syntaxJ.setTryEnd(Pattern.compile("\\}"));
- *      syntaxJ.setFunction(Pattern.compile("function\\s*([\\s+|[\\s*\\(]].+)\\{"));
+ *      syntaxJ.setFunction(Pattern.compile("function\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{"));
  *      syntaxJ.setFunctionEnd(Pattern.compile("\\}"));
+ *      syntaxJ.setNull(Pattern.compile("null"));
  *      syntaxJ.setReturn(Pattern.compile("return"));
  *      syntaxJ.setImport(Pattern.compile("import\\s+"));
  *      syntaxJ.setRootContext(Pattern.compile("root\\."));
@@ -90,15 +91,15 @@ public class Syntax {
     private Pattern operatorLessEqual = Pattern.compile("\\<\\s*\\=");
     private Pattern operatorGreaterEqual = Pattern.compile("\\>\\s*\\=");
     private Pattern number = Pattern.compile("\\-*\\d+[\\.\\d+]*");
-    private Pattern ifStart = Pattern.compile("([^\\?]+)\\?");
+    private Pattern ifStart = Pattern.compile("([^\\?\\@\\#\\^]+)\\?");
     private Pattern elseIfStart = Pattern.compile("\\?\\s*(.+)\\s*\\?");
     private Pattern elseStart = Pattern.compile("\\?\\s*\\?");
     private Pattern ifEnd = Pattern.compile("\\?");
-    private Pattern loopStart = Pattern.compile("([^\\@]+)\\@");
+    private Pattern loopStart = Pattern.compile("([^\\?\\@\\#\\^]+)\\@");
     private Pattern loopEnd = Pattern.compile("\\@");
-    private Pattern functionStart = Pattern.compile("([^\\#]+)\\s*(.+)\\s*\\#");
+    private Pattern functionStart = Pattern.compile("([^\\?\\@\\#\\^]+)\\s*(.+)\\s*\\#");
     private Pattern functionEnd = Pattern.compile("\\#");
-    private Pattern tryStart = Pattern.compile("([^\\^]+)\\^");
+    private Pattern tryStart = Pattern.compile("([^\\?\\@\\#\\^]+)\\^");
     private Pattern tryCatchStart = Pattern.compile("\\^\\s*\\^");
     private Pattern tryFinallyStart = Pattern.compile("\\^\\s*\\~\\s*\\^");
     private Pattern tryEnd = Pattern.compile("\\^");
@@ -127,7 +128,7 @@ public class Syntax {
     /**
      * Get If. Default "([^\\?]+)\\?".
      * Basic: "if\\s*([\\s+|[\\s*\\(]].+)\\s*".
-     * Java: "if\\s*([\\s+|[\\s*\\(]].+)\\{".
+     * Java: "if\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{".
      * @return If.
      */
     public Pattern getIf() {
@@ -147,7 +148,7 @@ public class Syntax {
     /**
      * Get Else If. Default "\\?\\s*(.+)\\s*\\?".
      * Basic: "elseif\\s*([\\s+|[\\s*\\(]].+)\\s*".
-     * Java: "\\}\\s*else\\s+if\\s*([\\s+|[\\s*\\(]].+)\\{".
+     * Java: "\\}\\s*else\\s+if\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{".
      * @return Else If.
      */
     public Pattern getElseIf() {
@@ -167,7 +168,7 @@ public class Syntax {
     /**
      * Get Loop. Default "([^\\@]+)\\@".
      * Basic: "while\\s*([\\s+|[\\s*\\(]].+)\\s*".
-     * Java: "while\\s*([\\s+|[\\s*\\(]].+)\\{".
+     * Java: "while\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{".
      * @return Loop.
      */
     public Pattern getLoop() {
@@ -187,7 +188,7 @@ public class Syntax {
     /**
      * Get Function. Default "([^\\#]+)\\s*(.+)\\s*\\#".
      * Basic: "function\\s*([\\s+|[\\s*\\(]].+)\\s*".
-     * Java: "function\\s*([\\s+|[\\s*\\(]].+)\\{".
+     * Java: "function\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{".
      * @return Function.
      */
     public Pattern getFunction() {
@@ -207,7 +208,7 @@ public class Syntax {
     /**
      * Get Try. Default "([^\\^]+)\\^".
      * Basic: "try\\s*([\\s+|[\\s*\\(]].+)\\s*".
-     * Java: "try\\s*([\\s+|[\\s*\\(]].+)\\{".
+     * Java: "try\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{".
      * @return Try.
      */
     public Pattern getTry() {
@@ -944,7 +945,8 @@ public class Syntax {
         }
         SyntaxPosition first = new SyntaxPosition(this, Pattern.compile(""));
         for (int i = 0; i < syntaxPositions.length; i++) {
-            if (syntaxPositions[i].getStart() > -1 && (first.getStart() == -1 || syntaxPositions[i].getStart() < first.getStart())) {
+            if ((syntaxPositions[i].getStart() > -1 && (first.getStart() == -1 || syntaxPositions[i].getStart() < first.getStart()))
+                    || (syntaxPositions[i].getStart() == first.getStart() && syntaxPositions[i].getEnd() > first.getEnd())) {
                 first = syntaxPositions[i];
             }
         }
@@ -959,15 +961,11 @@ public class Syntax {
     public SyntaxPosition lastOperator(String script, Pattern... patterns) {
         SyntaxPosition syntaxPositionFinal = new SyntaxPosition(this, Pattern.compile(""));
         while (true) {
-            SyntaxPosition syntaxPosition = new SyntaxPosition(this, Pattern.compile(""));
+            SyntaxPosition syntaxPosition = firstOperator(script, patterns);
             String spaces = "";
-            for (int i = 0; i < patterns.length; i++) {
-                syntaxPosition = matcherPosition(script, patterns[i]);
-                if (syntaxPosition.getStart() != -1) {
-                    for (int k = syntaxPosition.getStart(); k < syntaxPosition.getEnd(); k++) {
-                        spaces += " ";
-                    }
-                    break;
+            if (syntaxPosition.getStart() != -1) {
+                for (int k = syntaxPosition.getStart(); k < syntaxPosition.getEnd(); k++) {
+                    spaces = spaces.concat(" ");
                 }
             }
             if (syntaxPosition.getStart() != -1) {

@@ -102,9 +102,9 @@ public class Loop extends Base {
                 for (Element element : elements) {
                     Value v = element.execute(caju, context, syntax);
                     if (v != null && canElementReturn(element)) {
-                        if (element instanceof Break) {
+                        if (element instanceof Break && v.getFlag().equals("")) {
                             break loop;
-                        } else if (element instanceof Continue) {
+                        } else if (element instanceof Continue && v.getFlag().equals("")) {
                             continue loop;
                         } else if (!v.getFlag().equals("")) {
                             String act, lbl = "";

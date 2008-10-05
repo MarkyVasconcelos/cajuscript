@@ -76,13 +76,13 @@ public class CajuScriptException extends Exception {
      * @throws org.cajuscript.CajuScriptException Creating exception.
      */
     public static CajuScriptException create(CajuScript caju, Context context, String message, Throwable cause) throws CajuScriptException {
-        return new CajuScriptException(message + " > " + caju.getRunningLine().getNumber() + ": " + formatScript(caju, context, caju.getRunningLine().getContent()), cause);
+        return new CajuScriptException(message.concat(" > ").concat(Integer.toString(caju.getRunningLine().getNumber())).concat(": ").concat(formatScript(caju, context, caju.getRunningLine().getContent())), cause);
     }
     
     private static String formatScript(CajuScript caju, Context context, String script) {
         for (String key : caju.getAllKeys(true)) {
             if (key.startsWith(CajuScript.CAJU_VARS)) {
-                script = script.replace((CharSequence)key, "\""+ context.getVar(key).toString() + "\"");
+                script = script.replace((CharSequence)key, "\"".concat(context.getVar(key).toString()).concat("\""));
             }
         }
         return script;

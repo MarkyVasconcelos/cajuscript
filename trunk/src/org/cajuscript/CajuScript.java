@@ -91,19 +91,28 @@ public class CajuScript {
     /**
      * Strings along the code are replaced by statics variables with this name.
      */
-    public static final String CAJU_VARS_STATIC_STRING = CAJU_VARS + "_static_string_";
+    public static final String CAJU_VARS_STATIC_STRING = CAJU_VARS.concat("_static_string_");
     
     /**
      * Commands embraced by parenthesis are executed and the value is saved on
      * variables with this name. All parenthesis are replaced by variables with
      * the final value when the line is interpreted.
      */
-    public static final String CAJU_VARS_GROUP = CAJU_VARS + "_group_";
+    public static final String CAJU_VARS_GROUP = CAJU_VARS.concat("_group_");
+    
+    /**
+     * Commands embraced by parenthesis are executed and the value is saved on
+     * variables with this name. All parenthesis are replaced by variables with
+     * the final value when the line is interpreted.
+     */
+    public static final String CAJU_VARS_MATH = CAJU_VARS.concat("_math_");
     
     /**
      * Functions parameters are going to variables setting with this name.
      */
-    public static final String CAJU_VARS_PARAMETER = CAJU_VARS + "_param_";
+    public static final String CAJU_VARS_PARAMETER = CAJU_VARS.concat("_param_");
+    public static final String LINE_DETAIL_START = "#caju_line$";
+    public static final String LINE_DETAIL_END = ":";
     private static Map<String, Syntax> globalSyntaxs = new HashMap<String, Syntax>();
     private Context context = new Context();
     private LineDetail runningLine = new LineDetail(0, "");
@@ -235,237 +244,291 @@ public class CajuScript {
      * @throws org.cajuscript.CajuScriptException Errors ocurred on script execution.
      */
     public Value eval(String script, Syntax syntax) throws CajuScriptException {
-        String originalScript = script;
-        if (script.equals("")) {
-            return null;
-        }
-        script += LINE_LIMITER;
-        script = script.replace((CharSequence)"\r\n", LINE_LIMITER);
-        script = script.replace((CharSequence)"\n\r", LINE_LIMITER);
-        script = script.replace((CharSequence)"\n", LINE_LIMITER);
-        script = script.replace((CharSequence)"\r", LINE_LIMITER);
-        String[] lines = script.split(LINE_LIMITER);
-        script = "";
-        StringBuffer scriptBuffer = new StringBuffer();
-        String staticStringKey = "";
-        String staticStringValue = "";
-        String previousLine = "";
-        boolean isString1 = false;
-        boolean isString2 = false;
-        int lineNumber = 0;
-        String cacheId = "";
-        boolean config = true;
-        Context staticContexts = null;
-        Base cacheParser = null;
-        String cacheScript = null;
-        lines: for (String line : lines) {
-            line = line.trim();
-            lineNumber++;
-            if (config) {
-                while (true) {
-                    int lineLimiter = line.indexOf(SUBLINE_LIMITER);
-                    String configLine = line;
-                    if (lineLimiter > -1) {
-                        configLine = configLine.substring(0, lineLimiter);
-                    }
-                    configLine = configLine.replace('\t', ' ').trim();
-                    if (configLine.startsWith("caju.syntax")) {
-                        String syntaxName = configLine.substring(configLine.lastIndexOf(' ') + 1);
-                        Syntax _syntax = getSyntax(syntaxName);
-                        Syntax __syntax = getGlobalSyntax(syntaxName);
-                        if (_syntax != null) {
-                            syntax = _syntax;
-                        } else if (__syntax != null) {
-                            syntax = __syntax;
+        try {
+            String originalScript = script;
+            if (script.equals("")) {
+                return null;
+            }
+            script = script.concat(LINE_LIMITER);
+            script = script.replace((CharSequence)"\r\n", LINE_LIMITER);
+            script = script.replace((CharSequence)"\n\r", LINE_LIMITER);
+            script = script.replace((CharSequence)"\n", LINE_LIMITER);
+            script = script.replace((CharSequence)"\r", LINE_LIMITER);
+            String[] lines = script.split(LINE_LIMITER);
+            script = "";
+            StringBuffer scriptBuffer = new StringBuffer();
+            String staticStringKey = "";
+            String staticStringValue = "";
+            String previousLine = "";
+            boolean isString1 = false;
+            boolean isString2 = false;
+            int lineNumber = 0;
+            String cacheId = "";
+            boolean config = true;
+            Context staticContexts = null;
+            Base cacheParser = null;
+            String cacheScript = null;
+            lines: for (String line : lines) {
+                line = line.trim();
+                lineNumber++;
+                if (config) {
+                    while (true) {
+                        int lineLimiter = line.indexOf(SUBLINE_LIMITER);
+                        String configLine = line;
+                        if (lineLimiter > -1) {
+                            configLine = configLine.substring(0, lineLimiter);
+                        }
+                        configLine = configLine.replace('\t', ' ').trim();
+                        if (configLine.startsWith("caju.syntax")) {
+                            String syntaxName = configLine.substring(configLine.lastIndexOf(' ') + 1);
+                            Syntax _syntax = getSyntax(syntaxName);
+                            Syntax __syntax = getGlobalSyntax(syntaxName);
+                            if (_syntax != null) {
+                                syntax = _syntax;
+                            } else if (__syntax != null) {
+                                syntax = __syntax;
+                            } else {
+                                throw CajuScriptException.create(this, context, "Syntax \"".concat(syntaxName).concat("\" not found."));
+                            }
+                        } else if (configLine.startsWith("caju.cache")) {
+                            cacheId = configLine.substring(configLine.lastIndexOf(' ') + 1);
+                            cacheParser = cacheParsers.get(cacheId);
+                            cacheScript = cacheScripts.get(cacheId);
+                            if (cacheParser != null && originalScript.equals(cacheScript)) {
+                                staticContexts = cacheStaticContexts.get(cacheId);
+                            } else if (!cacheId.equals("")) {
+                                staticContexts = new Context();
+                            }
                         } else {
-                            throw CajuScriptException.create(this, context, "Syntax \""+ syntaxName +"\" not found.");
+                            if (!configLine.equals("")) {
+                                config = false;
+                                break;
+                            }
                         }
-                    } else if (configLine.startsWith("caju.cache")) {
-                        cacheId = configLine.substring(configLine.lastIndexOf(' ') + 1);
-                        cacheParser = cacheParsers.get(cacheId);
-                        cacheScript = cacheScripts.get(cacheId);
-                        if (cacheParser != null && originalScript.equals(cacheScript)) {
-                            staticContexts = cacheStaticContexts.get(cacheId);
-                        } else if (!cacheId.equals("")) {
-                            staticContexts = new Context();
-                        }
-                    } else {
-                        if (!configLine.equals("")) {
-                            config = false;
-                            break;
+                        if (lineLimiter > -1) {
+                            line = line.substring(lineLimiter + 1);
+                        } else {
+                            continue lines;
                         }
                     }
-                    if (lineLimiter > -1) {
-                        line = line.substring(lineLimiter + 1);
-                    } else {
+                }
+                if (!config && cacheParser != null && originalScript.equals(cacheScript)) {
+                    Set<String> keys = staticContexts.getAllKeys(true);
+                    for (String key : keys) {
+                        context.setVar(key, staticContexts.getVar(key));
+                    }
+                    Map<String, Function> funcs = staticContexts.getFuncs();
+                    keys = funcs.keySet();
+                    for (String key : keys) {
+                        context.setFunc(key, staticContexts.getFunc(key));
+                    }
+                    parserBase = cacheParser;
+                    Value finalValue = parserBase.execute(this, context, syntax);
+                    parserBase.clear();
+                    return finalValue;
+                }
+                if (isString1 || isString2) {
+                    setRunningLine(new LineDetail(lineNumber, previousLine));
+                    throw CajuScriptException.create(this, context, "String not closed");
+                }
+                String lineGarbage = line.trim();
+                if (lineGarbage.equals("")) {
+                    continue;
+                }
+                for (Pattern comment : syntax.getComments()) {
+                    Matcher m = comment.matcher(lineGarbage);
+                    if (m.find() && m.start() == 0) {
                         continue lines;
+                    } 
+                }
+                char[] chars = line.toCharArray();
+                previousLine = line;
+                isString1 = false;
+                isString2 = false;
+                char cO = (char)-1;
+                for (char c : chars) {
+                    switch (c) {
+                        case '\'':
+                            if (cO != '\\' && !isString2) {
+                                if (isString1) {
+                                    isString1 = false;
+                                    context.setVar(staticStringKey, new Value(null, null, null, "'".concat(staticStringValue).concat("'")));
+                                    if (staticContexts != null) {
+                                        staticContexts.setVar(staticStringKey, new Value(null, null, null, "'".concat(staticStringValue).concat("'")));
+                                    }
+                                    line = line.replace((CharSequence)("'".concat(staticStringValue).concat("'")), staticStringKey); 
+                                    staticStringKey = "";
+                                    staticStringValue = "";
+                                } else {
+                                    isString1 = true;
+                                    if (staticVarsStringCounter == Long.MAX_VALUE) {
+                                        staticVarsStringCounter = 0;
+                                    }
+                                    staticStringKey = CAJU_VARS_STATIC_STRING + staticVarsStringCounter;
+                                    staticVarsStringCounter++;
+                                }
+                            } else if (isString2 || cO == '\\') {
+                                staticStringValue = staticStringValue.concat(Character.toString(c));
+                            }
+                            break;
+                        case '"':
+                            if (cO != '\\' && !isString1) {
+                                if (isString2) {
+                                    isString2 = false;
+                                    context.setVar(staticStringKey, new Value(null, null, null, "\"".concat(staticStringValue).concat("\"")));
+                                    if (staticContexts != null) {
+                                        staticContexts.setVar(staticStringKey, new Value(null, null, null, "\"".concat(staticStringValue).concat("\"")));
+                                    }
+                                    line = line.replace((CharSequence)("\"".concat(staticStringValue).concat("\"")), staticStringKey); 
+                                    staticStringKey = "";
+                                    staticStringValue = "";
+                                } else {
+                                    isString2 = true;
+                                    if (staticVarsStringCounter == Long.MAX_VALUE) {
+                                        staticVarsStringCounter = 0;
+                                    }
+                                    staticStringKey = CAJU_VARS_STATIC_STRING + staticVarsStringCounter;
+                                    staticVarsStringCounter++;
+                                }
+                            } else if (isString1 || cO == '\\') {
+                                staticStringValue = staticStringValue.concat(Character.toString(c));
+                            }
+                            break;
+                        default:
+                            if (isString1 || isString2) {
+                                staticStringValue = staticStringValue.concat(Character.toString(c));
+                            }
+                            break;
+                    }
+                    cO = c;
+                }
+                scriptBuffer.append(LINE_DETAIL_START);
+                scriptBuffer.append(Integer.toString(lineNumber));
+                scriptBuffer.append(LINE_DETAIL_END);
+                scriptBuffer.append(line);
+                scriptBuffer.append(SUBLINE_LIMITER);
+            }
+            lines = scriptBuffer.toString().split(SUBLINE_LIMITER);
+            scriptBuffer = new StringBuffer();
+            for (String line : lines) {
+                String lineN = "";
+                if (line.startsWith(LINE_DETAIL_START)) {
+                    lineN = line.substring(0, line.indexOf(LINE_DETAIL_END) + 1);
+                    line = line.substring(lineN.length()).trim();
+                }
+                while(true) {
+                    line = line.trim();
+                    int p = endLineIndex(line, syntax);
+                    if (p > -1) {
+                        scriptBuffer.append(lineN + line.substring(0, p) + SUBLINE_LIMITER);
+                        line = line.substring(p);
+                    } else {
+                        scriptBuffer.append(lineN + line + SUBLINE_LIMITER);
+                        break;
                     }
                 }
             }
-            if (!config && cacheParser != null && originalScript.equals(cacheScript)) {
-                Set<String> keys = staticContexts.getAllKeys(true);
+            script = scriptBuffer.toString();
+            parserBase = new org.cajuscript.parser.Base(new LineDetail(-1, ""));
+            parserBase.parse(this, script, syntax);
+            if (!cacheId.equals("")) {
+                cacheScripts.put(cacheId, originalScript);
+                cacheParsers.put(cacheId, (org.cajuscript.parser.Base)parserBase.cloneSerialization());
+                cacheStaticContexts.put(cacheId, staticContexts);
+            }
+            Value finalValue = parserBase.execute(this, context, syntax);
+            if (!cacheId.equals("")) {
+                Map<String, Function> funcs = context.getFuncs();
+                Set<String> keys = funcs.keySet();
+                Context cacheContext = cacheStaticContexts.get(cacheId);
                 for (String key : keys) {
-                    context.setVar(key, staticContexts.getVar(key));
+                    cacheContext.setFunc(key, funcs.get(key));
                 }
-                //long time = System.nanoTime();
-                parserBase = cacheParser;
-                //parserBase = (org.cajuscript.parser.Base)cacheParser.cloneSerialization();
-                //System.out.println(System.nanoTime() - time);
-                Value finalValue = parserBase.execute(this, context, syntax);
-                parserBase.clear();
-                return finalValue;
             }
-            if (isString1 || isString2) {
-                setRunningLine(new LineDetail(lineNumber, previousLine));
-                throw CajuScriptException.create(this, context, "String not closed");
-            }
-            String lineGarbage = line.trim();
-            if (lineGarbage.equals("")) {
-                continue;
-            }
-            for (Pattern comment : syntax.getComments()) {
-                Matcher m = comment.matcher(lineGarbage);
-                if (m.find() && m.start() == 0) {
-                    continue lines;
-                } 
-            }
-            char[] chars = line.toCharArray();
-            previousLine = line;
-            isString1 = false;
-            isString2 = false;
-            char cO = (char)-1;
-            for (char c : chars) {
-                switch (c) {
-                    case '\'':
-                        if (cO != '\\' && !isString2) {
-                            if (isString1) {
-                                isString1 = false;
-                                context.setVar(staticStringKey, new Value(null, null, null, "'" + staticStringValue + "'"));
-                                if (staticContexts != null) {
-                                    staticContexts.setVar(staticStringKey, new Value(null, null, null, "'" + staticStringValue + "'"));
-                                }
-                                line = line.replace((CharSequence)("'" + staticStringValue + "'"), staticStringKey); 
-                                staticStringKey = "";
-                                staticStringValue = "";
-                            } else {
-                                isString1 = true;
-                                if (staticVarsStringCounter == Long.MAX_VALUE) {
-                                    staticVarsStringCounter = 0;
-                                }
-                                staticStringKey = CAJU_VARS_STATIC_STRING + staticVarsStringCounter;
-                                staticVarsStringCounter++;
-                            }
-                        } else if (isString2 || cO == '\\') {
-                            staticStringValue += c;
-                        }
-                        break;
-                    case '"':
-                        if (cO != '\\' && !isString1) {
-                            if (isString2) {
-                                isString2 = false;
-                                context.setVar(staticStringKey, new Value(null, null, null, "\"" + staticStringValue + "\""));
-                                if (staticContexts != null) {
-                                    staticContexts.setVar(staticStringKey, new Value(null, null, null, "\"" + staticStringValue + "\""));
-                                }
-                                line = line.replace((CharSequence)("\"" + staticStringValue + "\""), staticStringKey); 
-                                staticStringKey = "";
-                                staticStringValue = "";
-                            } else {
-                                isString2 = true;
-                                if (staticVarsStringCounter == Long.MAX_VALUE) {
-                                    staticVarsStringCounter = 0;
-                                }
-                                staticStringKey = CAJU_VARS_STATIC_STRING + staticVarsStringCounter;
-                                staticVarsStringCounter++;
-                            }
-                        } else if (isString1 || cO == '\\') {
-                            staticStringValue += c;
-                        }
-                        break;
-                    default:
-                        if (isString1 || isString2) {
-                            staticStringValue += c;
-                        }
-                        break;
-                }
-                cO = c;
-            }
-            scriptBuffer.append(">" + lineNumber + ":" + line);
-            scriptBuffer.append(SUBLINE_LIMITER);
+            return finalValue;
+        } catch (CajuScriptException e) {
+            throw e;
+        } catch (Exception e) {
+            throw CajuScriptException.create(this, context, e.getMessage(), e);
         }
-        lines = scriptBuffer.toString().split(SUBLINE_LIMITER);
-        scriptBuffer = new StringBuffer();
-        for (String line : lines) {
-            line = line.trim();
-            String lineN = "";
-            if (line.startsWith(">")) {
-                lineN = line.substring(0, line.indexOf(":") + 1);
-                line = line.substring(lineN.length()).trim();
-            }
-            int p = endLineIndex(line, syntax);
-            if (p > -1) {
-                String endLine = line.substring(p);
-                if (!endLine.trim().equals("")) {
-                    endLine += SUBLINE_LIMITER;
-                }
-                scriptBuffer.append(lineN + line.substring(0, p) + SUBLINE_LIMITER + endLine);
-            } else {
-                scriptBuffer.append(lineN + line + SUBLINE_LIMITER);
-            }
-        }
-        script = scriptBuffer.toString();
-        //long time = System.nanoTime();
-        parserBase = new org.cajuscript.parser.Base(new LineDetail(-1, ""));
-        parserBase.parse(this, script, syntax);
-        //System.out.println(System.nanoTime() - time);
-        if (!cacheId.equals("")) {
-            cacheScripts.put(cacheId, originalScript);
-            cacheParsers.put(cacheId, (org.cajuscript.parser.Base)parserBase.cloneSerialization());
-            cacheStaticContexts.put(cacheId, staticContexts);
-        }
-        return parserBase.execute(this, context, syntax);
     }
     
     private int endLineIndex(String line, Syntax syntax) {
         if (line.equals("")) {
             return -1;
         }
+        SyntaxPosition syntaxPosition = null;
         int p = -1;
-        if ((p = syntax.matcherPosition(line, syntax.getIf()).getEnd()) > -1) {
-            return p;
+        int l = -1;
+        if ((l = syntax.matcherPosition(line, syntax.getLabel()).getEnd()) > -1) {
+            line = line.substring(l);
         }
-        if ((p = syntax.matcherPosition(line, syntax.getElseIf()).getEnd()) > -1) {
-            return p;
+        int[] starts = new int[12];
+        int[] ends = new int[starts.length];
+        for (int i = 0; i < starts.length; i++) {
+            starts[i] = Integer.MAX_VALUE;
+            ends[i] = Integer.MAX_VALUE;
         }
-        if ((p = syntax.matcherPosition(line, syntax.getElse()).getEnd()) > -1) {
-            return p;
+        if ((syntaxPosition = syntax.matcherPosition(line, syntax.getIf())).getEnd() > -1) {
+            starts[0] = syntaxPosition.getStart();
+            ends[0] = syntaxPosition.getEnd();
         }
-        if ((p = syntax.matcherPosition(line, syntax.getLoop()).getEnd()) > -1) {
-            return p;
+        if ((syntaxPosition = syntax.matcherPosition(line, syntax.getElseIf())).getEnd() > -1) {
+            starts[1] = syntaxPosition.getStart();
+            ends[1] = syntaxPosition.getEnd();
         }
-        if ((p = syntax.matcherPosition(line, syntax.getFunction()).getEnd()) > -1) {
-            return p;
+        if ((syntaxPosition = syntax.matcherPosition(line, syntax.getElse())).getEnd() > -1) {
+            starts[2] = syntaxPosition.getStart();
+            ends[2] = syntaxPosition.getEnd();
         }
-        if ((p = syntax.matcherPosition(line, syntax.getTry()).getEnd()) > -1) {
-            return p;
+        if ((syntaxPosition = syntax.matcherPosition(line, syntax.getLoop())).getEnd() > -1) {
+            starts[3] = syntaxPosition.getStart();
+            ends[3] = syntaxPosition.getEnd();
         }
-        if ((p = syntax.matcherPosition(line, syntax.getTryCatch()).getEnd()) > -1) {
-            return p;
+        if ((syntaxPosition = syntax.matcherPosition(line, syntax.getFunction())).getEnd() > -1) {
+            starts[4] = syntaxPosition.getStart();
+            ends[4] = syntaxPosition.getEnd();
         }
-        if ((p = syntax.matcherPosition(line, syntax.getTryFinally()).getEnd()) > -1) {
-            return p;
+        if ((syntaxPosition = syntax.matcherPosition(line, syntax.getTry())).getEnd() > -1) {
+            starts[5] = syntaxPosition.getStart();
+            ends[5] = syntaxPosition.getEnd();
         }
-        if ((p = syntax.matcherPosition(line, syntax.getIfEnd()).getEnd()) > -1) {
-            return p;
+        if ((syntaxPosition = syntax.matcherPosition(line, syntax.getTryCatch())).getEnd() > -1) {
+            starts[6] = syntaxPosition.getStart();
+            ends[6] = syntaxPosition.getEnd();
         }
-        if ((p = syntax.matcherPosition(line, syntax.getLoopEnd()).getEnd()) > -1) {
-            return p;
+        if ((syntaxPosition = syntax.matcherPosition(line, syntax.getTryFinally())).getEnd() > -1) {
+            starts[7] = syntaxPosition.getStart();
+            ends[7] = syntaxPosition.getEnd();
         }
-        if ((p = syntax.matcherPosition(line, syntax.getFunctionEnd()).getEnd()) > -1) {
-            return p;
+        if ((syntaxPosition = syntax.matcherPosition(line, syntax.getIfEnd())).getEnd() > -1) {
+            starts[8] = syntaxPosition.getStart();
+            ends[8] = syntaxPosition.getEnd();
         }
-        if ((p = syntax.matcherPosition(line, syntax.getTryEnd()).getEnd()) > -1) {
-            return p;
+        if ((syntaxPosition = syntax.matcherPosition(line, syntax.getLoopEnd())).getEnd() > -1) {
+            starts[9] = syntaxPosition.getStart();
+            ends[9] = syntaxPosition.getEnd();
+        }
+        if ((syntaxPosition = syntax.matcherPosition(line, syntax.getFunctionEnd())).getEnd() > -1) {
+            starts[10] = syntaxPosition.getStart();
+            ends[10] = syntaxPosition.getEnd();
+        }
+        if ((syntaxPosition = syntax.matcherPosition(line, syntax.getTryEnd())).getEnd() > -1) {
+            starts[11] = syntaxPosition.getStart();
+            ends[11] = syntaxPosition.getEnd();
+        }
+        int id = -1;
+        for (int i = 0; i < starts.length; i++) {
+            if ((id == -1 && ends[i] < Integer.MAX_VALUE) || (ends[i] < Integer.MAX_VALUE && id > -1
+               && (ends[i] <= starts[id] || (starts[i] < starts[id] && ends[id] == ends[i])))) {
+                id = i;
+            }
+        }
+        if (id > -1) {
+            if (id == 3 && l > -1) {
+                ends[id] += l;
+            }
+            return ends[id];
         }
         return -1;
     }
@@ -497,7 +560,7 @@ public class CajuScript {
         } catch (CajuScriptException e) {
             throw e;
         } catch (Exception e) {
-            throw CajuScriptException.create(this, context, "Cannot read file \"" + e.getMessage() + "\"", e);
+            throw CajuScriptException.create(this, context, "Cannot read file \"".concat(e.getMessage()).concat("\""), e);
         } finally {
             if (is != null) {
                 try {
@@ -719,7 +782,7 @@ public class CajuScript {
         if (type2.indexOf("$") > -1) {
             type2 = type2.substring(0, type2.indexOf("$"));
         }
-        if (type1.toLowerCase().endsWith("." + type2.toLowerCase()) || type2.toLowerCase().endsWith("." + type1.toLowerCase()) || type1.equals(type2)) {
+        if (type1.toLowerCase().endsWith(".".concat(type2.toLowerCase())) || type2.toLowerCase().endsWith(".".concat(type1.toLowerCase())) || type1.equals(type2)) {
             return true;
         }
         return false;
@@ -776,17 +839,17 @@ public class CajuScript {
     
     static {
         Syntax syntaxJ = new Syntax();
-        syntaxJ.setIf(Pattern.compile("if\\s*([\\s+|[\\s*\\(]].+)\\{"));
-        syntaxJ.setElseIf(Pattern.compile("\\}\\s*else\\s+if\\s*([\\s+|[\\s*\\(]].+)\\{"));
+        syntaxJ.setIf(Pattern.compile("if\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{"));
+        syntaxJ.setElseIf(Pattern.compile("\\}\\s*else\\s+if\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{"));
         syntaxJ.setElse(Pattern.compile("\\}\\s*else\\s*\\{"));
         syntaxJ.setIfEnd(Pattern.compile("\\}"));
-        syntaxJ.setLoop(Pattern.compile("while\\s*([\\s+|[\\s*\\(]].+)\\{"));
+        syntaxJ.setLoop(Pattern.compile("while\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{"));
         syntaxJ.setLoopEnd(Pattern.compile("\\}"));
-        syntaxJ.setTry(Pattern.compile("try\\s*([\\s+|[\\s*\\(]].+)\\{"));
+        syntaxJ.setTry(Pattern.compile("try\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{"));
         syntaxJ.setTryCatch(Pattern.compile("\\}\\s*catch\\s*\\{"));
         syntaxJ.setTryFinally(Pattern.compile("\\}\\s*finally\\s*\\{"));
         syntaxJ.setTryEnd(Pattern.compile("\\}"));
-        syntaxJ.setFunction(Pattern.compile("function\\s*([\\s+|[\\s*\\(]].+)\\{"));
+        syntaxJ.setFunction(Pattern.compile("function\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{"));
         syntaxJ.setFunctionEnd(Pattern.compile("\\}"));
         syntaxJ.setNull(Pattern.compile("null"));
         syntaxJ.setReturn(Pattern.compile("return"));
@@ -796,18 +859,18 @@ public class CajuScript {
         syntaxJ.setBreak(Pattern.compile("break"));
         globalSyntaxs.put("CajuJava", syntaxJ);
         Syntax syntaxB = new Syntax();
-        syntaxB.setIf(Pattern.compile("if\\s*([\\s+|[\\s*\\(]].+)\\s*"));
-        syntaxB.setElseIf(Pattern.compile("elseif\\s*([\\s+|[\\s*\\(]].+)\\s*"));
-        syntaxB.setElse(Pattern.compile("else"));
-        syntaxB.setIfEnd(Pattern.compile("end"));
-        syntaxB.setLoop(Pattern.compile("while\\s*([\\s+|[\\s*\\(]].+)\\s*"));
-        syntaxB.setLoopEnd(Pattern.compile("end"));
-        syntaxB.setTry(Pattern.compile("try\\s*([\\s+|[\\s*\\(]].+)\\s*"));
-        syntaxB.setTryCatch(Pattern.compile("catch"));
-        syntaxB.setTryFinally(Pattern.compile("finally"));
-        syntaxB.setTryEnd(Pattern.compile("end"));
-        syntaxB.setFunction(Pattern.compile("function\\s*([\\s+|[\\s*\\(]].+)\\s*"));
-        syntaxB.setFunctionEnd(Pattern.compile("end"));
+        syntaxB.setIf(Pattern.compile("^[\\s+i|i]f\\s*([\\s+|[\\s*\\(]].+)\\s*"));
+        syntaxB.setElseIf(Pattern.compile("^[\\s+e|e]lseif\\s*([\\s+|[\\s*\\(]].+)\\s*"));
+        syntaxB.setElse(Pattern.compile("^[\\s+e|e]ls[e\\s+|e]$"));
+        syntaxB.setIfEnd(Pattern.compile("^[\\s+e|e]n[d\\s+|d]$"));
+        syntaxB.setLoop(Pattern.compile("^[\\s+w|w]hile\\s*([\\s+|[\\s*\\(]].+)\\s*"));
+        syntaxB.setLoopEnd(Pattern.compile("^[\\s+e|e]n[d\\s+|d]$"));
+        syntaxB.setTry(Pattern.compile("^[\\s+t|t]ry\\s*([\\s+|[\\s*\\(]].+)\\s*"));
+        syntaxB.setTryCatch(Pattern.compile("^[\\s+c|c]atc[h\\s+|h]$"));
+        syntaxB.setTryFinally(Pattern.compile("^[\\s+f|f]inall[y\\s+|y]$"));
+        syntaxB.setTryEnd(Pattern.compile("^[\\s+e|e]n[d\\s+|d]$"));
+        syntaxB.setFunction(Pattern.compile("^[\\s+f|f]unction\\s*([\\s+|[\\s*\\(]].+)\\s*"));
+        syntaxB.setFunctionEnd(Pattern.compile("^[\\s+e|e]n[d\\s+|d]$"));
         syntaxB.setNull(Pattern.compile("null"));
         syntaxB.setReturn(Pattern.compile("return"));
         syntaxB.setImport(Pattern.compile("import\\s+"));

@@ -52,8 +52,8 @@ public class Operation extends Base {
      */
     public Operation(LineDetail line) {
         super(line);
-        contextsKey = org.cajuscript.CajuScript.CAJU_VARS + "_contexts_" + Integer.toString(this.hashCode());
-        valueKey = org.cajuscript.CajuScript.CAJU_VARS + "_value_" + Integer.toString(this.hashCode());
+        contextsKey = org.cajuscript.CajuScript.CAJU_VARS.concat("_contexts_").concat(Integer.toString(this.hashCode()));
+        valueKey = org.cajuscript.CajuScript.CAJU_VARS.concat("_value_").concat(Integer.toString(this.hashCode()));
     }
 
     /**
@@ -80,6 +80,9 @@ public class Operation extends Base {
     @Override
     public Value execute(CajuScript caju, Context context, Syntax syntax) throws CajuScriptException {
         caju.setRunningLine(getLineDetail());
+        for (Element element : elements) {
+            element.execute(caju, context, syntax);
+        }
         Value contextsValue = context.getVar(contextsKey);
         if (contextsValue == null) {
             contextsValue = caju.toValue(new java.util.ArrayList<Context>());
