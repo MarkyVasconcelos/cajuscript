@@ -14,7 +14,7 @@
 	 
 	 // LOOP
      x = 0
-     x < 100 & x >= 0 @
+     x < 20 & x >= 0 @
         System.out.println(x)
         x += 1
 		x = 10 ?

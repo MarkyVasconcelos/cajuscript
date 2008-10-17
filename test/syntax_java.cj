@@ -1,7 +1,8 @@
 caju.syntax: CajuJava
 
 	import java.lang
-
+	
+	
      // IF
      x = 10
      if x < 10 & x > 0 {
@@ -16,19 +17,19 @@ caju.syntax: CajuJava
 	 
 	 // LOOP
      x = 0
-     while x < 100 & x >= 0 {
+     while x < 20 & x >= 0 {
         System.out.println(x)
         x += 1
-		if x = 10 {
+		if(x = 10){
 		    break
-		} else {
+		}else{
 		    continue
 		}
      }
 	 
 	 // FUNCTION
      x = 5
-     function addWithX(v1, v2) {
+     function addWithX v1, v2 {
          return root.x + v1 + v2
      }
      x = addWithX(10, 20)

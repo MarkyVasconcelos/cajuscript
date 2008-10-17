@@ -1,26 +1,36 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * CajuScriptTest.java
+ * 
+ * This file is part of CajuScript.
+ * 
+ * CajuScript is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3, or (at your option) 
+ * any later version.
+ * 
+ * CajuScript is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with CajuScript.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package org.cajuscript;
 
-import java.util.List;
 import java.util.Set;
-import org.cajuscript.parser.Base;
 import org.cajuscript.parser.Function;
-import org.cajuscript.parser.LineDetail;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import java.util.regex.Pattern;
 import static org.junit.Assert.*;
 
 /**
  *
- * @author msp0047
+ * @author eduveks
  */
 public class CajuScriptTest {
   
@@ -83,6 +93,32 @@ public class CajuScriptTest {
         scriptReload += "xFinally = 0;";
         scriptReload += "xFunc = 0;";
         caju.eval(scriptReload);
+    }
+    
+    @Test
+    public void syntaxImport() throws CajuScriptException {
+        System.out.println("syntaxImport");
+        CajuScript caju = new CajuScript();
+        syntaxReload(caju);
+        String script = "";
+        java.util.Properties p = new java.util.Properties();
+        p.setProperty("test", "test");
+        script += "$java.util;";
+        script += "p1 = Properties();";
+        script += "p1.setProperty('test1', 'test');";
+        script += "$java.util.Properties;";
+        script += "p2 = Properties();";
+        script += "p2.setProperty('test2', 'test');";
+        script += "p3 = $;";
+        script += "test #";
+        script += "    .p3 = Properties();";
+        script += "    .p3.setProperty('test3', 'test');";
+        script += "#";
+        script += "test();";
+        script += "$'test/file.cj';";
+        caju.eval(script);
+        syntaxCheckImport(caju);
+        syntaxCheckImportCache(caju, script);
     }
     
     @Test
@@ -542,6 +578,33 @@ public class CajuScriptTest {
     }
     
     @Test
+    public void syntaxJavaImport() throws CajuScriptException {
+        System.out.println("syntaxJavaImport");
+        CajuScript caju = new CajuScript();
+        syntaxReload(caju);
+        String script = "";
+        java.util.Properties p = new java.util.Properties();
+        p.setProperty("test", "test");
+        script += "caju.syntax: CajuJava;";
+        script += "import java.util;";
+        script += "p1 = Properties();";
+        script += "p1.setProperty('test1', 'test');";
+        script += "import java.util.Properties;";
+        script += "p2 = Properties();";
+        script += "p2.setProperty('test2', 'test');";
+        script += "p3 = null;";
+        script += "function test {";
+        script += "    root.p3 = Properties();";
+        script += "    root.p3.setProperty('test3', 'test');";
+        script += "}";
+        script += "test();";
+        script += "import 'test/file.cj';";
+        caju.eval(script);
+        syntaxCheckImport(caju);
+        syntaxCheckImportCache(caju, script);
+    }
+    
+    @Test
     public void syntaxJavaIf() throws CajuScriptException {
         System.out.println("syntaxJavaIf");
         CajuScript caju = new CajuScript();
@@ -995,6 +1058,33 @@ public class CajuScriptTest {
         caju.eval(scriptTry);
         syntaxCheckTryCatch(caju);
         syntaxCheckTryCatchCache(caju, scriptTry);
+    }
+    
+    @Test
+    public void syntaxBasicImport() throws CajuScriptException {
+        System.out.println("syntaxBasicImport");
+        CajuScript caju = new CajuScript();
+        syntaxReload(caju);
+        String script = "";
+        java.util.Properties p = new java.util.Properties();
+        p.setProperty("test", "test");
+        script += "caju.syntax: CajuBasic;";
+        script += "import java.util;";
+        script += "p1 = Properties();";
+        script += "p1.setProperty('test1', 'test');";
+        script += "import java.util.Properties;";
+        script += "p2 = Properties();";
+        script += "p2.setProperty('test2', 'test');";
+        script += "p3 = null;";
+        script += "function test ;";
+        script += "    root.p3 = Properties();";
+        script += "    root.p3.setProperty('test3', 'test');";
+        script += "end;";
+        script += "test();";
+        script += "import 'test/file.cj';";
+        caju.eval(script);
+        syntaxCheckImport(caju);
+        syntaxCheckImportCache(caju, script);
     }
     
     @Test
@@ -1453,6 +1543,34 @@ public class CajuScriptTest {
         syntaxCheckTryCatchCache(caju, scriptTry);
     }
     
+    private void syntaxCheckImportCache(CajuScript caju, String script) throws CajuScriptException {
+        syntaxReload(caju);
+        caju.eval("caju.cache: test;"+ script);
+        syntaxCheckImport(caju);
+        syntaxReload(caju);
+        caju.eval("caju.cache: test;"+ script);
+        syntaxCheckImport(caju);
+        caju = new CajuScript();
+        syntaxReload(caju);
+        caju.eval("caju.cache: test;"+ script);
+        syntaxCheckImport(caju);
+    }
+    
+    private void syntaxCheckImport(CajuScript caju) throws CajuScriptException {
+        if (((Integer)caju.get("x")).intValue() != 1) {
+            fail("x is "+ caju.get("x") +". Need be 1!");
+        }
+        if (!((java.util.Properties)caju.get("p1")).getProperty("test1").equals("test")) {
+            fail("p1 failed!");
+        }
+        if (!((java.util.Properties)caju.get("p2")).getProperty("test2").equals("test")) {
+            fail("p2 failed!");
+        }
+        if (!((java.util.Properties)caju.get("p3")).getProperty("test3").equals("test")) {
+            fail("p3 failed!");
+        }
+    }
+    
     private void syntaxCheckIfCache(CajuScript caju, String script) throws CajuScriptException {
         syntaxReload(caju);
         caju.eval("caju.cache: test;"+ script);
@@ -1606,10 +1724,10 @@ public class CajuScriptTest {
         System.out.println("syntax");
         CajuScript caju = new CajuScript();
         caju.setSyntax(CajuScript.getGlobalSyntax("CajuBasic"));
-        assertEquals(CajuScript.getGlobalSyntax("CajuBasic"), caju.getSyntax());
+        assertSame(CajuScript.getGlobalSyntax("CajuBasic"), caju.getSyntax());
         Syntax syntax = new Syntax();
         caju.addSyntax("CajuTest", syntax);
-        assertEquals(syntax, caju.getSyntax("CajuTest"));
+        assertSame(syntax, caju.getSyntax("CajuTest"));
     }
 
     /**
@@ -1621,23 +1739,68 @@ public class CajuScriptTest {
         CajuScript caju = new CajuScript();
         Context context = new Context();
         caju.setContext(context);
-        assertEquals(context, caju.getContext());
+        assertSame(context, caju.getContext());
     }
 
     /**
      * Test of eval method, of class CajuScript.
      */
     @Test
-    public void evalGroup() throws Exception {
-        System.out.println("evalGroup");
+    public void evalMath() throws Exception {
+        System.out.println("evalMath");
         String script = "x = 22 * (((78.3 + 87.6) % 1.006) + (3.8 * 3 / 6.4 - (65.8 - 34 % 4.8765)));";
-        double x = 22 * (((78.3 + 87.6) % 1.006) + (3.8 * 3 / 6.4 - (65.8 - 34 % 4.8765)));
-        System.out.println(x);
         CajuScript caju = new CajuScript();
-        Value result = caju.eval(script);
-        //-1283.9585000000004
-        System.out.println(caju.get("x"));
-        //assertEquals(, result);
+        caju.eval(script);
+        if (((Float)caju.get("x")).floatValue() != -1283.959f) {
+            fail("x is "+ caju.get("x") +". Need be -1283.959!");
+        }
+        caju.eval("caju.cache: test;"+ script);
+        if (((Float)caju.get("x")).floatValue() != -1283.959f) {
+            fail("x is "+ caju.get("x") +". Need be -1283.959!");
+        }
+        caju = new CajuScript();
+        caju.eval("caju.cache: test;"+ script);
+        if (((Float)caju.get("x")).floatValue() != -1283.959f) {
+            fail("x is "+ caju.get("x") +". Need be -1283.959!");
+        }
+    }
+    
+    
+    /**
+     * Test of eval method, of class CajuScript.
+     */
+    @Test
+    public void evalNative() throws Exception {
+        System.out.println("evalNative");
+        String script = "";
+        script += "alist = $;";
+        script += "alist = java.util.ArrayList();";
+        script += "alist.add('test');";
+        script += "test1 = alist.iterator().next().substring(0, 2);";
+        script += "test2 = array.get(alist.toArray(), 0);";
+        CajuScript caju = new CajuScript();
+        caju.eval(script);
+        if (!((String)caju.get("test1")).equals("te")) {
+            fail("test1 is "+ caju.get("test1") +". Need be 'te'!");
+        }
+        if (!((String)caju.get("test2")).equals("test")) {
+            fail("test2 is "+ caju.get("test2") +". Need be 'test'!");
+        }
+        caju.eval("caju.cache: test;"+ script);
+        if (!((String)caju.get("test1")).equals("te")) {
+            fail("test1 is "+ caju.get("test1") +". Need be 'te'!");
+        }
+        if (!((String)caju.get("test2")).equals("test")) {
+            fail("test2 is "+ caju.get("test2") +". Need be 'test'!");
+        }
+        caju = new CajuScript();
+        caju.eval("caju.cache: test;"+ script);
+        if (!((String)caju.get("test1")).equals("te")) {
+            fail("test1 is "+ caju.get("test1") +". Need be 'te'!");
+        }
+        if (!((String)caju.get("test2")).equals("test")) {
+            fail("test2 is "+ caju.get("test2") +". Need be 'test'!");
+        }
     }
 
     /**
@@ -1646,57 +1809,37 @@ public class CajuScriptTest {
     @Test
     public void evalFile() throws Exception {
         System.out.println("evalFile");
-        String path = "";
         CajuScript instance = new CajuScript();
-        Value expResult = null;
-        Value result = instance.evalFile(path);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        Value result = instance.evalFile("test/file.cj");
+        if (result.getNumberIntegerValue() != 1) {
+            fail("Eval file was failed.");
+        }
     }
 
     /**
-     * Test of getFunc method, of class CajuScript.
+     * Test of func method, of class CajuScript.
      */
     @Test
-    public void getFunc() throws CajuScriptException {
-        System.out.println("getFunc");
-        String key = "";
-        CajuScript instance = new CajuScript();
-        Function expResult = null;
-        Function result = instance.getFunc(key);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+    public void func() throws CajuScriptException {
+        System.out.println("func");
+        String key = "func";
+        CajuScript caju = new CajuScript();
+        Function func = new Function(null);
+        caju.setFunc(key, func);
+        assertSame(caju.getFunc(key), func);
     }
 
     /**
-     * Test of setFunc method, of class CajuScript.
+     * Test of var method, of class CajuScript.
      */
     @Test
-    public void setFunc() throws CajuScriptException {
-        System.out.println("setFunc");
-        String key = "";
-        Function func = null;
-        CajuScript instance = new CajuScript();
-        instance.setFunc(key, func);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getVar method, of class CajuScript.
-     */
-    @Test
-    public void getVar() throws CajuScriptException {
-        System.out.println("getVar");
-        String key = "";
-        CajuScript instance = new CajuScript();
-        Value expResult = null;
-        Value result = instance.getVar(key);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+    public void var() throws CajuScriptException {
+        System.out.println("var");
+        String key = "var";
+        CajuScript caju = new CajuScript();
+        Value var = new Value(caju, caju.getContext(), caju.getSyntax());
+        caju.setVar(key, var);
+        assertSame(caju.getVar(key), var);
     }
 
     /**
@@ -1706,109 +1849,91 @@ public class CajuScriptTest {
     public void getAllKeys() throws CajuScriptException {
         System.out.println("getAllKeys");
         CajuScript instance = new CajuScript();
-        Set<String> expResult = null;
+        instance.set("x", "test");
+        instance.set("y", "test");
         Set<String> result = instance.getAllKeys();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        int count = 0;
+        for (String key : result) {
+            if (key.equals("x")) {
+                assertEquals(instance.get("x"), "test");
+                count++;
+            } else if (key.equals("y")) {
+                assertEquals(instance.get("y"), "test");
+                count++;
+            } else if (key.equals("caju")) {
+                assertSame(instance.get("caju"), instance);
+                count++;
+            } else if (key.equals("array")) {
+                assertSame(instance.get("array"), instance.getVar("array").getValue());
+                count++;
+            } else {
+                fail("Invalid key: ".concat(key));
+            }
+        }
+        if (count != 4) {
+            fail("Some key failed.");
+        }
     }
-
-    /**
-     * Test of setVar method, of class CajuScript.
-     */
-    @Test
-    public void setVar() throws CajuScriptException {
-        System.out.println("setVar");
-        String key = "";
-        Value value = null;
-        CajuScript instance = new CajuScript();
-        instance.setVar(key, value);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
+    
     /**
      * Test of toValue method, of class CajuScript.
      */
     @Test
     public void toValue() throws Exception {
         System.out.println("toValue");
-        Object obj = null;
+        Object obj = "test";
         CajuScript instance = new CajuScript();
-        Value expResult = null;
         Value result = instance.toValue(obj);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        instance.setVar("x", result);
+        assertSame(obj, instance.get("x"));
     }
 
     /**
-     * Test of set method, of class CajuScript.
+     * Test of set and value method, of class CajuScript.
      */
     @Test
-    public void set() throws Exception {
+    public void objectSetAndGet() throws Exception {
         System.out.println("set");
-        String key = "";
-        Object value = null;
+        String key = "var";
+        Object value = "test";
         CajuScript instance = new CajuScript();
         instance.set(key, value);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        assertSame(instance.get(key), value);
     }
 
     /**
-     * Test of get method, of class CajuScript.
+     * Test of imports method, of class CajuScript.
      */
     @Test
-    public void get() throws Exception {
-        System.out.println("get");
-        String key = "";
+    public void imports() throws CajuScriptException {
+        System.out.println("imports");
         CajuScript instance = new CajuScript();
-        Object expResult = null;
-        Object result = instance.get(key);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getImports method, of class CajuScript.
-     */
-    @Test
-    public void getImports() throws CajuScriptException {
-        System.out.println("getImports");
-        CajuScript instance = new CajuScript();
-        List<String> expResult = null;
-        List<String> result = instance.getImports();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of addImport method, of class CajuScript.
-     */
-    @Test
-    public void addImport() throws CajuScriptException {
-        System.out.println("addImport");
-        String i = "";
-        CajuScript instance = new CajuScript();
-        instance.addImport(i);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of removeImport method, of class CajuScript.
-     */
-    @Test
-    public void removeImport() throws CajuScriptException {
-        System.out.println("removeImport");
-        String s = "";
-        CajuScript instance = new CajuScript();
-        instance.removeImport(s);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        instance.addImport("java.util");
+        int count = 0;
+        for (String i : instance.getImports()) {
+            if (i.equals("java.util")) {
+                count++;
+            } else if (i.equals("java.lang")) {
+                count++;
+            } else {
+                fail("Invalid import: ".concat(i));
+            }
+        }
+        if (count != 2) {
+            fail("Some import failed.");
+        }
+        instance.removeImport("java.util");
+        count = 0;
+        for (String i : instance.getImports()) {
+            if (i.equals("java.lang")) {
+                count++;
+            } else {
+                fail("Invalid import: ".concat(i));
+            }
+        }
+        if (count != 1) {
+            fail("Some import failed.");
+        }
     }
 
     /**
@@ -1817,14 +1942,36 @@ public class CajuScriptTest {
     @Test
     public void cast() throws Exception {
         System.out.println("cast");
-        Object value = null;
-        String type = "";
         CajuScript instance = new CajuScript();
-        Object expResult = null;
-        Object result = instance.cast(value, type);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        assertEquals(new Integer(1), instance.cast(new Double(1), "i"));
+        assertEquals(new Integer(1), instance.cast(new Long(1), "java.lang.Integer"));
+        assertEquals(new Integer(1), instance.cast(new Float(1), "int"));
+        assertEquals(new Long(1), instance.cast(new Double(1), "l"));
+        assertEquals(new Long(1), instance.cast(new Integer(1), "java.lang.Long"));
+        assertEquals(new Long(1), instance.cast(new Float(1), "long"));
+        assertEquals(new Float(1), instance.cast(new Double(1), "f"));
+        assertEquals(new Float(1), instance.cast(new Integer(1), "java.lang.Float"));
+        assertEquals(new Float(1), instance.cast(new Long(1), "float"));
+        assertEquals(new Double(1), instance.cast(new Float(1), "d"));
+        assertEquals(new Double(1), instance.cast(new Integer(1), "java.lang.Double"));
+        assertEquals(new Double(1), instance.cast(new Long(1), "double"));
+        assertEquals(new Character('A'), instance.cast(new Integer((int)'A'), "c"));
+        assertEquals(new Character('A'), instance.cast(new Double((int)'A'), "java.lang.Character"));
+        assertEquals(new Character('A'), instance.cast(new Long((int)'A'), "char"));
+        assertEquals(new Character('A'), instance.cast(new Float((int)'A'), "c"));
+        assertEquals(new Boolean(true), instance.cast(new Integer(1), "b"));
+        assertEquals(new Boolean(true), instance.cast(new Double(1.1), "java.lang.Boolean"));
+        assertEquals(new Boolean(true), instance.cast(new Long(1), "boolean"));
+        assertEquals(new Boolean(true), instance.cast(new Float(1.3), "bool"));
+        assertEquals(new Byte((byte)1), instance.cast(new Double(1), "bt"));
+        assertEquals(new Byte((byte)1), instance.cast(new Integer(1), "java.lang.Byte"));
+        assertEquals(new Byte((byte)1), instance.cast(new Long(1), "byte"));
+        assertEquals(new Byte((byte)1), instance.cast(new Float(1), "bt"));
+        assertEquals("1.0", instance.cast(new Double(1), "s"));
+        assertEquals("1", instance.cast(new Integer(1), "java.lang.String"));
+        assertEquals("1", instance.cast(new Long(1), "str"));
+        assertEquals("1.0", instance.cast(new Float(1), "string"));
+        assertEquals((CharSequence)"test", instance.cast("test", "java.lang.CharSequence"));
     }
 
     /**
@@ -1833,9 +1980,26 @@ public class CajuScriptTest {
     @Test
     public void error() throws Exception {
         System.out.println("error");
-        CajuScript.error();
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        int count = 0;
+        try {
+            CajuScript.error();
+            fail("Exception wasn't generated.");
+        } catch (Exception e) {
+            count++;
+        }
+        String message = "test";
+        try {
+            CajuScript.error(message);
+            fail("Exception wasn't generated.");
+        } catch (Exception e) {
+            if (!e.getMessage().equals(message)) {
+                fail("Exception message isn't valid.");
+            }
+            count++;
+        }
+        if (count != 2) {
+            fail("Some exception failed.");
+        }
     }
 
     /**
@@ -1844,13 +2008,15 @@ public class CajuScriptTest {
     @Test
     public void isSameType() {
         System.out.println("isSameType");
-        String type1 = "";
-        String type2 = "";
-        boolean expResult = false;
-        boolean result = CajuScript.isSameType(type1, type2);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        if (!CajuScript.isSameType(Byte.class, Byte.class)) {
+            fail("Class failed.");
+        }
+        if (!CajuScript.isSameType(new String(), (CharSequence)new String())) {
+            fail("Object failed.");
+        }
+        if (CajuScript.isSameType(new String(), new Exception())) {
+            fail("Not equal failed.");
+        }
     }
 
     /**
@@ -1859,12 +2025,30 @@ public class CajuScriptTest {
     @Test
     public void isPrimitiveType() {
         System.out.println("isPrimitiveType");
-        String type = "";
-        boolean expResult = false;
-        boolean result = CajuScript.isPrimitiveType(type);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        if (!CajuScript.isPrimitiveType(Integer.class)) {
+            fail("Integer failed.");
+        }
+        if (!CajuScript.isPrimitiveType(Long.class)) {
+            fail("Long failed.");
+        }
+        if (!CajuScript.isPrimitiveType(Double.class)) {
+            fail("Double failed.");
+        }
+        if (!CajuScript.isPrimitiveType(Float.class)) {
+            fail("Float failed.");
+        }
+        if (!CajuScript.isPrimitiveType(Character.class)) {
+            fail("Character failed.");
+        }
+        if (!CajuScript.isPrimitiveType(Byte.class)) {
+            fail("Byte failed.");
+        }
+        if (!CajuScript.isPrimitiveType(Boolean.class)) {
+            fail("Boolean failed.");
+        }
+        if (CajuScript.isPrimitiveType(Object.class)) {
+            fail("Object failed.");
+        }
     }
 
     /**
@@ -1873,26 +2057,12 @@ public class CajuScriptTest {
     @Test
     public void isInstance() throws CajuScriptException {
         System.out.println("isInstance");
-        Object o = null;
-        Class c = null;
         CajuScript instance = new CajuScript();
-        boolean expResult = false;
-        boolean result = instance.isInstance(o, c);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        if (!instance.isInstance("test", String.class)) {
+            fail("Returned false when should return true.");
+        }
+        if (instance.isInstance("test", Integer.class)) {
+            fail("Returned true when should return false.");
+        }
     }
-
-    /**
-     * Test of main method, of class CajuScript.
-     */
-    @Test
-    public void main() throws Exception {
-        System.out.println("main");
-        String[] args = null;
-        CajuScript.main(args);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
 }
