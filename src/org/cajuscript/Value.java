@@ -46,7 +46,7 @@ public class Value implements Cloneable {
      * Types of values.
      */
     public static enum Type {
-        NULL, NUMBER, STRING, OBJECT
+        NULL, NUMBER, BOOLEAN, STRING, OBJECT
     }
     /**
      * Types of numbers.
@@ -60,6 +60,7 @@ public class Value implements Cloneable {
     private float valueNumberFloat = 0;
     private double valueNumberDouble = 0;
     private String valueString = "";
+    private boolean valueBoolean = false;
     private TypeNumber typeNumber = null;
     private Type type = Type.NULL;
     private boolean _isCommand = false;
@@ -122,16 +123,14 @@ public class Value implements Cloneable {
                 } catch (Exception e) {
                     if (script.toLowerCase().equals("true")) {
                         value = new Boolean(true);
-                        valueNumberInteger = 1;
-                        valueString = Integer.toString(valueNumberInteger);
-                        type = Type.NUMBER;
-                        typeNumber = TypeNumber.INTEGER;
+                        valueBoolean = true;
+                        valueString = "true";
+                        type = Type.BOOLEAN;
                     } else if (script.toLowerCase().equals("false")) {
                         value = new Boolean(false);
-                        valueNumberInteger = 0;
-                        valueString = Integer.toString(valueNumberInteger);
-                        type = Type.NUMBER;
-                        typeNumber = TypeNumber.INTEGER;
+                        valueBoolean = false;
+                        valueString = "false";
+                        type = Type.BOOLEAN;
                     } else {
                         setCommand(script);
                     }
@@ -215,6 +214,7 @@ public class Value implements Cloneable {
                 if (syntaxRootContext.getStart() == 0) {
                     path = path.substring(syntaxRootContext.getEnd());
                     syntaxPathSeparator = syntax.matcherPosition(path, syntax.getFunctionCallPathSeparator());
+                    script = script.substring(syntaxRootContext.getEnd());
                 }
                 path = path.trim();
                 String name = syntaxPathSeparator.getStart() > -1 && syntaxPathSeparator.getEnd() < syntaxParamBegin.getStart() ? path.substring(0, syntaxPathSeparator.getStart()) : path;
@@ -230,6 +230,7 @@ public class Value implements Cloneable {
                 } else {
                     isRootContext = true;
                     val = cajuScript.getVar(name);
+                    script = script.substring(name.length());
                 }
                 if (func != null) {
                     scriptCommand = new ScriptCommand(script, ScriptCommand.Type.FUNCTION);
@@ -316,6 +317,14 @@ public class Value implements Cloneable {
     }
     
     /**
+     * Get value in boolean.
+     * @return Integer value.
+     */
+    public boolean getBooleanValue() {
+        return valueBoolean;
+    }
+    
+    /**
      * Get value in number.
      * @return Number value.
      */
@@ -384,8 +393,19 @@ public class Value implements Cloneable {
         valueNumberFloat = 0;
         valueNumberDouble = 0;
         valueString = "";
+        type = Type.NULL;
+        typeNumber = null;
         this.value = value;
         if (value instanceof Boolean) {
+            type = Type.BOOLEAN;
+            if (((Boolean)value).booleanValue()) {
+                valueBoolean = true;
+                valueString = "true";
+            } else {
+                valueBoolean = false;
+                valueString = "false";
+                typeNumber = TypeNumber.INTEGER;
+            }
             return;
         }
         try {
@@ -499,7 +519,8 @@ public class Value implements Cloneable {
                 loadNumberValue(Long.valueOf((long)d), false);
             }
         } else {
-            if (d <= Float.MAX_VALUE && d >= Float.MIN_VALUE) {
+            if (Double.doubleToLongBits(d) >= Double.doubleToLongBits(Float.MIN_VALUE)
+                && Double.doubleToLongBits(d) <= Double.doubleToLongBits(Float.MAX_VALUE)) {
                 if (loadValue) {
                    value = Float.valueOf((float)d);
                 }

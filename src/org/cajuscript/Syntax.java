@@ -53,18 +53,19 @@ import java.util.regex.Matcher;
  * <p>Syntax Basic style:</p>
  * <p><blockquote><pre>
  *      Syntax syntaxB = new Syntax();
- *      syntaxB.setIf(Pattern.compile("if\\s*([\\s+|[\\s*\\(]].+)\\s*"));
- *      syntaxB.setElseIf(Pattern.compile("elseif\\s*([\\s+|[\\s*\\(]].+)\\s*"));
- *      syntaxB.setElse(Pattern.compile("else"));
- *      syntaxB.setIfEnd(Pattern.compile("end"));
- *      syntaxB.setLoop(Pattern.compile("while\\s*([\\s+|[\\s*\\(]].+)\\s*"));
- *      syntaxB.setLoopEnd(Pattern.compile("end"));
- *      syntaxB.setTry(Pattern.compile("try\\s*([\\s+|[\\s*\\(]].+)\\s*"));
- *      syntaxB.setTryCatch(Pattern.compile("catch"));
- *      syntaxB.setTryFinally(Pattern.compile("finally"));
- *      syntaxB.setTryEnd(Pattern.compile("end"));
- *      syntaxB.setFunction(Pattern.compile("function\\s*([\\s+|[\\s*\\(]].+)\\s*"));
- *      syntaxB.setFunctionEnd(Pattern.compile("end"));
+ *      syntaxB.setIf(Pattern.compile("^[\\s+i|i]f\\s*([\\s+|[\\s*\\(]].+)\\s*"));
+ *      syntaxB.setElseIf(Pattern.compile("^[\\s+e|e]lseif\\s*([\\s+|[\\s*\\(]].+)\\s*"));
+ *      syntaxB.setElse(Pattern.compile("^[\\s+e|e]ls[e\\s+|e]$"));
+ *      syntaxB.setIfEnd(Pattern.compile("^[\\s+e|e]n[d\\s+|d]$"));
+ *      syntaxB.setLoop(Pattern.compile("^[\\s+w|w]hile\\s*([\\s+|[\\s*\\(]].+)\\s*"));
+ *      syntaxB.setLoopEnd(Pattern.compile("^[\\s+e|e]n[d\\s+|d]$"));
+ *      syntaxB.setTry(Pattern.compile("^[\\s+t|t]ry\\s*([\\s+|[\\s*\\(]].+)\\s*"));
+ *      syntaxB.setTryCatch(Pattern.compile("^[\\s+c|c]atc[h\\s+|h]$"));
+ *      syntaxB.setTryFinally(Pattern.compile("^[\\s+f|f]inall[y\\s+|y]$"));
+ *      syntaxB.setTryEnd(Pattern.compile("^[\\s+e|e]n[d\\s+|d]$"));
+ *      syntaxB.setFunction(Pattern.compile("^[\\s+f|f]unction\\s*([\\s+|[\\s*\\(]].+)\\s*"));
+ *      syntaxB.setFunctionEnd(Pattern.compile("^[\\s+e|e]n[d\\s+|d]$"));
+ *      syntaxB.setNull(Pattern.compile("null"));
  *      syntaxB.setReturn(Pattern.compile("return"));
  *      syntaxB.setImport(Pattern.compile("import\\s+"));
  *      syntaxB.setRootContext(Pattern.compile("root\\."));
@@ -112,7 +113,7 @@ public class Syntax {
     private Pattern label = Pattern.compile("\\:");
     private Pattern[] comments = new Pattern[]{Pattern.compile("\\\\"), Pattern.compile("\\-\\s*\\-"), Pattern.compile("\\/\\s*\\/")};
     private Pattern group = Pattern.compile("\\(([[^\\(\\)]|[.]]*)\\)");
-    private Pattern functionCall = Pattern.compile("[\\w]+[\\w|\\.|\\s]*\\([[^\\(\\)]|[.]]*\\)");
+    private Pattern functionCall = Pattern.compile("[\\w|\\.]+[\\w|\\.|\\s]*\\([[^\\(\\)]|[.]]*\\)");
     private Pattern functionCallPathSeparator = Pattern.compile("\\.");
     private Pattern functionCallParametersBegin = Pattern.compile("\\(");
     private Pattern functionCallParametersSeparator = Pattern.compile("\\,");
@@ -126,8 +127,8 @@ public class Syntax {
     }
 
     /**
-     * Get If. Default "([^\\?]+)\\?".
-     * Basic: "if\\s*([\\s+|[\\s*\\(]].+)\\s*".
+     * Get If. Default "([^\\?\\@\\#\\^]+)\\?".
+     * Basic: "^[\\s+i|i]f\\s*([\\s+|[\\s*\\(]].+)\\s*".
      * Java: "if\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{".
      * @return If.
      */
@@ -137,7 +138,7 @@ public class Syntax {
 
     /**
      * Get If end. Default "\\?".
-     * Basic: "end".
+     * Basic: "^[\\s+e|e]n[d\\s+|d]$".
      * Java: "\\}".
      * @return If end.
      */
@@ -147,7 +148,7 @@ public class Syntax {
 
     /**
      * Get Else If. Default "\\?\\s*(.+)\\s*\\?".
-     * Basic: "elseif\\s*([\\s+|[\\s*\\(]].+)\\s*".
+     * Basic: "^[\\s+e|e]lseif\\s*([\\s+|[\\s*\\(]].+)\\s*".
      * Java: "\\}\\s*else\\s+if\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{".
      * @return Else If.
      */
@@ -157,7 +158,7 @@ public class Syntax {
 
     /**
      * Get Else. Default "\\?\\s*\\?".
-     * Basic: "else".
+     * Basic: "^[\\s+e|e]ls[e\\s+|e]$".
      * Java: "\\}\\s*else\\s*\\{".
      * @return Else.
      */
@@ -166,8 +167,8 @@ public class Syntax {
     }
 
     /**
-     * Get Loop. Default "([^\\@]+)\\@".
-     * Basic: "while\\s*([\\s+|[\\s*\\(]].+)\\s*".
+     * Get Loop. Default "([^\\?\\@\\#\\^]+)\\@".
+     * Basic: "^[\\s+w|w]hile\\s*([\\s+|[\\s*\\(]].+)\\s*".
      * Java: "while\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{".
      * @return Loop.
      */
@@ -177,7 +178,7 @@ public class Syntax {
 
     /**
      * Get Loop end. Default "\\@".
-     * Basic: "end".
+     * Basic: "^[\\s+e|e]n[d\\s+|d]$".
      * Java: "\\}".
      * @return Loop end.
      */
@@ -186,8 +187,8 @@ public class Syntax {
     }
 
     /**
-     * Get Function. Default "([^\\#]+)\\s*(.+)\\s*\\#".
-     * Basic: "function\\s*([\\s+|[\\s*\\(]].+)\\s*".
+     * Get Function. Default "([^\\?\\@\\#\\^]+)\\s*(.+)\\s*\\#".
+     * Basic: "^[\\s+f|f]unction\\s*([\\s+|[\\s*\\(]].+)\\s*".
      * Java: "function\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{".
      * @return Function.
      */
@@ -197,7 +198,7 @@ public class Syntax {
 
     /**
      * Get Function end. Default "\\#".
-     * Basic: "end".
+     * Basic: "^[\\s+e|e]n[d\\s+|d]$".
      * Java: "\\}".
      * @return Function end.
      */
@@ -206,8 +207,8 @@ public class Syntax {
     }
 
     /**
-     * Get Try. Default "([^\\^]+)\\^".
-     * Basic: "try\\s*([\\s+|[\\s*\\(]].+)\\s*".
+     * Get Try. Default "([^\\?\\@\\#\\^]+)\\^".
+     * Basic: "^[\\s+t|t]ry\\s*([\\s+|[\\s*\\(]].+)\\s*".
      * Java: "try\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{".
      * @return Try.
      */
@@ -217,7 +218,7 @@ public class Syntax {
 
     /**
      * Get Try end. Default "\\^".
-     * Basic: "end".
+     * Basic: "^[\\s+e|e]n[d\\s+|d]$".
      * Java: "\\}".
      * @return Try end.
      */
@@ -227,7 +228,7 @@ public class Syntax {
 
     /**
      * Get Catch. Default "\\^\\s*\\^".
-     * Basic: "catch".
+     * Basic: "^[\\s+c|c]atc[h\\s+|h]$".
      * Java: "\\}\\s*catch\\s*\\{".
      * @return Catch.
      */
@@ -237,7 +238,7 @@ public class Syntax {
 
     /**
      * Get Finally. Default "\\^\\s*\\~\\s*\\^".
-     * Basic: "finally".
+     * Basic: "^[\\s+f|f]inall[y\\s+|y]$".
      * Java: "\\}\\s*finally\\s*\\{".
      * @return Finally.
      */
@@ -442,7 +443,7 @@ public class Syntax {
     }
 
     /**
-     * Get function call. Default: "[\\w]+[\\w|\\.|\\s]*\\([[^\\(\\)]|[.]]*\\)".
+     * Get function call. Default: "[\\w|\\.]+[\\w|\\.|\\s]*\\([[^\\(\\)]|[.]]*\\)".
      * @return Function call.
      */
     public Pattern getFunctionCall() {
@@ -482,9 +483,9 @@ public class Syntax {
     }
 
     /**
-     * Set If. Default "([^\\?]+)\\?".
-     * Basic: "if\\s*([\\s+|[\\s*\\(]].+)\\s*".
-     * Java: "if\\s*([\\s+|[\\s*\\(]].+)\\{".
+     * Set If. Default "([^\\?\\@\\#\\^]+)\\?".
+     * Basic: "^[\\s+i|i]f\\s*([\\s+|[\\s*\\(]].+)\\s*".
+     * Java: "if\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{".
      * @param ifStart If.
      */
     public void setIf(Pattern ifStart) {
@@ -493,7 +494,7 @@ public class Syntax {
 
     /**
      * Set If end. Default "\\?".
-     * Basic: "end".
+     * Basic: "^[\\s+e|e]n[d\\s+|d]$".
      * Java: "\\}".
      * @param ifEnd If end.
      */
@@ -503,8 +504,8 @@ public class Syntax {
 
     /**
      * Set Else If. Default "\\?\\s*(.+)\\s*\\?".
-     * Basic: "elseif\\s*([\\s+|[\\s*\\(]].+)\\s*".
-     * Java: "\\}\\s*else\\s+if\\s*([\\s+|[\\s*\\(]].+)\\{".
+     * Basic: "^[\\s+e|e]lseif\\s*([\\s+|[\\s*\\(]].+)\\s*".
+     * Java: "\\}\\s*else\\s+if\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{".
      * @param elseIfStart Else If.
      */
     public void setElseIf(Pattern elseIfStart) {
@@ -513,7 +514,7 @@ public class Syntax {
 
     /**
      * Set Else. Default "\\?\\s*\\?".
-     * Basic: "else".
+     * Basic: "^[\\s+e|e]ls[e\\s+|e]$".
      * Java: "\\}\\s*else\\s*\\{".
      * @param elseStart Else.
      */
@@ -522,9 +523,9 @@ public class Syntax {
     }
 
     /**
-     * Set Loop. Default "([^\\@]+)\\@".
-     * Basic: "while\\s*([\\s+|[\\s*\\(]].+)\\s*".
-     * Java: "while\\s*([\\s+|[\\s*\\(]].+)\\{".
+     * Set Loop. Default "([^\\?\\@\\#\\^]+)\\@".
+     * Basic: "^[\\s+w|w]hile\\s*([\\s+|[\\s*\\(]].+)\\s*".
+     * Java: "while\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{".
      * @param loopStart Loop.
      */
     public void setLoop(Pattern loopStart) {
@@ -533,7 +534,7 @@ public class Syntax {
 
     /**
      * Set Loop end. Default "\\@".
-     * Basic: "end".
+     * Basic: "^[\\s+e|e]n[d\\s+|d]$".
      * Java: "\\}".
      * @param loopEnd Loop end.
      */
@@ -542,9 +543,9 @@ public class Syntax {
     }
 
     /**
-     * Set Function. Default "([^\\#]+)\\s*(.+)\\s*\\#".
-     * Basic: "function\\s*([\\s+|[\\s*\\(]].+)\\s*".
-     * Java: "function\\s*([\\s+|[\\s*\\(]].+)\\{".
+     * Set Function. Default "([^\\?\\@\\#\\^]+)\\s*(.+)\\s*\\#".
+     * Basic: "^[\\s+f|f]unction\\s*([\\s+|[\\s*\\(]].+)\\s*".
+     * Java: "function\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{".
      * @param functionStart Function.
      */
     public void setFunction(Pattern functionStart) {
@@ -553,7 +554,7 @@ public class Syntax {
 
     /**
      * Set Function end. Default "\\#".
-     * Basic: "end".
+     * Basic: "^[\\s+e|e]n[d\\s+|d]$".
      * Java: "\\}".
      * @param functionEnd Function end.
      */
@@ -562,9 +563,9 @@ public class Syntax {
     }
 
     /**
-     * Set Try. Default "([^\\^]+)\\^".
-     * Basic: "try\\s*([\\s+|[\\s*\\(]].+)\\s*".
-     * Java: "try\\s*([\\s+|[\\s*\\(]].+)\\{".
+     * Set Try. Default "([^\\?\\@\\#\\^]+)\\^".
+     * Basic: "^[\\s+t|t]ry\\s*([\\s+|[\\s*\\(]].+)\\s*".
+     * Java: "try\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{".
      * @param tryStart Try.
      */
     public void setTry(Pattern tryStart) {
@@ -573,7 +574,7 @@ public class Syntax {
 
     /**
      * Set Try end. Default "\\^".
-     * Basic: "end".
+     * Basic: "^[\\s+e|e]n[d\\s+|d]$".
      * Java: "\\}".
      * @param tryEnd Try end.
      */
@@ -583,7 +584,7 @@ public class Syntax {
 
     /**
      * Set Catch. Default "\\^\\s*\\^".
-     * Basic: "catch".
+     * Basic: "^[\\s+c|c]atc[h\\s+|h]$".
      * Java: "\\}\\s*catch\\s*\\{".
      * @param catchStart Catch.
      */
@@ -593,7 +594,7 @@ public class Syntax {
 
     /**
      * Set Finally. Default "\\^\\s*\\~\\s*\\^".
-     * Basic: "finally".
+     * Basic: "^[\\s+f|f]inall[y\\s+|y]$".
      * Java: "\\}\\s*finally\\s*\\{".
      * @param finallyStart Finally.
      */
@@ -798,7 +799,7 @@ public class Syntax {
     }
 
     /**
-     * Set function call. Default: "[\\w]+[\\w|\\.|\\s]*\\([[^\\(\\)]|[.]]*\\)".
+     * Set function call. Default: "[\\w|\\.]+[\\w|\\.|\\s]*\\([[^\\(\\)]|[.]]*\\)".
      * @param functionCall Function call.
      */
     public void setFunctionCall(Pattern functionCall) {
