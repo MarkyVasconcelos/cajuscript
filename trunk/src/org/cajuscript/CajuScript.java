@@ -704,31 +704,27 @@ public class CajuScript {
      */
     public Object cast(Object value, String type) throws Exception {
         if (type.equalsIgnoreCase("int") || type.equalsIgnoreCase("java.lang.Integer") || type.equalsIgnoreCase("i")) {
-            if (value.toString().indexOf('.') > -1) {
-                return Integer.valueOf((int)Double.valueOf(value.toString()).doubleValue());
-            } else {
-                return Integer.valueOf(value.toString());
-            }
+            return Integer.valueOf((int)Double.valueOf(value.toString()).doubleValue());
         }
         if (type.equalsIgnoreCase("long") || type.equalsIgnoreCase("java.lang.Long") || type.equalsIgnoreCase("l")) {
-            return Long.valueOf(value.toString());
+            return Long.valueOf((long)Double.valueOf(value.toString()).doubleValue());
         }
         if (type.equalsIgnoreCase("double") || type.equalsIgnoreCase("java.lang.Double") || type.equalsIgnoreCase("d")) {
             return Double.valueOf(value.toString());
         }
         if (type.equalsIgnoreCase("float") || type.equalsIgnoreCase("java.lang.Float") || type.equalsIgnoreCase("f")) {
-            return Float.valueOf(value.toString());
+            return Float.valueOf((float)Double.valueOf(value.toString()).doubleValue());
         }
         if (type.equalsIgnoreCase("char") || type.equalsIgnoreCase("java.lang.Character") || type.equalsIgnoreCase("c")) {
             try {
-                return (char)Integer.valueOf(value.toString()).intValue();
+                return (char)Double.valueOf(value.toString()).doubleValue();
             } catch (Exception e) {
                 return value.toString().toCharArray()[0];
             }
         }
         if (type.equalsIgnoreCase("boolean") || type.equalsIgnoreCase("java.lang.Boolean") || type.equalsIgnoreCase("b")  || type.equalsIgnoreCase("bool")) {
             try {
-                if (Integer.parseInt(cast(value, "i").toString()) > 0) {
+                if (Double.valueOf(value.toString()).doubleValue() >= 1) {
                     return Boolean.valueOf(true);
                 } else {
                     return Boolean.valueOf(false);
@@ -739,12 +735,12 @@ public class CajuScript {
         }
         if (type.equalsIgnoreCase("byte") || type.equalsIgnoreCase("java.lang.Byte") || type.equalsIgnoreCase("bt")) {
             try {
-                return (byte)Integer.valueOf(value.toString()).intValue();
+                return (byte)(int)Double.valueOf(value.toString()).doubleValue();
             } catch (Exception e) {
                 return value.toString().getBytes()[0];
             }
         }
-        if (type.equalsIgnoreCase("string") || type.equalsIgnoreCase("java.lang.String") || type.equalsIgnoreCase("s")) {
+        if (type.equalsIgnoreCase("string") || type.equalsIgnoreCase("java.lang.String") || type.equalsIgnoreCase("s") || type.equalsIgnoreCase("str")) {
             return value.toString();
         }
         return Class.forName(type).cast(value);
@@ -768,6 +764,26 @@ public class CajuScript {
     }
     
     /**
+     * If two Class are from same type.
+     * @param type1 First type, Class.
+     * @param type2 Second type, Class.
+     * @return Is from same type or not.
+     */
+    public static boolean isSameType(Class c1, Class c2) {
+        return isSameType(c1.getName(), c2.getName());
+    }
+    
+    /**
+     * If two Object are from same type.
+     * @param type1 First type, Object.
+     * @param type2 Second type, Object.
+     * @return Is from same type or not.
+     */
+    public static boolean isSameType(Object obj1, Object obj2) {
+        return isSameType(obj1.getClass().getName(), obj2.getClass().getName());
+    }
+    
+    /**
      * If two Object.getClass().getName() are from same type.
      * @param type1 First type, Object.getClass().getName().
      * @param type2 Second type, Object.getClass().getName().
@@ -786,6 +802,24 @@ public class CajuScript {
             return true;
         }
         return false;
+    }
+    
+    /**
+     * If Class is from primitive type.
+     * @param c Class
+     * @return Is from primitive type or not.
+     */
+    public static boolean isPrimitiveType(Class c) {
+        return isPrimitiveType(c.getName());
+    }
+    
+    /**
+     * If Object is from primitive type.
+     * @param obj Object
+     * @return Is from primitive type or not.
+     */
+    public static boolean isPrimitiveType(Object obj) {
+        return isPrimitiveType(obj.getClass().getName());
     }
     
     /**
