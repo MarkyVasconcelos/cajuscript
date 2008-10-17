@@ -202,7 +202,7 @@ public class Operation extends Base {
                 }
                 return null;
             case AND:
-                if (((Boolean) v1.getValue()).booleanValue() == true && ((Boolean) v2.getValue()).booleanValue() == true) {
+                if (v1.getBooleanValue() == true && v2.getBooleanValue() == true) {
                     v.setValue(BOOLEAN_TRUE);
                     return v;
                 } else {
@@ -210,7 +210,7 @@ public class Operation extends Base {
                     return v;
                 }
             case OR:
-                if (((Boolean) v1.getValue()).booleanValue() == true || ((Boolean) v2.getValue()).booleanValue() == true) {
+                if (v1.getBooleanValue() == true || v2.getBooleanValue() == true) {
                     v.setValue(BOOLEAN_TRUE);
                     return v;
                 } else {
@@ -218,7 +218,15 @@ public class Operation extends Base {
                     return v;
                 }
             case EQUAL:
-                if (v1.getType() == Value.Type.NUMBER && v2.getType() == Value.Type.NUMBER) {
+                if (v1.getType() == Value.Type.BOOLEAN && v2.getType() == Value.Type.BOOLEAN) {
+                    if (v1.getBooleanValue() == v2.getBooleanValue()) {
+                        v.setValue(BOOLEAN_TRUE);
+                        return v;
+                    } else {
+                        v.setValue(BOOLEAN_FALSE);
+                        return v;
+                    }
+                } else if (v1.getType() == Value.Type.NUMBER && v2.getType() == Value.Type.NUMBER) {
                     if (v1.getNumberValue() == v2.getNumberValue()) {
                         v.setValue(BOOLEAN_TRUE);
                         return v;
@@ -242,7 +250,15 @@ public class Operation extends Base {
                 }
                 return v;
             case NOT_EQUAL:
-                if (v1.getType() == Value.Type.NUMBER && v2.getType() == Value.Type.NUMBER) {
+                if (v1.getType() == Value.Type.BOOLEAN && v2.getType() == Value.Type.BOOLEAN) {
+                    if (v1.getBooleanValue() != v2.getBooleanValue()) {
+                        v.setValue(BOOLEAN_TRUE);
+                        return v;
+                    } else {
+                        v.setValue(BOOLEAN_FALSE);
+                        return v;
+                    }
+                } else if (v1.getType() == Value.Type.NUMBER && v2.getType() == Value.Type.NUMBER) {
                     if (v1.getNumberValue() != v2.getNumberValue()) {
                         v.setValue(BOOLEAN_TRUE);
                         return v;

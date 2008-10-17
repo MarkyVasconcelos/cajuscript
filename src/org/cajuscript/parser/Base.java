@@ -163,7 +163,7 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                         ifsStatements.add(scriptIF.toString());
                         String condition = syntaxPositionElseIf.getGroup();
                         if (condition.trim().equals("")) {
-                            condition = "1";
+                            condition = "true";
                         }
                         scriptIFCondition = condition;
                         scriptIF.delete(0, scriptIF.length());
@@ -171,7 +171,7 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                     } else if (ifLevel == 0 && (syntaxPositionElseIf = syntax.matcherPosition(scriptIFline, syntax.getElse())).getStart() == 0) {
                         ifsConditions.add(scriptIFCondition);
                         ifsStatements.add(scriptIF.toString());
-                        scriptIFCondition = "1";
+                        scriptIFCondition = "true";
                         scriptIF.delete(0, scriptIF.length());
                         continue;
                     } else if (isStatementBegins(scriptIFline, syntax)) {
