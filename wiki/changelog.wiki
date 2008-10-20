@@ -4,7 +4,7 @@
 
   * [tutorialCache Parser can be cached] to high performance with scrits executed many times.
   * [sampleSyntax Syntax customizable] with regular expression.
-  * [tutorialOperable Operable interface] for manipulate mathematic calculation with a class java
+  * [tutorialOperable Operable interface] for manipulate mathematic calculation with a class Java.
   * Java calls performance in loops was increased.
   * Bug with generics solved.
   * Suport to especial character encoding like Java with "\uXXXX".
