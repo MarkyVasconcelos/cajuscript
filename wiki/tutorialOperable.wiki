@@ -1,10 +1,10 @@
 #summary One-sentence summary of this page.
 
-= Introduction =
+= Operable =
 
-Add your content here.
+With org.cajuscript.math.Operable you can do calculation using java class to manipulate each mathematic operation.
 
- * To do calcs with classes, like:
+You need implement a java class, like:
 {{{
 package cajuscript_test;
 public class Vector2D implements org.cajuscript.math.Operable<Vector2D> {
@@ -43,7 +43,7 @@ public class Vector2D implements org.cajuscript.math.Operable<Vector2D> {
 }
 }}}
 
-In CajuScript you can use this:
+In CajuScript you can use the class now, like that:
 {{{
 printVector2D action, vector #
     System.out.println(action + ' x = ' + vector.getX())
@@ -61,3 +61,4 @@ c = a / b
 printVector2D('divide', c)
 c = a % b
 printVector2D('module', c)
+}}}
