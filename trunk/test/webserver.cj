@@ -19,11 +19,11 @@ true @
 	connected = 1
 	connected = 1 @
 		line = in.readLine().trim()
-		--line = "" ?
-		--	connected = 0
-		--??
+		line = "" ?
+			connected = 0
+		??
 			System.out.println(line)
-		--?
+		?
 	@
 	out.println("HTTP/1.0 200 OK")
 	out.println("Content-type: text/plain\n\n")
