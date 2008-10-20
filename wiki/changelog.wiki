@@ -2,6 +2,7 @@
 
 *VERSION 0.3*
 
+  * Parser can be cached to high performance with scrits executed many times.
   * Syntax customizable with regular expression.
   * Java calls performance in loops was increased.
   * Bug with generics solved.
