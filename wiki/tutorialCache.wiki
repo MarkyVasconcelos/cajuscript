@@ -10,7 +10,7 @@ For increase the performance is possible do cached of parsers, very good for usi
 Use cache like that:
 
 {{{
-caju.cache: YOUR_SCRIPT_ID; YOUR_SCRIPT_HERE
+caju.cache: YOUR_CACHE_ID; YOUR_SCRIPT_HERE
 }}}
 
 Sample of a script using cache:
