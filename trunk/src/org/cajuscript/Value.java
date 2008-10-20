@@ -21,8 +21,6 @@ package org.cajuscript;
 
 import java.lang.reflect.*;
 import org.cajuscript.parser.Function;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 
 /**
  * All values of variables of the CajuScript are instance this class.
@@ -201,6 +199,8 @@ public class Value implements Cloneable {
         boolean varMode = false;
         if (scriptCommand == null) {
             script = script.trim();
+            script = script.replace((CharSequence)" ", (CharSequence)"");
+            script = script.replace((CharSequence)"\t", (CharSequence)"");
             command = script;
             if (scriptCommand != null && !script.equals(scriptCommand.getScript())) {
                 scriptCommand = null;
@@ -243,7 +243,7 @@ public class Value implements Cloneable {
                         _script = "";
                     }
                     scriptCommand = new ScriptCommand(_script, isRootContext ? ScriptCommand.Type.NATIVE_OBJECT_ROOT : ScriptCommand.Type.NATIVE_OBJECT);
-                    //scriptCommand.setObject(name);
+                    scriptCommand.setVar(name);
                     scriptCommand.setValue(val);
                 } else {
                     scriptCommand = new ScriptCommand(script, ScriptCommand.Type.NATIVE_CLASS);
@@ -271,10 +271,12 @@ public class Value implements Cloneable {
                     }
                     break;
                 case NATIVE_OBJECT_ROOT:
-                    value = invokeNative(scriptCommand.getValue().getValue() == null ? null : scriptCommand.getValue().getValue(), scriptCommand.getScript(), scriptCommand);
+                    scriptCommand.setValue(cajuScript.getVar(scriptCommand.getVar()));
+                    value = invokeNative(scriptCommand.getValue().getValue(), scriptCommand.getScript(), scriptCommand);
                     break;
                 case NATIVE_OBJECT:
                     String _script = scriptCommand.getScript();
+                    scriptCommand.setValue(context.getVar(scriptCommand.getVar()));
                     if (scriptCommand.getValue() != null) {
                         SyntaxPosition syntaxPathSeparator = syntax.matcherPosition(_script, syntax.getFunctionCallPathSeparator());
                         _script = _script.substring(syntaxPathSeparator.getEnd());
@@ -552,7 +554,6 @@ public class Value implements Cloneable {
                 String realPath = "";
                 int p = -1;
                 String scriptRest = script;
-
                 String scriptPart = "";
                 while (true) {
                     p++;
@@ -568,7 +569,7 @@ public class Value implements Cloneable {
                         path = path.concat(".");
                         realPath = realPath.concat(".");
                     }
-                    if (realPath.endsWith("..")) {
+                    if (realPath.endsWith(".".concat("."))) {
                         realClassName = path.substring(0, path.lastIndexOf('.') - 1);
                         throw new Exception("Cannot invoke ".concat(realClassName));
                     }
@@ -618,6 +619,7 @@ public class Value implements Cloneable {
                                 _value = cajuScript.getVar(path);
                             }
                             if (_value != null) {
+                                scriptCommand.setVar(path);
                                 scriptCommand.setValue(_value);
                                 if (isRootContext) {
                                     scriptCommand.setType(ScriptCommand.Type.NATIVE_OBJECT_ROOT);
@@ -668,6 +670,7 @@ public class Value implements Cloneable {
                         if (value != null) {
                             scriptCommand.setParamName(paramName);
                             ScriptCommand sc = new ScriptCommand(script, ScriptCommand.Type.NATIVE_OBJECT);
+                            sc.setVar(scriptCommand.getVar());
                             Object oParam = c.getField(paramName).get(value);
                             if (oParam != null) {
                                 sc.setClassReference(oParam.getClass());
@@ -683,8 +686,10 @@ public class Value implements Cloneable {
                             scriptCommand.setParamName(paramName);
                             ScriptCommand sc = new ScriptCommand(script, ScriptCommand.Type.NATIVE_OBJECT);
                             Object oParam = c.getField(paramName).get(c);
-                            sc.setClassReference(oParam.getClass());
-                            sc.setClassPath(oParam.getClass().getName());
+                            if (oParam != null) {
+                                sc.setClassReference(oParam.getClass());
+                                sc.setClassPath(oParam.getClass().getName());
+                            }
                             Object o = invokeNative(oParam, script, sc);
                             scriptCommand.setNextScriptCommand(sc);
                             return o;
@@ -913,6 +918,7 @@ class ScriptCommand {
     private Value[] params = null;
     private String function = "";
     private String classPath = "";
+    private String var = "";
     private String paramName = "";
     private Class classReference = null;
     private String object = "";
@@ -1135,6 +1141,22 @@ class ScriptCommand {
      */
     public void setNextScriptCommand(ScriptCommand nextScriptCommand) {
         this.nextScriptCommand = nextScriptCommand;
+    }
+    
+    /**
+     * Get variable name.
+     * @return Variable name.
+     */
+    public String getVar() {
+        return var;
+    }
+
+    /**
+     * Set variable name.
+     * @param var Variable name.
+     */
+    public void setVar(String var) {
+        this.var = var;
     }
 
     /**
