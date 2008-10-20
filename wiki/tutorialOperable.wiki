@@ -1,4 +1,4 @@
-#summary To manipulate mathematic calcules with a class java
+#summary Manipulate mathematic calculation with a class java
 
 = Operable =
 
