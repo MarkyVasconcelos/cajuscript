@@ -38,3 +38,7 @@ caju.cache: SwingTester
 
     frame.setSize(300, 300)
 }}}
+
+The parser is saved in a static array and is shared by all instance of CajuScript.
+
+If the script is changed the parser saved in cache is reloaded.
