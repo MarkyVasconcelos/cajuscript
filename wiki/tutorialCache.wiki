@@ -1,0 +1,40 @@
+#summary Parser cached
+
+= Cache =
+
+From version 0.3 CajuScrip Parser uses regular expression. This method is very flexible but have a high consumed of cpu.
+
+For increase the performance is possible do cached of parsers, very good for using with scripts executed many times.
+
+Use cache like that:
+
+{{{
+caju.cache: YOUR_SCRIPT_ID; YOUR_SCRIPT_HERE
+}}}
+
+Sample of a script using cache:
+
+{{{
+caju.cache: SwingTester
+
+    $java.lang
+    $javax.swing
+    $java.awt
+
+    frame = JFrame()
+    frame.setTitle("CajuScript")
+    frame.setVisible(true)
+    frame.setSize(100, 100)
+    frame.getContentPane().setLayout(BorderLayout())
+
+    textArea = JTextArea()
+    textArea.setText("Hello World!")
+    frame.add(textArea, BorderLayout.CENTER)
+
+    button = JButton("Ok!")
+    frame.add(button, BorderLayout.SOUTH)
+
+    frame.pack()
+
+    frame.setSize(300, 300)
+}}}
