@@ -619,7 +619,6 @@ public class Value implements Cloneable {
                             }
                             if (_value != null) {
                                 scriptCommand.setValue(_value);
-                                //scriptCommand.setObject(path);
                                 if (isRootContext) {
                                     scriptCommand.setType(ScriptCommand.Type.NATIVE_OBJECT_ROOT);
                                 } else {
@@ -644,7 +643,6 @@ public class Value implements Cloneable {
                     return invokeConstructor(c, values, script, scriptCommand);
                 } else if (!cName.equals("") && value != null) {
                     Object[] values = invokeValues(script, scriptCommand);
-                    //script = script.substring(values[values.length - 1].toString().length());
                     return invokeMethod(c, value, cName, values, script, scriptCommand);
                 } else {
                     syntaxPathSeparator = syntax.matcherPosition(script, syntax.getFunctionCallPathSeparator());
@@ -671,12 +669,13 @@ public class Value implements Cloneable {
                             scriptCommand.setParamName(paramName);
                             ScriptCommand sc = new ScriptCommand(script, ScriptCommand.Type.NATIVE_OBJECT);
                             Object oParam = c.getField(paramName).get(value);
-                            sc.setClassReference(oParam.getClass());
-                            sc.setClassPath(oParam.getClass().getName());
+                            if (oParam != null) {
+                                sc.setClassReference(oParam.getClass());
+                                sc.setClassPath(oParam.getClass().getName());
+                            }
                             Object o = invokeNative(oParam, script, sc);
                             scriptCommand.setNextScriptCommand(sc);
                             return o;
-                            //return invokeNative(value.getClass().getField(paramName).get(value), script, scriptCommand);
                         }
                         if (paramName.equals("class")) {
                             return invokeNative(c, script, scriptCommand);
@@ -693,7 +692,6 @@ public class Value implements Cloneable {
                     } else {
                         Object[] values = invokeValues(script.substring(syntaxParameterBegin.getStart()), scriptCommand);
                         String propName = script.substring(0, syntaxParameterBegin.getStart());
-                        //script = script.substring(propName.length() + values[values.length - 1].toString().length());
                         return invokeMethod(c, value, propName, values, script, scriptCommand);
                     }
                 }
@@ -706,11 +704,13 @@ public class Value implements Cloneable {
                     Object[] values = invokeValues(null, scriptCommand);
                     return invokeConstructor(c, values, script, scriptCommand);
                 } else if (!scriptCommand.getParamName().equals("")) {
-                    return invokeNative(c.getField(scriptCommand.getParamName()).get(c), script, scriptCommand.getNextScriptCommand());
+                    if (scriptCommand.getValue() != null) {
+                        return invokeNative(c.getField(scriptCommand.getParamName()).get(scriptCommand.getValue().getValue()), scriptCommand.getScript().substring(scriptCommand.getScript().indexOf(".".concat(script)) + script.length() + 1), scriptCommand.getNextScriptCommand());
+                    } else {
+                        return invokeNative(c.getField(scriptCommand.getParamName()).get(c), scriptCommand.getScript().substring(scriptCommand.getScript().indexOf(".".concat(script)) + script.length() + 1), scriptCommand.getNextScriptCommand());
+                    }
                 }
                 throw new Exception("Cannot invoke ".concat(scriptCommand.getScript()));
-                //cName = scriptCommand.getClassPath();
-                //scriptPart = scriptCommand.getScript();
             }
         } catch (CajuScriptException e) {
             throw e;
