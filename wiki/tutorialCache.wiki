@@ -1,4 +1,4 @@
-#summary Parser cached
+#summary Parser cache
 #labels Tutorial
 
 = Cache =
