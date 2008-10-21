@@ -104,6 +104,7 @@ public class Value implements Cloneable {
                 script = script.replace((CharSequence)"\\r", (CharSequence)"\r");
                 script = script.replace((CharSequence)"\\n", (CharSequence)"\n");
                 script = script.replace((CharSequence)"\\\"", (CharSequence)"\"");
+                script = script.replace((CharSequence)"\\\\", (CharSequence)"\\");
                 script = script.replace((CharSequence)"\\'", (CharSequence)"'");
                 java.util.regex.Pattern p = java.util.regex.Pattern.compile("\\\\u[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]");
                 java.util.regex.Matcher m = p.matcher(script);
