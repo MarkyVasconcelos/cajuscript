@@ -1,6 +1,8 @@
 #summary Syntax in portuguese.
 #labels Sample
 
+=Sintaxe em Português=
+
 Exemplo de uma sintaxe em Português usando o CajuScript.
 
 Na mesma pasta em que esta o jar do CajuScript crie o arquivo "carregaSintaxePortugues.cj" que ira carregar a sintaxe, com o seguinte conteúdo:
