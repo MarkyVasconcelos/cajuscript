@@ -1,6 +1,8 @@
 #summary Changelog.
 #labels Changelog
 
+= Changelog =
+
 *VERSION 0.3*
 
   * [tutorialCache Parser can be cached] to high performance with scrits executed many times.
