@@ -92,7 +92,7 @@ E também o arquivo "exemploSintaxePortugues.cj" que é o arquivo com a nova sin
 
 Agora é só executar com o comando:
 
-*java -jar cajuscript-0.3.jar carregaSintaxePortugues.cj*
+*java -jar cajuscript.jar carregaSintaxePortugues.cj*
 
 
 Pronto! :P
