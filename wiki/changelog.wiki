@@ -1,4 +1,5 @@
-#summary Change log.
+#summary Changelog.
+#labels Changelog
 
 *VERSION 0.3*
 
