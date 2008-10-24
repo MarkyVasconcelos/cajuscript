@@ -19,7 +19,7 @@ Na mesma pasta em que esta o jar do CajuScript crie o arquivo "carregaSintaxePor
     syntaxPT.setLoopEnd(Pattern.compile("^[\\s+f|f]i[m\\s+|m]$"))
     syntaxPT.setTry(Pattern.compile("^[\\s+t|t]enta\\s*([\\s+|[\\s*\\(]].+)\\s*faz"))
     syntaxPT.setTryCatch(Pattern.compile("^[\\s+p|p]ega\\s+o\\s+err[o\\s+|o]$"))
-    syntaxPT.setTryFinally(Pattern.compile("^[\\s+f|f]inalmente[e\\s+|e]$"))
+    syntaxPT.setTryFinally(Pattern.compile("^[\\s+f|f]inalment[e\\s+|e]$"))
     syntaxPT.setTryEnd(Pattern.compile("^[\\s+f|f]i[m\\s+|m]$"))
     syntaxPT.setFunction(Pattern.compile("^[\\s+f|f]uncao\\s*([\\s+|[\\s*\\(]].+)\\s*faz"))
     syntaxPT.setFunctionEnd(Pattern.compile("^[\\s+f|f]i[m\\s+|m]$"))
