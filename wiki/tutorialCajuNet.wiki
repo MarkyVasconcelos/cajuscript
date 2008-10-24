@@ -25,7 +25,7 @@ So open Visual Studio, create a console application, and add as referecences the
 
 In the Program.cs file you can now use cajuscript, if you type org.cajuscript. you can see all the classes.
 
-Here is a lite example how to do it:
+Here is a lite C# example how to do it:
 
 {{{
   String value = "1";
