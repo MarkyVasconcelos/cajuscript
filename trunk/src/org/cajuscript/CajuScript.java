@@ -239,12 +239,12 @@ public class CajuScript {
     /**
      * Script execute.
      * @param script Script to be executed.
-     * @param isToRun Can be executed.
+     * @param execute Can be executed.
      * @return Value returned by script.
      * @throws org.cajuscript.CajuScriptException Errors ocurred on script execution.
      */
-    public Value eval(String script, boolean isToRun) throws CajuScriptException {
-        return eval(script, syntax, isToRun);
+    public Value eval(String script, boolean execute) throws CajuScriptException {
+        return eval(script, syntax, execute);
     }
     
     /**
@@ -262,11 +262,11 @@ public class CajuScript {
      * Script execute with specific syntax.
      * @param script Script to be executed.
      * @param syntax Syntax of the script.
-     * @param isToRun Can be executed.
+     * @param execute Can be executed.
      * @return Value returned by script.
      * @throws org.cajuscript.CajuScriptException Errors ocurred on script execution.
      */
-    public Value eval(String script, Syntax syntax, boolean isToRun) throws CajuScriptException {
+    public Value eval(String script, Syntax syntax, boolean execute) throws CajuScriptException {
         try {
             String originalScript = script;
             if (script.equals("")) {
@@ -459,7 +459,7 @@ public class CajuScript {
                 cacheParsers.put(cacheId, (org.cajuscript.parser.Base)parserBase.cloneSerialization());
                 cacheStaticContexts.put(cacheId, staticContexts);
             }
-            if (isToRun) {
+            if (execute) {
                 Value finalValue = parserBase.execute(this, context, syntax);
                 if (!cacheId.equals("")) {
                     Map<String, Function> funcs = context.getFuncs();
@@ -573,12 +573,12 @@ public class CajuScript {
     /**
      * File exucute.
      * @param path File to be executed.
-     * @param isToRun Can be executed.
+     * @param execute Can be executed.
      * @return Value returned by script.
      * @throws org.cajuscript.CajuScriptException File cannot be executed or error ocurred on execution.
      */
-    public Value evalFile(String path, boolean isToRun) throws CajuScriptException {
-        return evalFile(path, syntax, isToRun);
+    public Value evalFile(String path, boolean execute) throws CajuScriptException {
+        return evalFile(path, syntax, execute);
     }
     
     /**
@@ -596,11 +596,11 @@ public class CajuScript {
      * File execute with specific syntax.
      * @param path File to be executed.
      * @param syntax Syntax of the script in file.
-     * @param isToRun Can be executed.
+     * @param execute Can be executed.
      * @return Value returned by script.
      * @throws org.cajuscript.CajuScriptException File cannot be executed or error ocurred on execution.
      */
-    public Value evalFile(String path, Syntax syntax, boolean isToRun) throws CajuScriptException {
+    public Value evalFile(String path, Syntax syntax, boolean execute) throws CajuScriptException {
         java.io.InputStream is = null;
         try {
             is = new java.io.FileInputStream(path);
