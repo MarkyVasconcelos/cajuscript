@@ -233,7 +233,18 @@ public class CajuScript {
      * @throws org.cajuscript.CajuScriptException Errors ocurred on script execution.
      */
     public Value eval(String script) throws CajuScriptException {
-        return eval(script, syntax);
+        return eval(script, syntax, true);
+    }
+    
+    /**
+     * Script execute.
+     * @param script Script to be executed.
+     * @param isToRun Can be executed.
+     * @return Value returned by script.
+     * @throws org.cajuscript.CajuScriptException Errors ocurred on script execution.
+     */
+    public Value eval(String script, boolean isToRun) throws CajuScriptException {
+        return eval(script, syntax, isToRun);
     }
     
     /**
@@ -244,6 +255,18 @@ public class CajuScript {
      * @throws org.cajuscript.CajuScriptException Errors ocurred on script execution.
      */
     public Value eval(String script, Syntax syntax) throws CajuScriptException {
+        return eval(script, syntax, true);
+    }
+    
+    /**
+     * Script execute with specific syntax.
+     * @param script Script to be executed.
+     * @param syntax Syntax of the script.
+     * @param isToRun Can be executed.
+     * @return Value returned by script.
+     * @throws org.cajuscript.CajuScriptException Errors ocurred on script execution.
+     */
+    public Value eval(String script, Syntax syntax, boolean isToRun) throws CajuScriptException {
         try {
             String originalScript = script;
             if (script.equals("")) {
@@ -436,16 +459,20 @@ public class CajuScript {
                 cacheParsers.put(cacheId, (org.cajuscript.parser.Base)parserBase.cloneSerialization());
                 cacheStaticContexts.put(cacheId, staticContexts);
             }
-            Value finalValue = parserBase.execute(this, context, syntax);
-            if (!cacheId.equals("")) {
-                Map<String, Function> funcs = context.getFuncs();
-                Set<String> keys = funcs.keySet();
-                Context cacheContext = cacheStaticContexts.get(cacheId);
-                for (String key : keys) {
-                    cacheContext.setFunc(key, funcs.get(key));
+            if (isToRun) {
+                Value finalValue = parserBase.execute(this, context, syntax);
+                if (!cacheId.equals("")) {
+                    Map<String, Function> funcs = context.getFuncs();
+                    Set<String> keys = funcs.keySet();
+                    Context cacheContext = cacheStaticContexts.get(cacheId);
+                    for (String key : keys) {
+                        cacheContext.setFunc(key, funcs.get(key));
+                    }
                 }
+                return finalValue;
+            } else {
+                return null;
             }
-            return finalValue;
         } catch (CajuScriptException e) {
             throw e;
         } catch (Exception e) {
@@ -544,6 +571,17 @@ public class CajuScript {
     }
     
     /**
+     * File exucute.
+     * @param path File to be executed.
+     * @param isToRun Can be executed.
+     * @return Value returned by script.
+     * @throws org.cajuscript.CajuScriptException File cannot be executed or error ocurred on execution.
+     */
+    public Value evalFile(String path, boolean isToRun) throws CajuScriptException {
+        return evalFile(path, syntax, isToRun);
+    }
+    
+    /**
      * File execute with specific syntax.
      * @param path File to be executed.
      * @param syntax Syntax of the script in file.
@@ -551,6 +589,18 @@ public class CajuScript {
      * @throws org.cajuscript.CajuScriptException File cannot be executed or error ocurred on execution.
      */
     public Value evalFile(String path, Syntax syntax) throws CajuScriptException {
+        return evalFile(path, syntax, true);
+    }
+    
+    /**
+     * File execute with specific syntax.
+     * @param path File to be executed.
+     * @param syntax Syntax of the script in file.
+     * @param isToRun Can be executed.
+     * @return Value returned by script.
+     * @throws org.cajuscript.CajuScriptException File cannot be executed or error ocurred on execution.
+     */
+    public Value evalFile(String path, Syntax syntax, boolean isToRun) throws CajuScriptException {
         java.io.InputStream is = null;
         try {
             is = new java.io.FileInputStream(path);

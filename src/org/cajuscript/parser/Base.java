@@ -151,6 +151,7 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                 List<String> ifsConditions = new ArrayList();
                 List<String> ifsStatements = new ArrayList();
                 int ifLevel = 0;
+                boolean ifClosed = false;
                 for (int z = y + 1; z < lines.length; z++) {
                     y++;
                     String originalIFline = lines[z];
@@ -180,11 +181,15 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                         if (ifLevel == 0) {
                             ifsConditions.add(scriptIFCondition);
                             ifsStatements.add(scriptIF.toString());
+                            ifClosed = true;
                             break;
                         }
                         ifLevel--;
                     }
                     scriptIF.append(originalIFline + CajuScript.SUBLINE_LIMITER);
+                }
+                if (ifLevel != 0 || !ifClosed) {
+                    throw CajuScriptException.create(caju, caju.getContext(), "\"If\" statement sintax error, maybe any \"if\" statement was not closed.");
                 }
                 IfGroup ifGroup = new IfGroup(lineDetail);
                 for (int i = 0; i < ifsConditions.size(); i++) {
@@ -204,6 +209,7 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                 String scriptLOOPCondition = syntaxPositionLoop.getGroup();
                 StringBuffer scriptLOOP = new StringBuffer();
                 int loopLevel = 0;
+                boolean loopClosed = false;
                 for (int z = y + 1; z < lines.length; z++) {
                     y++;
                     String originalLOOPline = lines[z];
@@ -214,11 +220,15 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                         loopLevel++;
                     } else if (isStatementEnds(scriptLOOPline, syntax)) {
                         if (loopLevel == 0) {
+                            loopClosed = true;
                             break;
                         }
                         loopLevel--;
                     }
                     scriptLOOP.append(originalLOOPline + CajuScript.SUBLINE_LIMITER);
+                }
+                if (loopLevel != 0 || !loopClosed) {
+                    throw CajuScriptException.create(caju, caju.getContext(), "\"Loop\" statement sintax error, maybe any \"loop\" statement was not closed.");
                 }
                 Loop loop = new Loop(lineDetail);
                 loop.setLabel(label);
@@ -231,6 +241,7 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                 String scriptFuncDef = syntaxPosition.getGroup();
                 StringBuffer scriptFUNC = new StringBuffer();
                 int funcLevel = 0;
+                boolean funcClosed = false;
                 for (int z = y + 1; z < lines.length; z++) {
                     y++;
                     String originalFUNCline = lines[z];
@@ -243,11 +254,15 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                         funcLevel++;
                     } else if (isStatementEnds(scriptFUNCline, syntax)) {
                         if (funcLevel == 0) {
+                            funcClosed = true;
                             break;
                         }
                         funcLevel--;
                     }
                     scriptFUNC.append(originalFUNCline + CajuScript.SUBLINE_LIMITER);
+                }
+                if (funcLevel != 0 || !funcClosed) {
+                    throw CajuScriptException.create(caju, caju.getContext(), "\"Function\" statement sintax error, maybe any \"function\" statement was not closed.");
                 }
                 Function func = new Function(lineDetail);
                 func.setDefinition(scriptFuncDef);
@@ -262,6 +277,7 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                 boolean isCatch = false;
                 boolean isFinally = false;
                 int tryLevel = 0;
+                boolean tryClosed = false;
                 for (int z = y + 1; z < lines.length; z++) {
                     y++;
                     String originalTRYCATCHline = lines[z];
@@ -282,6 +298,7 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                         tryLevel++;
                     } else if (isStatementEnds(scriptTRYCATCHline, syntax)) {
                         if (tryLevel == 0) {
+                            tryClosed = true;
                             break;
                         }
                         tryLevel--;
@@ -293,6 +310,9 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                     } else if (isFinally) {
                         scriptFINALLY.append(originalTRYCATCHline + CajuScript.SUBLINE_LIMITER);
                     }
+                }
+                if (tryLevel != 0 || !tryClosed) {
+                    throw CajuScriptException.create(caju, caju.getContext(), "\"Try\" statement sintax error, maybe any \"try\" statement was not closed.");
                 }
                 TryCatch tryCatch = new TryCatch(lineDetail);
                 Variable error = new Variable(lineDetail);
