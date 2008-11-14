@@ -76,6 +76,9 @@ public class CajuScriptException extends Exception {
      * @throws org.cajuscript.CajuScriptException Creating exception.
      */
     public static CajuScriptException create(CajuScript caju, Context context, String message, Throwable cause) throws CajuScriptException {
+        if (message == null) {
+            return new CajuScriptException(null, cause);
+        }
         return new CajuScriptException(message.concat(" > ").concat(Integer.toString(caju.getRunningLine().getNumber())).concat(": ").concat(formatScript(caju, context, caju.getRunningLine().getContent())), cause);
     }
     
