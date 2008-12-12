@@ -20,6 +20,7 @@
 package org.cajuscript;
 
 import java.lang.reflect.*;
+import java.util.Arrays;
 import org.cajuscript.parser.Function;
 
 /**
@@ -390,7 +391,7 @@ public class Value implements Cloneable {
      * Define the value.
      * @param value Objet to be the value.
      */
-    public void setValue(Object value) {
+    public void setValue(Object value) throws CajuScriptException {
         valueNumberInteger = 0;
         valueNumberLong = 0;
         valueNumberFloat = 0;
@@ -399,6 +400,9 @@ public class Value implements Cloneable {
         type = Type.NULL;
         typeNumber = null;
         this.value = value;
+        if (value == null) {
+            return;
+        }
         if (value instanceof Boolean) {
             type = Type.BOOLEAN;
             if (((Boolean)value).booleanValue()) {
@@ -411,23 +415,32 @@ public class Value implements Cloneable {
             }
             return;
         }
-        try {
-            loadNumberValue(value, false);
-        } catch (Exception e) {
-            if (value == null) {
-                type = Type.NULL;
-            } else if (value instanceof String || value instanceof Character) {
-                type = Type.STRING;
-                valueString = value.toString();
-            } else {
-                type = Type.OBJECT;
+        if (value instanceof CharSequence
+                || value instanceof Character
+                || value instanceof Integer
+                || value instanceof Long
+                || value instanceof Float
+                || value instanceof Double) {
+            try {
+                loadNumberValue(value, false);
+                return;
+            } catch (Exception e) {
+                //throw CajuScriptException.create(cajuScript, context, e.getMessage(), e);
             }
-            this.value = value;
-            valueNumberInteger = 0;
-            valueNumberLong = 0;
-            valueNumberFloat = 0;
-            valueNumberDouble = 0;
         }
+        if (value == null) {
+            type = Type.NULL;
+        } else if (value instanceof String || value instanceof Character) {
+            type = Type.STRING;
+            valueString = value.toString();
+        } else {
+            type = Type.OBJECT;
+        }
+        this.value = value;
+        valueNumberInteger = 0;
+        valueNumberLong = 0;
+        valueNumberFloat = 0;
+        valueNumberDouble = 0;
     }
     
     /**
@@ -788,7 +801,8 @@ public class Value implements Cloneable {
     
     private Object invokeMethod(Class c, Object o, String name, Object[] values, String script, ScriptCommand scriptCommand) throws Exception {
         if (scriptCommand.getMethod() != null) {
-            return scriptCommand.getMethod().invoke(o, getParams(values, scriptCommand.getMethod().getParameterTypes(), scriptCommand));
+            Object r = scriptCommand.getMethod().invoke(o, getParams(values, scriptCommand.getMethod().getParameterTypes(), scriptCommand));
+            return r;
         }
         Class[] classes = null;
         if (c.isMemberClass()) {
@@ -870,7 +884,7 @@ public class Value implements Cloneable {
     }
     
     private Object[] getParams(Object[] values, Class[] cx, ScriptCommand scriptCommand) throws Exception {
-        if (values.equals(paramsValues)) {
+        if (Arrays.equals(values, paramsValues)) {
             return paramsFinal;
         }
         Object[] params = new Object[cx.length];

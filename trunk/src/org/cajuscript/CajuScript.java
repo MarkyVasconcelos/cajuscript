@@ -19,11 +19,14 @@
 
 package org.cajuscript;
 
+import java.util.Collection;
+import java.util.Enumeration;
 import org.cajuscript.parser.LineDetail;
 import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import org.cajuscript.parser.Function;
@@ -66,7 +69,7 @@ public class CajuScript {
     /**
      * Core version.
      */
-    public static final String VERSION = "0.3";
+    public static final String VERSION = "0.3.1";
     
     /**
      * Language version.
@@ -131,7 +134,7 @@ public class CajuScript {
      */
     public CajuScript() throws CajuScriptException {
         context.setVar("caju", toValue(this));
-        context.setVar("array", toValue(new Array()));
+        context.setVar("array", toValue(new Array(this)));
     }
     
     /**
@@ -908,7 +911,144 @@ public class CajuScript {
         }
         return false;
     }
-    
+
+    private Map<String, Value> eachValues = new HashMap<String, Value>();
+    private Map<String, Integer> eachIndexs = new HashMap<String, Integer>();
+    private Map<String, Iterator> eachIterators = new HashMap<String, Iterator>();
+    private Map<String, Enumeration> eachEnumerations = new HashMap<String, Enumeration>();
+    /**
+     * To do loops like foreach:
+     * <p><blockquote><pre>
+     * caju.each('myValue', myArray) @
+     *     System.out.println('Value = '+ myValue);
+     *     System.out.println('Index = '+ caju.index('myValue'));
+     *     System.out.println('-------------------');
+     * @;
+     * </pre></blockquote></p>
+     * <p><blockquote><pre>
+     * caju.each('myValue', myMap) @
+     *     System.out.println('Key = '+ caju.key('myValue'));
+     *     System.out.println('Value = '+ myValue);
+     *     System.out.println('Index = '+ caju.index('myValue'));
+     *     System.out.println('-------------------');
+     * @;
+     * </pre></blockquote></p>
+     * <p>Suports only Array, Collection, Enumeration and Map.</p>
+     * @param var Variable to be created for saved the data from the position of array.
+     * @param array Array to be interacted.
+     * @return Return true to continue the loop or false to stoped.
+     * @throws org.cajuscript.CajuScriptException Exception generated.
+     */
+    public boolean each(String var, Object array) throws CajuScriptException {
+        boolean isToContinue = false;
+        int index = -1;
+        if (array instanceof Collection) {
+            Integer iIndex = eachIndexs.get(var);
+            Iterator iterator = eachIterators.get(var);
+            Value value = eachValues.get(var);
+            if (iIndex == null) {
+                iterator = ((Collection)array).iterator();
+                iIndex = Integer.valueOf(index);
+                value = toValue(null);
+                eachValues.put(var, value);
+                eachIterators.put(var, iterator);
+            }
+            if (iterator.hasNext()) {
+                index = iIndex.intValue() + 1;
+                value = eachValues.get(var);
+                value.setValue(iterator.next());
+                setVar(var, value);
+                isToContinue = true;
+            } else {
+                if (iIndex != null) {
+                    index = iIndex.intValue();
+                }
+            }
+            eachIndexs.put(var, Integer.valueOf(index));
+            return isToContinue;
+        } else if (array instanceof Enumeration) {
+            Integer iIndex = eachIndexs.get(var);
+            Enumeration enumeration = eachEnumerations.get(var);
+            Value value = eachValues.get(var);
+            if (iIndex == null) {
+                enumeration = (Enumeration)array;
+                iIndex = Integer.valueOf(index);
+                value = toValue(null);
+                eachValues.put(var, value);
+                eachEnumerations.put(var, enumeration);
+            }
+            if (enumeration.hasMoreElements()) {
+                index = iIndex.intValue() + 1;
+                value = eachValues.get(var);
+                value.setValue(enumeration.nextElement());
+                setVar(var, value);
+                isToContinue = true;
+            } else {
+                if (iIndex != null) {
+                    index = iIndex.intValue();
+                }
+            }
+            eachIndexs.put(var, Integer.valueOf(index));
+            return isToContinue;
+        } else if (array instanceof Map) {
+            String iteratorKey = CajuScript.CAJU_VARS.concat("_").concat(var).concat("_iterator");
+            Value valueIterator = getVar(iteratorKey);
+            if (valueIterator == null) {
+                set(iteratorKey, ((Map)array).keySet().iterator());
+            }
+            Iterator iterator = (Iterator)get(iteratorKey);
+            Integer iIndex = eachIndexs.get(var);
+            if (iterator.hasNext()) {
+                if (iIndex == null) {
+                    iIndex =Integer.valueOf(index);
+                    eachIndexs.put(var, iIndex);
+                }
+                index = iIndex.intValue();
+                index++;
+                Object key = iterator.next();
+                set(CajuScript.CAJU_VARS.concat("_").concat(var).concat("_key"), key);
+                set(var, ((Map)array).get(key));
+                isToContinue = true;
+            } else {
+                if (iIndex != null) {
+                    index = iIndex.intValue();
+                }
+            }
+            eachIndexs.put(var, Integer.valueOf(index));
+            return isToContinue;
+        } else {
+            int len = Array.size(array);
+            if (len > 0) {
+                Integer iIndex = eachIndexs.get(var);
+                if (iIndex == null) {
+                    iIndex =Integer.valueOf(index);
+                    eachIndexs.put(var, iIndex);
+                }
+                index = iIndex.intValue();
+                if (index < len - 1) {
+                    index++;
+                    set(var, Array.get(array, index));
+                    isToContinue = true;
+                }
+            }
+            eachIndexs.put(var, Integer.valueOf(index));
+            return isToContinue;
+        }
+    }
+
+    /**
+     *
+     * @param var
+     * @return
+     */
+    public int index(String var) {
+        return eachIndexs.get(var);
+    }
+
+    public Object key(String var) throws CajuScriptException {
+        return get(CajuScript.CAJU_VARS.concat("_").concat(var).concat("_key"));
+    }
+
     /**
      * Entry point to running.
      * @param args Arguments.

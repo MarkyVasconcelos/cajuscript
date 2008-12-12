@@ -45,10 +45,13 @@ package org.cajuscript;
  * @author eduveks
  */
 public class Array {
+    private CajuScript caju = null;
     /**
      * Initializes a newly created <code>Array</code>
      */
-    public Array() {}
+    public Array(CajuScript caju) {
+        this.caju = caju;
+    }
     
     /**
      * Create a new array.
