@@ -242,7 +242,7 @@ public class CajuScript {
     /**
      * Script execute.
      * @param script Script to be executed.
-     * @param execute Can be executed.
+     * @param execute If can be executed.
      * @return Value returned by script.
      * @throws org.cajuscript.CajuScriptException Errors ocurred on script execution.
      */
@@ -265,7 +265,7 @@ public class CajuScript {
      * Script execute with specific syntax.
      * @param script Script to be executed.
      * @param syntax Syntax of the script.
-     * @param execute Can be executed.
+     * @param execute If can be executed.
      * @return Value returned by script.
      * @throws org.cajuscript.CajuScriptException Errors ocurred on script execution.
      */
@@ -576,7 +576,7 @@ public class CajuScript {
     /**
      * File exucute.
      * @param path File to be executed.
-     * @param execute Can be executed.
+     * @param execute If can be executed.
      * @return Value returned by script.
      * @throws org.cajuscript.CajuScriptException File cannot be executed or error ocurred on execution.
      */
@@ -599,7 +599,7 @@ public class CajuScript {
      * File execute with specific syntax.
      * @param path File to be executed.
      * @param syntax Syntax of the script in file.
-     * @param execute Can be executed.
+     * @param execute If can be executed.
      * @return Value returned by script.
      * @throws org.cajuscript.CajuScriptException File cannot be executed or error ocurred on execution.
      */
@@ -917,7 +917,7 @@ public class CajuScript {
     private Map<String, Iterator> eachIterators = new HashMap<String, Iterator>();
     private Map<String, Enumeration> eachEnumerations = new HashMap<String, Enumeration>();
     /**
-     * To do loops like foreach:
+     * To do loops like "for each":
      * <p><blockquote><pre>
      * caju.each('myValue', myArray) @
      *     System.out.println('Value = '+ myValue);
@@ -1037,14 +1037,20 @@ public class CajuScript {
     }
 
     /**
-     *
-     * @param var
-     * @return
+     * Get the index from a interaction at an "for each".
+     * @param var Name of variable to be catch the index.
+     * @return Index from the current interaction.
      */
     public int index(String var) {
         return eachIndexs.get(var);
     }
 
+    /**
+     * Get the key from a java.util.Map interaction at an "for each".
+     * @param var Name of variable to be found the correspondent key.
+     * @return Key referent the current interaction.
+     * @throws org.cajuscript.CajuScriptException Variable with the key not been found.
+     */
     public Object key(String var) throws CajuScriptException {
         return get(CajuScript.CAJU_VARS.concat("_").concat(var).concat("_key"));
     }
