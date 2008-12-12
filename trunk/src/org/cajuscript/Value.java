@@ -402,8 +402,7 @@ public class Value implements Cloneable {
         this.value = value;
         if (value == null) {
             return;
-        }
-        if (value instanceof Boolean) {
+        } else if (value instanceof Boolean) {
             type = Type.BOOLEAN;
             if (((Boolean)value).booleanValue()) {
                 valueBoolean = true;
@@ -414,8 +413,7 @@ public class Value implements Cloneable {
                 typeNumber = TypeNumber.INTEGER;
             }
             return;
-        }
-        if (value instanceof Integer) {
+        } else if (value instanceof Integer) {
             valueNumberInteger = ((Integer)value).intValue();
             valueNumberLong = (long)valueNumberInteger;
             valueNumberFloat = (float)valueNumberInteger;
