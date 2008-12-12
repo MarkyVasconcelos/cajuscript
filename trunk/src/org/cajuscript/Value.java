@@ -415,28 +415,42 @@ public class Value implements Cloneable {
             }
             return;
         }
-        if (value instanceof CharSequence
-                || value instanceof Character
-                || value instanceof Integer
-                || value instanceof Long
-                || value instanceof Float
-                || value instanceof Double) {
-            try {
-                loadNumberValue(value, false);
-                return;
-            } catch (Exception e) {
-                //throw CajuScriptException.create(cajuScript, context, e.getMessage(), e);
-            }
+        if (value instanceof Integer) {
+            valueNumberInteger = ((Integer)value).intValue();
+            valueNumberLong = (long)valueNumberInteger;
+            valueNumberFloat = (float)valueNumberInteger;
+            valueNumberDouble = (double)valueNumberInteger;
+            valueString = Integer.toString(valueNumberInteger);
+            type = Type.NUMBER;
+            typeNumber = TypeNumber.INTEGER;
+            return;
+        } else if (value instanceof Float) {
+            valueNumberFloat = ((Float)value).floatValue();
+            valueNumberDouble = (double)valueNumberFloat;
+            valueString = Float.toString(valueNumberFloat);
+            type = Type.NUMBER;
+            typeNumber = TypeNumber.FLOAT;
+            return;
+        } else if (value instanceof Long) {
+            valueNumberLong = ((Long)value).longValue();
+            valueNumberDouble = (double)valueNumberLong;
+            valueString = Long.toString(valueNumberLong);
+            type = Type.NUMBER;
+            typeNumber = TypeNumber.LONG;
+            return;
+        } else if (value instanceof Double) {
+            valueNumberDouble = (float)((Double)value).doubleValue();
+            valueString = Double.toString(valueNumberDouble);
+            type = Type.NUMBER;
+            typeNumber = TypeNumber.DOUBLE;
+            return;
         }
-        if (value == null) {
-            type = Type.NULL;
-        } else if (value instanceof String || value instanceof Character) {
+        if (value instanceof CharSequence || value instanceof Character) {
             type = Type.STRING;
             valueString = value.toString();
         } else {
             type = Type.OBJECT;
         }
-        this.value = value;
         valueNumberInteger = 0;
         valueNumberLong = 0;
         valueNumberFloat = 0;

@@ -2093,7 +2093,7 @@ public class CajuScriptTest {
         script += "collection_values = 0;";
         script += "caju.each('_collection', list) @";
         script += "  collection_indexes += caju.index('_collection');";
-        script += "  collection_values += _collection;";
+        script += "  collection_values += caju.cast(_collection, 'i');";
         script += "@;";
         script += "collection_indexes += caju.index('_collection');";
         script += "map = java.util.HashMap();";
@@ -2107,8 +2107,8 @@ public class CajuScriptTest {
         script += "map_values = 0;";
         script += "caju.each('_map', map) @";
         script += "  map_indexes += caju.index('_map');";
-        script += "  map_keys += caju.key('_map');";
-        script += "  map_values += _map;";
+        script += "  map_keys += caju.cast(caju.key('_map'), 'i');";
+        script += "  map_values += caju.cast(_map, 'i');";
         script += "@;";
         script += "map_indexes += caju.index('_map');";
         script += "prop = java.util.Properties();";
@@ -2121,7 +2121,7 @@ public class CajuScriptTest {
         script += "enumeration_values = 0;";
         script += "caju.each('_enumeration', prop.elements()) @";
         script += "  enumeration_indexes += caju.index('_enumeration');";
-        script += "  enumeration_values += _enumeration;";
+        script += "  enumeration_values += caju.cast(_enumeration, 'i');";
         script += "@;";
         script += "enumeration_indexes += caju.index('_enumeration');";
         caju.eval(script);
