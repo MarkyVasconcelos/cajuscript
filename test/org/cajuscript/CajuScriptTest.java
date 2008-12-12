@@ -33,9 +33,20 @@ import static org.junit.Assert.*;
  * @author eduveks
  */
 public class CajuScriptTest {
-  
+
+    public enum Enum {
+        TEST
+    }
+
     public CajuScriptTest() throws CajuScriptException {
         
+    }
+
+    public boolean testEnum(Enum e) {
+        if (e.equals(Enum.TEST)) {
+            return true;
+        }
+        return false;
     }
 
     @BeforeClass
@@ -2048,6 +2059,98 @@ public class CajuScriptTest {
         }
         if (CajuScript.isPrimitiveType(Object.class)) {
             fail("Object failed.");
+        }
+    }
+
+    /**
+     * Test of array.
+     */
+    @Test
+    public void each() throws CajuScriptException {
+        System.out.println("array");
+        CajuScript caju = new CajuScript();
+        String script = "";
+        script += "a = array.create('i', 5);";
+        script += "array.set(a, 0, 10);";
+        script += "array.set(a, 1, 20);";
+        script += "array.set(a, 2, 30);";
+        script += "array.set(a, 3, 40);";
+        script += "array.set(a, 4, 50);";
+        script += "array_indexes = 0;";
+        script += "array_values = 0;";
+        script += "caju.each('_array', a) @";
+        script += "  array_indexes += caju.index('_array');";
+        script += "  array_values += _array;";
+        script += "@;";
+        script += "array_indexes += caju.index('_array');";
+        script += "list = java.util.ArrayList();";
+        script += "list.add('10');";
+        script += "list.add('20');";
+        script += "list.add('30');";
+        script += "list.add('40');";
+        script += "list.add('50');";
+        script += "collection_indexes = 0;";
+        script += "collection_values = 0;";
+        script += "caju.each('_collection', list) @";
+        script += "  collection_indexes += caju.index('_collection');";
+        script += "  collection_values += _collection;";
+        script += "@;";
+        script += "collection_indexes += caju.index('_collection');";
+        script += "map = java.util.HashMap();";
+        script += "map.put('100', '10');";
+        script += "map.put('200', '20');";
+        script += "map.put('300', '30');";
+        script += "map.put('400', '40');";
+        script += "map.put('500', '50');";
+        script += "map_indexes = 0;";
+        script += "map_keys = 0;";
+        script += "map_values = 0;";
+        script += "caju.each('_map', map) @";
+        script += "  map_indexes += caju.index('_map');";
+        script += "  map_keys += caju.key('_map');";
+        script += "  map_values += _map;";
+        script += "@;";
+        script += "map_indexes += caju.index('_map');";
+        script += "prop = java.util.Properties();";
+        script += "prop.put('1', '10');";
+        script += "prop.put('2', '20');";
+        script += "prop.put('3', '30');";
+        script += "prop.put('4', '40');";
+        script += "prop.put('5', '50');";
+        script += "enumeration_indexes = 0;";
+        script += "enumeration_values = 0;";
+        script += "caju.each('_enumeration', prop.elements()) @";
+        script += "  enumeration_indexes += caju.index('_enumeration');";
+        script += "  enumeration_values += _enumeration;";
+        script += "@;";
+        script += "enumeration_indexes += caju.index('_enumeration');";
+        caju.eval(script);
+        if (((Integer)caju.get("array_indexes")).intValue() != 14) {
+            fail("array_indexes is "+ caju.get("array_indexes") +". Need be 14!");
+        }
+        if (((Integer)caju.get("array_values")).intValue() != 150) {
+            fail("array_values is "+ caju.get("array_values") +". Need be 150!");
+        }
+        if (((Integer)caju.get("collection_indexes")).intValue() != 14) {
+            fail("collection_indexes is "+ caju.get("collection_indexes") +". Need be 14!");
+        }
+        if (((Integer)caju.get("collection_values")).intValue() != 150) {
+            fail("collection_values is "+ caju.get("collection_values") +". Need be 150!");
+        }
+        if (((Integer)caju.get("map_indexes")).intValue() != 14) {
+            fail("map_indexes is "+ caju.get("map_indexes") +". Need be 14!");
+        }
+        if (((Integer)caju.get("map_keys")).intValue() != 1500) {
+            fail("map_keys is "+ caju.get("map_keys") +". Need be 1500!");
+        }
+        if (((Integer)caju.get("map_values")).intValue() != 150) {
+            fail("map_values is "+ caju.get("map_values") +". Need be 150!");
+        }
+        if (((Integer)caju.get("enumeration_indexes")).intValue() != 14) {
+            fail("enumeration_indexes is "+ caju.get("enumeration_indexes") +". Need be 14!");
+        }
+        if (((Integer)caju.get("enumeration_values")).intValue() != 150) {
+            fail("enumeration_values is "+ caju.get("enumeration_values") +". Need be 150!");
         }
     }
 
