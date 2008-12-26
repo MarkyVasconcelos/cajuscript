@@ -57,6 +57,30 @@ public class Operation extends Base {
     }
 
     /**
+     * Get first command
+     * @return First command
+     */
+    public Element getFirstCommand() {
+        return firstCommand;
+    }
+
+    /**
+     * Get Operator
+     * @return Operator
+     */
+    public Operator getOperator() {
+        return operator;
+    }
+
+    /**
+     * Get second command
+     * @return Second command
+     */
+    public Element getSecondCommand() {
+        return secondCommand;
+    }
+
+    /**
      * Set commands of this operation
      * @param firstCommand First command
      * @param operator Operator
