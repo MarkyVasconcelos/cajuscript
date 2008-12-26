@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import org.cajuscript.parser.Function;
 import org.cajuscript.parser.Base;
+import org.cajuscript.compiler.Compiler;
 
 /**
  * The core of the <code>CajuScript</code> language.
@@ -294,6 +295,7 @@ public class CajuScript {
             Context staticContexts = null;
             Base cacheParser = null;
             String cacheScript = null;
+            String compilePath = null;
             lines: for (String line : lines) {
                 line = line.trim();
                 lineNumber++;
@@ -325,6 +327,9 @@ public class CajuScript {
                             } else if (!cacheId.equals("")) {
                                 staticContexts = new Context();
                             }
+                        } else if (configLine.startsWith("caju.compile")) {
+                            compilePath = configLine.substring(configLine.lastIndexOf(' ') + 1).trim();
+                            staticContexts = new Context();
                         } else {
                             if (!configLine.equals("")) {
                                 config = false;
@@ -352,6 +357,12 @@ public class CajuScript {
                     Value finalValue = parserBase.execute(this, context, syntax);
                     parserBase.clear();
                     return finalValue;
+                }
+                if (!config && compilePath != null) {
+                    Compiler compiler = new Compiler(compilePath);
+                    if (compiler.isLastest(originalScript)) {
+                        return compiler.execute(this, context, syntax);
+                    }
                 }
                 if (isString1 || isString2) {
                     setRunningLine(new LineDetail(lineNumber, previousLine));
@@ -461,6 +472,10 @@ public class CajuScript {
                 cacheScripts.put(cacheId, originalScript);
                 cacheParsers.put(cacheId, (org.cajuscript.parser.Base)parserBase.cloneSerialization());
                 cacheStaticContexts.put(cacheId, staticContexts);
+            }
+            if (compilePath != null) {
+                Compiler compiler = new Compiler(compilePath);
+                compiler.compile(this, staticContexts, originalScript, parserBase);
             }
             if (execute) {
                 Value finalValue = parserBase.execute(this, context, syntax);
