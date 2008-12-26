@@ -7,7 +7,7 @@ import org.cajuscript.Syntax;
 import org.cajuscript.Value;
 import org.cajuscript.parser.Element;
 
-public interface ParserExecutable {
+public interface Executable {
     public Element load() throws CajuScriptException;
     public Value execute(CajuScript caju, Context context, Syntax syntax) throws CajuScriptException;
 }

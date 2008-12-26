@@ -68,7 +68,7 @@ public class Compiler {
     public Value execute(CajuScript caju, Context context, Syntax syntax) throws CajuScriptException {
         try {
             URLClassLoader sysLoader = new URLClassLoader(new URL[] { baseDir.toURI().toURL() });
-            org.cajuscript.compiler.ParserExecutable parserExecute = (org.cajuscript.compiler.ParserExecutable)sysLoader.loadClass(packagePath.concat(".").concat(className)).newInstance();
+            org.cajuscript.compiler.Executable parserExecute = (org.cajuscript.compiler.Executable)sysLoader.loadClass(packagePath.concat(".").concat(className)).newInstance();
             return parserExecute.execute(caju, context, syntax);
         } catch (Exception e) {
             throw CajuScriptException.create(caju, context, e.getMessage(), e);
@@ -113,7 +113,7 @@ public class Compiler {
             out.println();
             out.print("public class ");
             out.print(className);
-            out.print(" implements org.cajuscript.compiler.ParserExecutable {");
+            out.print(" implements org.cajuscript.compiler.Executable {");
             out.println();
             out.print("private org.cajuscript.parser.Element parser = null;");
             out.println();
