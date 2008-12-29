@@ -86,6 +86,14 @@ public class Function extends Base {
     public String getName() {
         return name;
     }
+
+    /**
+     * Function name.
+     * @param name Name
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
     
     /**
      * Function parameters.
@@ -95,6 +103,14 @@ public class Function extends Base {
         return paramKey;
     }
     
+    /**
+     * Function parameters.
+     * @param paramKey Parameters
+     */
+    public void setParameters(String[] paramKey) {
+        this.paramKey = paramKey;
+    }
+
     /**
      * Run function.
      * @param caju CajuScript instance

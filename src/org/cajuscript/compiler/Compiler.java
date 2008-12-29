@@ -10,7 +10,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Set;
 import org.cajuscript.CajuScript;
 import org.cajuscript.CajuScriptException;
 import org.cajuscript.Context;
@@ -21,6 +20,7 @@ import org.cajuscript.parser.Break;
 import org.cajuscript.parser.Command;
 import org.cajuscript.parser.Continue;
 import org.cajuscript.parser.Element;
+import org.cajuscript.parser.Function;
 import org.cajuscript.parser.If;
 import org.cajuscript.parser.IfGroup;
 import org.cajuscript.parser.Import;
@@ -42,9 +42,15 @@ public class Compiler {
     private File scriptFile = null;
 
     public Compiler(String path) {
-        packagePath = path.substring(0, path.lastIndexOf("."));
-        className = path.substring(path.lastIndexOf(".") + 1);
-        packageDir = new File(baseDir.getAbsolutePath().concat(Character.toString(File.separatorChar)).concat(packagePath.replace('.', File.separatorChar)));
+        if (path.lastIndexOf(".") > -1) {
+            packagePath = path.substring(0, path.lastIndexOf("."));
+            className = path.substring(path.lastIndexOf(".") + 1);
+            packageDir = new File(baseDir.getAbsolutePath().concat(Character.toString(File.separatorChar)).concat(packagePath.replace('.', File.separatorChar)));
+        } else {
+            packagePath = "";
+            className = path;
+            packageDir = baseDir;
+        }
         javaFile = new File(packageDir.getAbsolutePath().concat(Character.toString(File.separatorChar)).concat(className).concat(".java"));
         scriptFile = new File(packageDir.getAbsolutePath().concat(Character.toString(File.separatorChar)).concat(className).concat(".cj"));
     }
@@ -68,7 +74,7 @@ public class Compiler {
     public Value execute(CajuScript caju, Context context, Syntax syntax) throws CajuScriptException {
         try {
             URLClassLoader sysLoader = new URLClassLoader(new URL[] { baseDir.toURI().toURL() });
-            org.cajuscript.compiler.Executable parserExecute = (org.cajuscript.compiler.Executable)sysLoader.loadClass(packagePath.concat(".").concat(className)).newInstance();
+            org.cajuscript.compiler.Executable parserExecute = (org.cajuscript.compiler.Executable)sysLoader.loadClass(packagePath.equals("") ? className : packagePath.concat(".").concat(className)).newInstance();
             return parserExecute.execute(caju, context, syntax);
         } catch (Exception e) {
             throw CajuScriptException.create(caju, context, e.getMessage(), e);
@@ -102,42 +108,31 @@ public class Compiler {
     }
 
     public void compile(CajuScript caju, Context staticContext, String script, Element base) throws CajuScriptException {
+        for (String key : caju.getContext().getFuncs().keySet()) {
+            compileElement(caju.getContext().getFuncs().get(key));
+        }
         String baseParserKey = compileElement(base);
         packageDir.mkdirs();
         PrintWriter out = null;
         try {
             out = new PrintWriter(new FileWriter(javaFile));
-            out.print("package ");
-            out.print(packagePath);
-            out.print(";");
-            out.println();
+            if (!packagePath.equals("")) {
+                out.print("package ");
+                out.print(packagePath);
+                out.print(";");
+                out.println();
+            }
             out.print("public class ");
             out.print(className);
             out.print(" implements org.cajuscript.compiler.Executable {");
-            out.println();
-            out.print("private org.cajuscript.parser.Element parser = null;");
             out.println();
             out.print("public ");
             out.print(className);
             out.print("() { }");
             out.println();
-            out.print("public org.cajuscript.parser.Element load() throws org.cajuscript.CajuScriptException { ");
-            out.println();
-            out.print(source.toString());
-            out.print("this.parser = ");
-            out.print(baseParserKey);
-            out.print(";");
-            out.println();
-            out.print("return ");
-            out.print(baseParserKey);
-            out.print(";");
-            out.println();
-            out.print("}");
-            out.println();
             out.print("public org.cajuscript.Value execute(org.cajuscript.CajuScript caju, org.cajuscript.Context context, org.cajuscript.Syntax syntax) throws org.cajuscript.CajuScriptException { ");
             out.println();
-            Set<String> keys = staticContext.getAllKeys(true);
-            for (String key : keys) {
+            for (String key : staticContext.getAllKeys(true)) {
                 out.print("caju.set(");
                 out.print(toString(key));
                 out.print(",");
@@ -145,13 +140,11 @@ public class Compiler {
                 out.print(");");
                 out.println();
             }
-            out.print("if (this.parser == null) {");
+            out.print(source.toString());
             out.println();
-            out.print("this.load();");
-            out.println();
-            out.print("}");
-            out.println();
-            out.print("return this.parser.execute(caju, context, syntax);");
+            out.print("return ");
+            out.print(baseParserKey);
+            out.print(".execute(caju, context, syntax);");
             out.println();
             out.print("}");
             out.println();
@@ -191,6 +184,9 @@ public class Compiler {
 
     private String compileElement(Element element) {
         String key = "";
+        if (element == null) {
+            return null;
+        }
         String lineDetail = getLineDetail(element.getLineDetail());
         if (element instanceof Command) {
             Command command = (Command)element;
@@ -346,6 +342,36 @@ public class Compiler {
             source.append(key);
             source.append(".setLabel(");
             source.append(toString(loop.getLabel()));
+            source.append(");");
+            source.append("\n");
+        } else if (element instanceof Function) {
+            Function function = (Function)element;
+            key = "function".concat(Integer.toString(function.hashCode()));
+            source.append("org.cajuscript.parser.Function ");
+            source.append(key);
+            source.append(" = new org.cajuscript.parser.Function(");
+            source.append(lineDetail);
+            source.append(");");
+            source.append("\n");
+            source.append(key);
+            source.append(".setName(");
+            source.append(toString(function.getName()));
+            source.append(");");
+            source.append("\n");
+            source.append(key);
+            source.append(".setParameters(new String[] {");
+            for (int i = 0; i < function.getParameters().length; i++) {
+                if (i > 0) {
+                    source.append(",");
+                }
+                source.append(toString(function.getParameters()[i]));
+            }
+            source.append("});");
+            source.append("\n");
+            source.append("context.setFunc(");
+            source.append(toString(function.getName()));
+            source.append(",");
+            source.append(key);
             source.append(");");
             source.append("\n");
         } else if (element instanceof TryCatch) {
