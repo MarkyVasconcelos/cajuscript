@@ -55,7 +55,7 @@ public class Variable extends Base {
      * @param key Key
      */
     public void setKey(String key) {
-        this.key = key;
+        this.key = key.trim();
     }
     
     /**

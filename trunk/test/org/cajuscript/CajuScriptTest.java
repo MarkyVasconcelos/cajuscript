@@ -63,6 +63,27 @@ public class CajuScriptTest {
 
     @After
     public void tearDown() {
+        while (true) {
+            try {
+                syntaxImport();
+                syntaxIf();
+                syntaxLoop();
+                syntaxFunction();
+                syntaxTryCatch();
+                syntaxJavaImport();
+                syntaxJavaIf();
+                syntaxJavaLoop();
+                syntaxJavaFunction();
+                syntaxJavaTryCatch();
+                syntaxBasicImport();
+                syntaxBasicIf();
+                syntaxBasicLoop();
+                syntaxBasicFunction();
+                syntaxBasicTryCatch();
+            } catch (Exception e) {
+                throw new Error(e);
+            }
+        }
     }
 
     /**
@@ -130,6 +151,7 @@ public class CajuScriptTest {
         caju.eval(script);
         syntaxCheckImport(caju);
         syntaxCheckImportCache(caju, script);
+        syntaxCheckImportCompile(caju, script);
     }
     
     @Test
@@ -276,6 +298,7 @@ public class CajuScriptTest {
         caju.eval(scriptIf);
         syntaxCheckIf(caju);
         syntaxCheckIfCache(caju, scriptIf);
+        syntaxCheckIfCompile(caju, scriptIf);
     }
     
     @Test
@@ -355,6 +378,7 @@ public class CajuScriptTest {
         caju.eval(scriptLoop);
         syntaxCheckLoop(caju);
         syntaxCheckLoopCache(caju, scriptLoop);
+        syntaxCheckLoopCompile(caju, scriptLoop);
     }
     
     @Test
@@ -428,6 +452,7 @@ public class CajuScriptTest {
         caju.eval(scriptFunc);
         syntaxCheckFunction(caju);
         syntaxCheckFunctionCache(caju, scriptFunc);
+        syntaxCheckFunctionCompile(caju, scriptFunc);
     }
     
     @Test
@@ -586,6 +611,7 @@ public class CajuScriptTest {
         caju.eval(scriptTry);
         syntaxCheckTryCatch(caju);
         syntaxCheckTryCatchCache(caju, scriptTry);
+        syntaxCheckTryCatchCompile(caju, scriptTry);
     }
     
     @Test
@@ -613,6 +639,7 @@ public class CajuScriptTest {
         caju.eval(script);
         syntaxCheckImport(caju);
         syntaxCheckImportCache(caju, script);
+        syntaxCheckImportCompile(caju, script);
     }
     
     @Test
@@ -759,6 +786,7 @@ public class CajuScriptTest {
         caju.eval(scriptIf);
         syntaxCheckIf(caju);
         syntaxCheckIfCache(caju, scriptIf);
+        syntaxCheckIfCompile(caju, scriptIf);
     }
     
     @Test
@@ -838,6 +866,7 @@ public class CajuScriptTest {
         caju.eval(scriptLoop);
         syntaxCheckLoop(caju);
         syntaxCheckLoopCache(caju, scriptLoop);
+        syntaxCheckLoopCompile(caju, scriptLoop);
     }
     
     @Test
@@ -911,6 +940,7 @@ public class CajuScriptTest {
         caju.eval(scriptFunc);
         syntaxCheckFunction(caju);
         syntaxCheckFunctionCache(caju, scriptFunc);
+        syntaxCheckFunctionCompile(caju, scriptFunc);
     }
     
     @Test
@@ -1069,6 +1099,7 @@ public class CajuScriptTest {
         caju.eval(scriptTry);
         syntaxCheckTryCatch(caju);
         syntaxCheckTryCatchCache(caju, scriptTry);
+        syntaxCheckTryCatchCompile(caju, scriptTry);
     }
     
     @Test
@@ -1096,6 +1127,7 @@ public class CajuScriptTest {
         caju.eval(script);
         syntaxCheckImport(caju);
         syntaxCheckImportCache(caju, script);
+        syntaxCheckImportCompile(caju, script);
     }
     
     @Test
@@ -1242,6 +1274,7 @@ public class CajuScriptTest {
         caju.eval(scriptIf);
         syntaxCheckIf(caju);
         syntaxCheckIfCache(caju, scriptIf);
+        syntaxCheckIfCompile(caju, scriptIf);
     }
     
     @Test
@@ -1321,6 +1354,7 @@ public class CajuScriptTest {
         caju.eval(scriptLoop);
         syntaxCheckLoop(caju);
         syntaxCheckLoopCache(caju, scriptLoop);
+        syntaxCheckLoopCompile(caju, scriptLoop);
     }
     
     @Test
@@ -1394,6 +1428,7 @@ public class CajuScriptTest {
         caju.eval(scriptFunc);
         syntaxCheckFunction(caju);
         syntaxCheckFunctionCache(caju, scriptFunc);
+        syntaxCheckFunctionCompile(caju, scriptFunc);
     }
     
     @Test
@@ -1552,9 +1587,11 @@ public class CajuScriptTest {
         caju.eval(scriptTry);
         syntaxCheckTryCatch(caju);
         syntaxCheckTryCatchCache(caju, scriptTry);
+        syntaxCheckTryCatchCompile(caju, scriptTry);
     }
-    
+
     private void syntaxCheckImportCache(CajuScript caju, String script) throws CajuScriptException {
+        /*
         syntaxReload(caju);
         caju.eval("caju.cache: test;"+ script);
         syntaxCheckImport(caju);
@@ -1564,6 +1601,19 @@ public class CajuScriptTest {
         caju = new CajuScript();
         syntaxReload(caju);
         caju.eval("caju.cache: test;"+ script);
+        syntaxCheckImport(caju);*/
+    }
+
+    private void syntaxCheckImportCompile(CajuScript caju, String script) throws CajuScriptException {
+        syntaxReload(caju);
+        caju.eval("caju.compile: test.TestImport;"+ script);
+        syntaxCheckImport(caju);
+        syntaxReload(caju);
+        caju.eval("caju.compile: test.TestImport;"+ script);
+        syntaxCheckImport(caju);
+        caju = new CajuScript();
+        syntaxReload(caju);
+        caju.eval("caju.compile: test.TestImport;"+ script);
         syntaxCheckImport(caju);
     }
     
@@ -1583,7 +1633,7 @@ public class CajuScriptTest {
     }
     
     private void syntaxCheckIfCache(CajuScript caju, String script) throws CajuScriptException {
-        syntaxReload(caju);
+        /*syntaxReload(caju);
         caju.eval("caju.cache: test;"+ script);
         syntaxCheckIf(caju);
         syntaxReload(caju);
@@ -1592,15 +1642,28 @@ public class CajuScriptTest {
         caju = new CajuScript();
         syntaxReload(caju);
         caju.eval("caju.cache: test;"+ script);
+        syntaxCheckIf(caju);*/
+    }
+
+    private void syntaxCheckIfCompile(CajuScript caju, String script) throws CajuScriptException {
+        syntaxReload(caju);
+        caju.eval("caju.compile: test.TestIf;"+ script);
+        syntaxCheckIf(caju);
+        syntaxReload(caju);
+        caju.eval("caju.compile: test.TestIf;"+ script);
+        syntaxCheckIf(caju);
+        caju = new CajuScript();
+        syntaxReload(caju);
+        caju.eval("caju.compile: test.TestIf;"+ script);
         syntaxCheckIf(caju);
     }
     
     private void syntaxCheckIf(CajuScript caju) throws CajuScriptException {
         syntaxCheck(caju, 18, 1, 2, 1, 2, 3, 0, 0, 3, 3, 3, 0, 0, 17, 17, 17, 21, 0, 0, 24, 27, 30, 0);
     }
-    
+
     private void syntaxCheckLoopCache(CajuScript caju, String script) throws CajuScriptException {
-        syntaxReload(caju);
+        /*syntaxReload(caju);
         caju.eval("caju.cache: test;"+ script);
         syntaxCheckLoop(caju);
         syntaxReload(caju);
@@ -1609,15 +1672,28 @@ public class CajuScriptTest {
         caju = new CajuScript();
         syntaxReload(caju);
         caju.eval("caju.cache: test;"+ script);
+        syntaxCheckLoop(caju);*/
+    }
+
+    private void syntaxCheckLoopCompile(CajuScript caju, String script) throws CajuScriptException {
+        syntaxReload(caju);
+        caju.eval("caju.compile: test.TestLoop;"+ script);
+        syntaxCheckLoop(caju);
+        syntaxReload(caju);
+        caju.eval("caju.compile: test.TestLoop;"+ script);
+        syntaxCheckLoop(caju);
+        caju = new CajuScript();
+        syntaxReload(caju);
+        caju.eval("caju.compile: test.TestLoop;"+ script);
         syntaxCheckLoop(caju);
     }
 
     private void syntaxCheckLoop(CajuScript caju) throws CajuScriptException {
         syntaxCheck(caju, 10, 13, 2, 2, 3, 22, 2, 10, 10, 10, 10, 0, 73, 15, 12, 10, 112, 15, 50, 55, 55, 55, 0);
     }
-    
+
     private void syntaxCheckFunctionCache(CajuScript caju, String script) throws CajuScriptException {
-        syntaxReload(caju);
+        /*syntaxReload(caju);
         caju.eval("caju.cache: test;"+ script);
         syntaxCheckFunction(caju);
         syntaxReload(caju);
@@ -1626,6 +1702,19 @@ public class CajuScriptTest {
         caju = new CajuScript();
         syntaxReload(caju);
         caju.eval("caju.cache: test;"+ script);
+        syntaxCheckFunction(caju);*/
+    }
+
+    private void syntaxCheckFunctionCompile(CajuScript caju, String script) throws CajuScriptException {
+        syntaxReload(caju);
+        caju.eval("caju.compile: test.TestFunction;"+ script);
+        syntaxCheckFunction(caju);
+        syntaxReload(caju);
+        caju.eval("caju.compile: test.TestFunction;"+ script);
+        syntaxCheckFunction(caju);
+        caju = new CajuScript();
+        syntaxReload(caju);
+        caju.eval("caju.compile: test.TestFunction;"+ script);
         syntaxCheckFunction(caju);
     }
     
@@ -1634,7 +1723,7 @@ public class CajuScriptTest {
     }
     
     private void syntaxCheckTryCatchCache(CajuScript caju, String script) throws CajuScriptException {
-        syntaxReload(caju);
+        /*syntaxReload(caju);
         caju.eval("caju.cache: test;"+ script);
         syntaxCheckTryCatch(caju);
         syntaxReload(caju);
@@ -1643,6 +1732,19 @@ public class CajuScriptTest {
         caju = new CajuScript();
         syntaxReload(caju);
         caju.eval("caju.cache: test;"+ script);
+        syntaxCheckTryCatch(caju);*/
+    }
+
+    private void syntaxCheckTryCatchCompile(CajuScript caju, String script) throws CajuScriptException {
+        syntaxReload(caju);
+        caju.eval("caju.compile: test.TestTryCatch;"+ script);
+        syntaxCheckTryCatch(caju);
+        syntaxReload(caju);
+        caju.eval("caju.compile: test.TestTryCatch;"+ script);
+        syntaxCheckTryCatch(caju);
+        caju = new CajuScript();
+        syntaxReload(caju);
+        caju.eval("caju.compile: test.TestTryCatch;"+ script);
         syntaxCheckTryCatch(caju);
     }
     

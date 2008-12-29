@@ -316,7 +316,7 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                 }
                 TryCatch tryCatch = new TryCatch(lineDetail);
                 Variable error = new Variable(lineDetail);
-                error.setKey(scriptTRYCATCHerrorVar);
+                error.setKey(scriptTRYCATCHerrorVar.trim());
                 Base _try = new Base(lineDetail);
                 parse(_try, caju, lineDetail, scriptTRY.toString(), syntax);
                 Base _catch = new Base(lineDetail);
