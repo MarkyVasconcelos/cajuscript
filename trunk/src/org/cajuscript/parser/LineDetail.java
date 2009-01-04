@@ -67,5 +67,15 @@ public class LineDetail implements java.io.Serializable {
      */
     public void setNumber(int number) {
         this.number = number;
-    }   
+    }
+
+    /**
+     * Set line detail.
+     * @param n Line number
+     * @param c Line content
+     */
+    public void set(int n, String c) {
+        content = c;
+        number = n;
+    }
 }

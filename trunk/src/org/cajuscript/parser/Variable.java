@@ -73,6 +73,38 @@ public class Variable extends Base {
     public void setValue(Element value) {
         this.value = value;
     }
+
+    /**
+     * Is the key to root context?
+     * @param syntax Syntax
+     * @return If is to root context return true
+     */
+    public Boolean isKeyRootContext(Syntax syntax) {
+        if (!key.equals("")) {
+            SyntaxPosition syntaxPosition = syntax.matcherPosition(key, syntax.getRootContext());
+            if (syntaxPosition.getStart() == 0) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Get the key name to root context.
+     * @param syntax Syntax
+     * @return Key name
+     */
+    public String getKeyRootContext(Syntax syntax) {
+        if (!key.equals("")) {
+            SyntaxPosition syntaxPosition = syntax.matcherPosition(key, syntax.getRootContext());
+            if (syntaxPosition.getStart() == 0) {
+                return key.substring(syntaxPosition.getEnd());
+            }
+        }
+        return "";
+    }
     
     /**
      * Executed this element and all childs elements.

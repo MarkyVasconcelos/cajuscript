@@ -121,150 +121,169 @@ public class Operation extends Base {
         }
         Value v1 = firstCommand.execute(caju, context, syntax);
         Value v2 = secondCommand.execute(caju, context, syntax);
+        compare(v, v1, operator, v2);
+        return v;
+    }
+
+    /**
+     * Compare values.
+     * @param v Comparation result
+     * @param v1 First value to be compared
+     * @param operator Operator of comparation
+     * @param v2 Second value to be compared
+     * @return Comparation result
+     * @throws org.cajuscript.CajuScriptException Errors ocurred on comparation
+     */
+    public static void compare(Value v, Value v1, Operator operator, Value v2) throws CajuScriptException {
         switch (operator) {
             case ADDITION:
                 if (v1.getType() == Value.Type.NUMBER && v2.getType() == Value.Type.NUMBER) {
                     if (v1.getTypeNumber() == Value.TypeNumber.INTEGER && v2.getTypeNumber() == Value.TypeNumber.INTEGER) {
                         v.setValue(new Integer(v1.getNumberIntegerValue() + v2.getNumberIntegerValue()));
-                        return v;
+                        return;
                     } else if ((v1.getTypeNumber() == Value.TypeNumber.INTEGER || v1.getTypeNumber() == Value.TypeNumber.FLOAT) && (v2.getTypeNumber() == Value.TypeNumber.INTEGER || v2.getTypeNumber() == Value.TypeNumber.FLOAT)) {
                         v.setValue(new Float(v1.getNumberFloatValue() + v2.getNumberFloatValue()));
-                        return v;
+                        return;
                     } else if ((v1.getTypeNumber() == Value.TypeNumber.INTEGER || v1.getTypeNumber() == Value.TypeNumber.LONG) && (v2.getTypeNumber() == Value.TypeNumber.INTEGER || v2.getTypeNumber() == Value.TypeNumber.LONG)) {
                         v.setValue(new Long(v1.getNumberLongValue() + v2.getNumberLongValue()));
-                        return v;
+                        return;
                     } else {
                         v.setValue(new Double(v1.getNumberDoubleValue() + v2.getNumberDoubleValue()));
-                        return v;
+                        return;
                     }
                 } else if (v1.getType() == Value.Type.OBJECT && v2.getType() == Value.Type.OBJECT && v1.getValue() instanceof Operable && v2.getValue() instanceof Operable) {
                     v.setValue(Operable.class.cast(v1.getValue()).plus(v2.getValue()));
-                    return v;
+                    return;
                 } else if ((v1.getType() == Value.Type.STRING || v1.getType() == Value.Type.NUMBER || v1.getType() == Value.Type.OBJECT) && (v2.getType() == Value.Type.STRING || v2.getType() == Value.Type.NUMBER || v2.getType() == Value.Type.OBJECT)) {
                     v.setValue(v1.getStringValue() + v2.getStringValue());
-                    return v;
+                    return;
                 }
-                return null;
+                v.setValue(null);
+                return;
             case SUBTRACTION:
                 if (v1.getType() == Value.Type.NUMBER && v2.getType() == Value.Type.NUMBER) {
                     if (v1.getTypeNumber() == Value.TypeNumber.INTEGER && v2.getTypeNumber() == Value.TypeNumber.INTEGER) {
                         v.setValue(new Integer(v1.getNumberIntegerValue() - v2.getNumberIntegerValue()));
-                        return v;
+                        return;
                     } else if ((v1.getTypeNumber() == Value.TypeNumber.INTEGER || v1.getTypeNumber() == Value.TypeNumber.FLOAT) && (v2.getTypeNumber() == Value.TypeNumber.INTEGER || v2.getTypeNumber() == Value.TypeNumber.FLOAT)) {
                         v.setValue(new Float(v1.getNumberFloatValue() - v2.getNumberFloatValue()));
-                        return v;
+                        return;
                     } else if ((v1.getTypeNumber() == Value.TypeNumber.INTEGER || v1.getTypeNumber() == Value.TypeNumber.LONG) && (v2.getTypeNumber() == Value.TypeNumber.INTEGER || v2.getTypeNumber() == Value.TypeNumber.LONG)) {
                         v.setValue(new Long(v1.getNumberLongValue() - v2.getNumberLongValue()));
-                        return v;
+                        return;
                     } else {
                         v.setValue(new Double(v1.getNumberDoubleValue() - v2.getNumberDoubleValue()));
-                        return v;
+                        return;
                     }
                 } else if (v1.getType() == Value.Type.OBJECT && v2.getType() == Value.Type.OBJECT && v1.getValue() instanceof Operable && v2.getValue() instanceof Operable) {
                     v.setValue(Operable.class.cast(v1.getValue()).subtract(v2.getValue()));
-                    return v;
+                    return;
                 }
-                return null;
+                v.setValue(null);
+                return;
             case MULTIPLICATION:
                 if (v1.getType() == Value.Type.NUMBER && v2.getType() == Value.Type.NUMBER) {
                     if (v1.getTypeNumber() == Value.TypeNumber.INTEGER && v2.getTypeNumber() == Value.TypeNumber.INTEGER) {
                         v.setValue(new Integer(v1.getNumberIntegerValue() * v2.getNumberIntegerValue()));
-                        return v;
+                        return;
                     } else if ((v1.getTypeNumber() == Value.TypeNumber.INTEGER || v1.getTypeNumber() == Value.TypeNumber.FLOAT) && (v2.getTypeNumber() == Value.TypeNumber.INTEGER || v2.getTypeNumber() == Value.TypeNumber.FLOAT)) {
                         v.setValue(new Float(v1.getNumberFloatValue() * v2.getNumberFloatValue()));
-                        return v;
+                        return;
                     } else if ((v1.getTypeNumber() == Value.TypeNumber.INTEGER || v1.getTypeNumber() == Value.TypeNumber.LONG) && (v2.getTypeNumber() == Value.TypeNumber.INTEGER || v2.getTypeNumber() == Value.TypeNumber.LONG)) {
                         v.setValue(new Long(v1.getNumberLongValue() * v2.getNumberLongValue()));
-                        return v;
+                        return;
                     } else {
                         v.setValue(new Double(v1.getNumberDoubleValue() * v2.getNumberDoubleValue()));
-                        return v;
+                        return;
                     }
                 } else if (v1.getType() == Value.Type.OBJECT && v2.getType() == Value.Type.OBJECT && v1.getValue() instanceof Operable && v2.getValue() instanceof Operable) {
                     v.setValue(Operable.class.cast(v1.getValue()).multiply(v2.getValue()));
-                    return v;
+                    return;
                 }
-                return null;
+                v.setValue(null);
+                return;
             case DIVISION:
                 if (v1.getType() == Value.Type.NUMBER && v2.getType() == Value.Type.NUMBER) {
                     if (v1.getTypeNumber() == Value.TypeNumber.INTEGER && v2.getTypeNumber() == Value.TypeNumber.INTEGER) {
                         v.setValue(new Integer(v1.getNumberIntegerValue() / v2.getNumberIntegerValue()));
-                        return v;
+                        return;
                     } else if ((v1.getTypeNumber() == Value.TypeNumber.INTEGER || v1.getTypeNumber() == Value.TypeNumber.FLOAT) && (v2.getTypeNumber() == Value.TypeNumber.INTEGER || v2.getTypeNumber() == Value.TypeNumber.FLOAT)) {
                         v.setValue(new Float(v1.getNumberFloatValue() / v2.getNumberFloatValue()));
-                        return v;
+                        return;
                     } else if ((v1.getTypeNumber() == Value.TypeNumber.INTEGER || v1.getTypeNumber() == Value.TypeNumber.LONG) && (v2.getTypeNumber() == Value.TypeNumber.INTEGER || v2.getTypeNumber() == Value.TypeNumber.LONG)) {
                         v.setValue(new Long(v1.getNumberLongValue() / v2.getNumberLongValue()));
-                        return v;
+                        return;
                     } else {
                         v.setValue(new Double(v1.getNumberDoubleValue() / v2.getNumberDoubleValue()));
-                        return v;
+                        return;
                     }
                 } else if (v1.getType() == Value.Type.OBJECT && v2.getType() == Value.Type.OBJECT && v1.getValue() instanceof Operable && v2.getValue() instanceof Operable) {
                     v.setValue(Operable.class.cast(v1.getValue()).divide(v2.getValue()));
-                    return v;
+                    return;
                 }
-                return null;
+                v.setValue(null);
+                return;
             case MODULES:
                 if (v1.getType() == Value.Type.NUMBER && v2.getType() == Value.Type.NUMBER) {
                     if (v1.getTypeNumber() == Value.TypeNumber.INTEGER && v2.getTypeNumber() == Value.TypeNumber.INTEGER) {
                         v.setValue(new Integer(v1.getNumberIntegerValue() % v2.getNumberIntegerValue()));
-                        return v;
+                        return;
                     } else if ((v1.getTypeNumber() == Value.TypeNumber.INTEGER || v1.getTypeNumber() == Value.TypeNumber.FLOAT) && (v2.getTypeNumber() == Value.TypeNumber.INTEGER || v2.getTypeNumber() == Value.TypeNumber.FLOAT)) {
                         v.setValue(new Float(v1.getNumberFloatValue() % v2.getNumberFloatValue()));
-                        return v;
+                        return;
                     } else if ((v1.getTypeNumber() == Value.TypeNumber.INTEGER || v1.getTypeNumber() == Value.TypeNumber.LONG) && (v2.getTypeNumber() == Value.TypeNumber.INTEGER || v2.getTypeNumber() == Value.TypeNumber.LONG)) {
                         v.setValue(new Long(v1.getNumberLongValue() % v2.getNumberLongValue()));
-                        return v;
+                        return;
                     } else {
                         v.setValue(new Double(v1.getNumberDoubleValue() % v2.getNumberDoubleValue()));
-                        return v;
+                        return;
                     }
                 } else if (v1.getType() == Value.Type.OBJECT && v2.getType() == Value.Type.OBJECT && v1.getValue() instanceof Operable && v2.getValue() instanceof Operable) {
                     v.setValue(Operable.class.cast(v1.getValue()).module(v2.getValue()));
-                    return v;
+                    return;
                 }
-                return null;
+                v.setValue(null);
+                return;
             case AND:
                 if (v1.getBooleanValue() == true && v2.getBooleanValue() == true) {
                     v.setValue(BOOLEAN_TRUE);
-                    return v;
+                    return;
                 } else {
                     v.setValue(BOOLEAN_FALSE);
-                    return v;
+                    return;
                 }
             case OR:
                 if (v1.getBooleanValue() == true || v2.getBooleanValue() == true) {
                     v.setValue(BOOLEAN_TRUE);
-                    return v;
+                    return;
                 } else {
                     v.setValue(BOOLEAN_FALSE);
-                    return v;
+                    return;
                 }
             case EQUAL:
                 if (v1.getType() == Value.Type.BOOLEAN && v2.getType() == Value.Type.BOOLEAN) {
                     if (v1.getBooleanValue() == v2.getBooleanValue()) {
                         v.setValue(BOOLEAN_TRUE);
-                        return v;
+                        return;
                     } else {
                         v.setValue(BOOLEAN_FALSE);
-                        return v;
+                        return;
                     }
                 } else if (v1.getType() == Value.Type.NUMBER && v2.getType() == Value.Type.NUMBER) {
                     if (v1.getNumberValue() == v2.getNumberValue()) {
                         v.setValue(BOOLEAN_TRUE);
-                        return v;
+                        return;
                     } else {
                         v.setValue(BOOLEAN_FALSE);
-                        return v;
+                        return;
                     }
                 } else if ((v1.getType() == Value.Type.STRING || v1.getType() == Value.Type.NUMBER) && (v2.getType() == Value.Type.STRING || v2.getType() == Value.Type.NUMBER)) {
                     if (v1.getStringValue().equals(v2.getStringValue())) {
                         v.setValue(BOOLEAN_TRUE);
-                        return v;
+                        return;
                     } else {
                         v.setValue(BOOLEAN_FALSE);
-                        return v;
+                        return;
                     }
                 }
                 if (v1.getValue() == null || v2.getValue() == null) {
@@ -272,31 +291,31 @@ public class Operation extends Base {
                 } else {
                     v.setValue(new Boolean(v1.getValue().equals(v2.getValue())));
                 }
-                return v;
+                return;
             case NOT_EQUAL:
                 if (v1.getType() == Value.Type.BOOLEAN && v2.getType() == Value.Type.BOOLEAN) {
                     if (v1.getBooleanValue() != v2.getBooleanValue()) {
                         v.setValue(BOOLEAN_TRUE);
-                        return v;
+                        return;
                     } else {
                         v.setValue(BOOLEAN_FALSE);
-                        return v;
+                        return;
                     }
                 } else if (v1.getType() == Value.Type.NUMBER && v2.getType() == Value.Type.NUMBER) {
                     if (v1.getNumberValue() != v2.getNumberValue()) {
                         v.setValue(BOOLEAN_TRUE);
-                        return v;
+                        return;
                     } else {
                         v.setValue(BOOLEAN_FALSE);
-                        return v;
+                        return;
                     }
                 } else if ((v1.getType() == Value.Type.STRING || v1.getType() == Value.Type.NUMBER) && (v2.getType() == Value.Type.STRING || v2.getType() == Value.Type.NUMBER)) {
                     if (!v1.getStringValue().equals(v2.getStringValue())) {
                         v.setValue(BOOLEAN_TRUE);
-                        return v;
+                        return;
                     } else {
                         v.setValue(BOOLEAN_FALSE);
-                        return v;
+                        return;
                     }
                 }
                 if (v1.getValue() == null || v2.getValue() == null) {
@@ -304,88 +323,93 @@ public class Operation extends Base {
                 } else {
                     v.setValue(new Boolean(!v1.getValue().equals(v2.getValue())));
                 }
-                return v;
+                return;
             case LESS:
                 if (v1.getType() == Value.Type.NUMBER && v2.getType() == Value.Type.NUMBER) {
                     if (v1.getNumberValue() < v2.getNumberValue()) {
                         v.setValue(BOOLEAN_TRUE);
-                        return v;
+                        return;
                     } else {
                         v.setValue(BOOLEAN_FALSE);
-                        return v;
+                        return;
                     }
                 } else if ((v1.getType() == Value.Type.STRING || v1.getType() == Value.Type.NUMBER) && (v2.getType() == Value.Type.STRING || v2.getType() == Value.Type.NUMBER)) {
                     if (v1.getStringValue().compareTo(v2.getStringValue()) < 0) {
                         v.setValue(BOOLEAN_TRUE);
-                        return v;
+                        return;
                     } else {
                         v.setValue(BOOLEAN_FALSE);
-                        return v;
+                        return;
                     }
                 }
-                return null;
+                v.setValue(null);
+                return;
             case GREATER:
                 if (v1.getType() == Value.Type.NUMBER && v2.getType() == Value.Type.NUMBER) {
                     if (v1.getNumberValue() > v2.getNumberValue()) {
                         v.setValue(BOOLEAN_TRUE);
-                        return v;
+                        return;
                     } else {
                         v.setValue(BOOLEAN_FALSE);
-                        return v;
+                        return;
                     }
                 } else if ((v1.getType() == Value.Type.STRING || v1.getType() == Value.Type.NUMBER) && (v2.getType() == Value.Type.STRING || v2.getType() == Value.Type.NUMBER)) {
                     if (v1.getStringValue().compareTo(v2.getStringValue()) > 0) {
                         v.setValue(BOOLEAN_TRUE);
-                        return v;
+                        return;
                     } else {
                         v.setValue(BOOLEAN_FALSE);
-                        return v;
+                        return;
                     }
                 }
-                return null;
+                v.setValue(null);
+                return;
             case LESS_EQUAL:
                 if (v1.getType() == Value.Type.NUMBER && v2.getType() == Value.Type.NUMBER) {
                     if (v1.getNumberValue() <= v2.getNumberValue()) {
                         v.setValue(BOOLEAN_TRUE);
-                        return v;
+                        return;
                     } else {
                         v.setValue(BOOLEAN_FALSE);
-                        return v;
+                        return;
                     }
                 } else if ((v1.getType() == Value.Type.STRING || v1.getType() == Value.Type.NUMBER) && (v2.getType() == Value.Type.STRING || v2.getType() == Value.Type.NUMBER)) {
                     int c = v1.getStringValue().compareTo(v2.getStringValue());
                     if (c < 0 || c == 0) {
                         v.setValue(BOOLEAN_TRUE);
-                        return v;
+                        return;
                     } else {
                         v.setValue(BOOLEAN_FALSE);
-                        return v;
+                        return;
                     }
                 }
-                return null;
+                v.setValue(null);
+                return;
             case GREATER_EQUAL:
                 if (v1.getType() == Value.Type.NUMBER && v2.getType() == Value.Type.NUMBER) {
                     if (v1.getNumberValue() >= v2.getNumberValue()) {
                         v.setValue(BOOLEAN_TRUE);
-                        return v;
+                        return;
                     } else {
                         v.setValue(BOOLEAN_FALSE);
-                        return v;
+                        return;
                     }
                 } else if ((v1.getType() == Value.Type.STRING || v1.getType() == Value.Type.NUMBER) && (v2.getType() == Value.Type.STRING || v2.getType() == Value.Type.NUMBER)) {
                     int c = v1.getStringValue().compareTo(v2.getStringValue());
                     if (c > 0 || c == 0) {
                         v.setValue(BOOLEAN_TRUE);
-                        return v;
+                        return;
                     } else {
                         v.setValue(BOOLEAN_FALSE);
-                        return v;
+                        return;
                     }
                 }
-                return null;
+                v.setValue(null);
+                return;
             default:
                 break;
         }
-        return null;
+        v.setValue(null);
+        return;
     }
 }
