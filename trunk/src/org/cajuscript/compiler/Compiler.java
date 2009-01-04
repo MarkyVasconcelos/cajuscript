@@ -1,19 +1,13 @@
 package org.cajuscript.compiler;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -110,7 +104,23 @@ public class Compiler {
         if (!scriptFile.exists() || !classFile.exists()) {
             return false;
         }
-        return scriptFile.lastModified() < classFile.lastModified();
+        String scriptClass = "";
+        java.io.InputStream is = null;
+        try {
+            is = new java.io.FileInputStream(scriptFile);
+            byte[] b = new byte[is.available()];
+            is.read(b);
+            scriptClass = new String(b);
+        } catch (Exception e) {
+            throw new CajuScriptException(e);
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (Exception e) { }
+            }
+        }
+        return scriptClass.equals(script);
     }
 
     public void compile(CajuScript c, Context staticContext, String script, Element base) throws CajuScriptException {
