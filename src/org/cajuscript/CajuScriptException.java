@@ -77,15 +77,20 @@ public class CajuScriptException extends Exception {
      */
     public static CajuScriptException create(CajuScript caju, Context context, String message, Throwable cause) throws CajuScriptException {
         if (message == null) {
-            return new CajuScriptException(null, cause);
+            if (caju != null && context != null) {
+                message = Integer.toString(caju.getRunningLine().getNumber()).concat(": ").concat(formatScript(context, caju.getRunningLine().getContent()));
+            } else if (caju != null) {
+                message = Integer.toString(caju.getRunningLine().getNumber()).concat(": ").concat(formatScript(caju.getContext(), caju.getRunningLine().getContent()));
+            }
+            return new CajuScriptException(message, cause);
         }
-        return new CajuScriptException(message.concat(" > ").concat(Integer.toString(caju.getRunningLine().getNumber())).concat(": ").concat(formatScript(caju, context, caju.getRunningLine().getContent())), cause);
+        return new CajuScriptException(message.concat(" > ").concat(Integer.toString(caju.getRunningLine().getNumber())).concat(": ").concat(formatScript(context, caju.getRunningLine().getContent())), cause);
     }
     
-    private static String formatScript(CajuScript caju, Context context, String script) {
-        for (String key : caju.getAllKeys(true)) {
+    private static String formatScript(Context context, String script) {
+        for (String key : context.getAllKeys(true)) {
             if (key.startsWith(CajuScript.CAJU_VARS)) {
-                script = script.replace((CharSequence)key, "\"".concat(context.getVar(key).toString()).concat("\""));
+                script = script.replace(key, "\"".concat(context.getVar(key).toString()).concat("\""));
             }
         }
         return script;

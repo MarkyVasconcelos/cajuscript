@@ -63,6 +63,7 @@ public class CajuScriptTest {
 
     @After
     public void tearDown() {
+        /*
         while (true) {
             try {
                 syntaxImport();
@@ -83,7 +84,7 @@ public class CajuScriptTest {
             } catch (Exception e) {
                 throw new Error(e);
             }
-        }
+        }*/
     }
 
     /**
@@ -326,8 +327,8 @@ public class CajuScriptTest {
         scriptLoop += "	       xLoop += x;";
         scriptLoop += "        countContinue += 1;";
         scriptLoop += "        xContinue += x;";
-        scriptLoop += "        . .;";
         scriptLoop += "        x += 1;";
+        scriptLoop += "        . .;";
         scriptLoop += "    @;";
         scriptLoop += "    ex ^";
         scriptLoop += "        countTry += 1;";
@@ -814,8 +815,8 @@ public class CajuScriptTest {
         scriptLoop += "	       xLoop += x;";
         scriptLoop += "        countContinue += 1;";
         scriptLoop += "        xContinue += x;";
-        scriptLoop += "        continue;";
         scriptLoop += "        x += 1;";
+        scriptLoop += "        continue;";
         scriptLoop += "    }";
         scriptLoop += "    try ex {";
         scriptLoop += "        countTry += 1;";
@@ -1302,8 +1303,8 @@ public class CajuScriptTest {
         scriptLoop += "	       xLoop += x;";
         scriptLoop += "        countContinue += 1;";
         scriptLoop += "        xContinue += x;";
-        scriptLoop += "        continue;";
         scriptLoop += "        x += 1;";
+        scriptLoop += "        continue;";
         scriptLoop += "    end;";
         scriptLoop += "    try ex ;";
         scriptLoop += "        countTry += 1;";
@@ -1689,7 +1690,7 @@ public class CajuScriptTest {
     }
 
     private void syntaxCheckLoop(CajuScript caju) throws CajuScriptException {
-        syntaxCheck(caju, 10, 13, 2, 2, 3, 22, 2, 10, 10, 10, 10, 0, 73, 15, 12, 10, 112, 15, 50, 55, 55, 55, 0);
+        syntaxCheck(caju, 10, 12, 1, 2, 3, 20, 1, 9, 9, 9, 9, 0, 68, 10, 12, 10, 102, 10, 45, 50, 50, 50, 0);
     }
 
     private void syntaxCheckFunctionCache(CajuScript caju, String script) throws CajuScriptException {
@@ -1759,74 +1760,123 @@ public class CajuScriptTest {
     int xLoop, int xBreak, int xContinue, int xTry, int xCatch, int xFinally, int xFunc
     ) throws CajuScriptException {
         if (((Integer)caju.get("x")).intValue() != x) {
+            syntaxPrintAllVars(caju);
             fail("x is "+ caju.get("x") +". Need be "+ x +"!");
         }
         if (((Integer)caju.get("countIf")).intValue() != countIf) {
+            syntaxPrintAllVars(caju);
             fail("countIf is "+ caju.get("countIf") +". Need be "+ countIf +"!");
         }
         if (((Integer)caju.get("countElseIf1")).intValue() != countElseIf1) {
+            syntaxPrintAllVars(caju);
             fail("countElseIf1 is "+ caju.get("countElseIf1") +". Need be "+ countElseIf1 +"!");
         }
         if (((Integer)caju.get("countElseIf2")).intValue() != countElseIf2) {
+            syntaxPrintAllVars(caju);
             fail("countElseIf2 is "+ caju.get("countElseIf2") +". Need be "+ countElseIf2 +"!");
         }
         if (((Integer)caju.get("countElse")).intValue() != countElse) {
+            syntaxPrintAllVars(caju);
             fail("countElse is "+ caju.get("countElse") +". Need be "+ countElse +"!");
         }
         if (((Integer)caju.get("countLoop")).intValue() != countLoop) {
+            syntaxPrintAllVars(caju);
             fail("countLoop is "+ caju.get("countLoop") +". Need be "+ countLoop +"!");
         }
         if (((Integer)caju.get("countBreak")).intValue() != countBreak) {
+            syntaxPrintAllVars(caju);
             fail("countBreak is "+ caju.get("countBreak") +". Need be "+ countBreak +"!");
         }
         if (((Integer)caju.get("countContinue")).intValue() != countContinue) {
+            syntaxPrintAllVars(caju);
             fail("countContinue is "+ caju.get("countContinue") +". Need be "+ countContinue +"!");
         }
         if (((Integer)caju.get("countFunc")).intValue() != countFunc) {
+            syntaxPrintAllVars(caju);
             fail("countFunc is "+ caju.get("countFunc") +". Need be "+ countFunc +"!");
         }
         if (((Integer)caju.get("countTry")).intValue() != countTry) {
+            syntaxPrintAllVars(caju);
             fail("countTry is "+ caju.get("countTry") +". Need be "+ countTry +"!");
         }
         if (((Integer)caju.get("countCatch")).intValue() != countCatch) {
+            syntaxPrintAllVars(caju);
             fail("countCatch is "+ caju.get("countCatch") +". Need be "+ countCatch +"!");
         }
         if (((Integer)caju.get("countFinally")).intValue() != countFinally) {
+            syntaxPrintAllVars(caju);
             fail("countFinally is "+ caju.get("countFinally") +". Need be "+ countFinally +"!");
         }
         if (((Integer)caju.get("xIf")).intValue() != xIf) {
+            syntaxPrintAllVars(caju);
             fail("xIf is "+ caju.get("xIf") +". Need be "+ xIf +"!");
         }
         if (((Integer)caju.get("xElseIf1")).intValue() != xElseIf1) {
+            syntaxPrintAllVars(caju);
             fail("xElseIf1 is "+ caju.get("xElseIf1") +". Need be "+ xElseIf1 +"!");
         }
         if (((Integer)caju.get("xElseIf2")).intValue() != xElseIf2) {
+            syntaxPrintAllVars(caju);
             fail("xElseIf2 is "+ caju.get("xElseIf2") +". Need be "+ xElseIf2 +"!");
         }
         if (((Integer)caju.get("xElse")).intValue() != xElse) {
+            syntaxPrintAllVars(caju);
             fail("xElse is "+ caju.get("xElse") +". Need be "+ xElse +"!");
         }
         if (((Integer)caju.get("xLoop")).intValue() != xLoop) {
+            syntaxPrintAllVars(caju);
             fail("xLoop is "+ caju.get("xLoop") +". Need be "+ xLoop +"!");
         }
         if (((Integer)caju.get("xBreak")).intValue() != xBreak) {
-            fail("xBreak is "+ caju.get("xBreak") +". Need be xBreak!");
+            syntaxPrintAllVars(caju);
+            fail("xBreak is "+ caju.get("xBreak") +". Need be "+ xBreak +" Break!");
         }
         if (((Integer)caju.get("xContinue")).intValue() != xContinue) {
+            syntaxPrintAllVars(caju);
             fail("xContinue is "+ caju.get("xContinue") +". Need be "+ xContinue +"!");
         }
         if (((Integer)caju.get("xFunc")).intValue() != xFunc) {
+            syntaxPrintAllVars(caju);
             fail("xFunc is "+ caju.get("xFunc") +". Need be "+ xFunc +"!");
         }
         if (((Integer)caju.get("xTry")).intValue() != xTry) {
+            syntaxPrintAllVars(caju);
             fail("xTry is "+ caju.get("xTry") +". Need be "+ xTry +"!");
         }
         if (((Integer)caju.get("xCatch")).intValue() != xCatch) {
+            syntaxPrintAllVars(caju);
             fail("xCatch is "+ caju.get("xCatch") +". Need be "+ xCatch +"!");
         }
         if (((Integer)caju.get("xFinally")).intValue() != xFinally) {
+            syntaxPrintAllVars(caju);
             fail("xFinally is "+ caju.get("xFinally") +". Need be "+ xFinally +"!");
         }
+    }
+
+    private void syntaxPrintAllVars(CajuScript caju) throws CajuScriptException {
+        System.out.println("x is "+ caju.get("x") +".");
+        System.out.println("countIf is "+ caju.get("countIf") +".");
+        System.out.println("countElseIf1 is "+ caju.get("countElseIf1") +".");
+        System.out.println("countElseIf2 is "+ caju.get("countElseIf2") +".");
+        System.out.println("countElse is "+ caju.get("countElse") +".");
+        System.out.println("countLoop is "+ caju.get("countLoop") +".");
+        System.out.println("countBreak is "+ caju.get("countBreak") +".");
+        System.out.println("countContinue is "+ caju.get("countContinue") +".");
+        System.out.println("countFunc is "+ caju.get("countFunc") +".");
+        System.out.println("countTry is "+ caju.get("countTry") +".");
+        System.out.println("countCatch is "+ caju.get("countCatch") +".");
+        System.out.println("countFinally is "+ caju.get("countFinally") +".");
+        System.out.println("xIf is "+ caju.get("xIf") +".");
+        System.out.println("xElseIf1 is "+ caju.get("xElseIf1") +".");
+        System.out.println("xElseIf2 is "+ caju.get("xElseIf2") +".");
+        System.out.println("xElse is "+ caju.get("xElse") +".");
+        System.out.println("xLoop is "+ caju.get("xLoop") +".");
+        System.out.println("xBreak is "+ caju.get("xBreak") +".");
+        System.out.println("xContinue is "+ caju.get("xContinue") +".");
+        System.out.println("xFunc is "+ caju.get("xFunc") +".");
+        System.out.println("xTry is "+ caju.get("xTry") +".");
+        System.out.println("xCatch is "+ caju.get("xCatch") +".");
+        System.out.println("xFinally is "+ caju.get("xFinally") +".");
     }
 
     /**

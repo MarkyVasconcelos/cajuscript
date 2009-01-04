@@ -360,7 +360,7 @@ public class CajuScript {
                 }
                 if (!config && compilePath != null) {
                     Compiler compiler = new Compiler(compilePath);
-                    if (compiler.isLastest(originalScript)) {
+                    if (compiler.isLatest(originalScript)) {
                         return compiler.execute(this, context, syntax);
                     }
                 }
@@ -494,6 +494,8 @@ public class CajuScript {
         } catch (CajuScriptException e) {
             throw e;
         } catch (Exception e) {
+            throw CajuScriptException.create(this, context, e.getMessage(), e);
+        } catch (Error e) {
             throw CajuScriptException.create(this, context, e.getMessage(), e);
         }
     }

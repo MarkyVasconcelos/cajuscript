@@ -27,6 +27,7 @@ import org.cajuscript.Syntax;
 import org.cajuscript.SyntaxPosition;
 import org.cajuscript.Value;
 import org.cajuscript.CajuScriptException;
+import org.cajuscript.compiler.Executable;
 import org.cajuscript.parser.Operation.Operator;
 
 /**
@@ -38,6 +39,7 @@ public class Base implements Element, java.io.Serializable, Cloneable {
     protected LineDetail baseLineDetail = null;
     private static long varsGroupCounter = 0;
     private static long varsMathCounter = 0;
+    protected Executable executable = null;
     
     /**
      * Base
@@ -45,6 +47,14 @@ public class Base implements Element, java.io.Serializable, Cloneable {
      */
     public Base(LineDetail line) {
         this.baseLineDetail = line;
+    }
+
+    /**
+     * Base
+     * @param executable Executable
+     */
+    public Base(Executable executable) {
+        this.executable = executable;
     }
     
     /**

@@ -71,6 +71,7 @@ public class Value implements Cloneable {
     private ScriptCommand scriptCommand = null;
     private Object[] paramsValues = null;
     private Object[] paramsFinal = null;
+    private String script = null;
     
     /**
      * Create a new value.
@@ -92,10 +93,34 @@ public class Value implements Cloneable {
      * @throws org.cajuscript.CajuScriptException Errors loading value with the script.
      */
     public Value(CajuScript caju, Context context, Syntax syntax, String script) throws CajuScriptException {
+        cajuScript = caju;
+        this.context = context;
+        this.syntax = syntax;
+        setScript(script);
+    }
+
+    /**
+     * Get script.
+     * @return Script.
+     */
+    public String getScript() {
+        return script;
+    }
+
+    /**
+     * Set script.
+     * @param s Script.
+     * @throws org.cajuscript.CajuScriptException Errors loading the script.
+     */
+    public void setScript(String s) throws CajuScriptException {
         try {
-            cajuScript = caju;
-            this.context = context;
-            this.syntax = syntax;
+            if (script != null && script.equals(s)) {
+                if (isCommand()) {
+                    setCommand(script);
+                }
+                return;
+            }
+            script = s;
             script = script.trim();
             if (script.equals("")) {
                 return;
@@ -139,7 +164,7 @@ public class Value implements Cloneable {
         } catch (CajuScriptException e) {
             throw e;
         } catch (Exception e) {
-            throw CajuScriptException.create(caju, context, "Invalid value: ".concat(script), e);
+            throw CajuScriptException.create(cajuScript, context, "Invalid value: ".concat(script), e);
         }
     }
     

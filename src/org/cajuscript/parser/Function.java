@@ -24,6 +24,7 @@ import org.cajuscript.Context;
 import org.cajuscript.Value;
 import org.cajuscript.Syntax;
 import org.cajuscript.CajuScriptException;
+import org.cajuscript.compiler.Executable;
 
 /**
  * Script element of type function.
@@ -39,6 +40,15 @@ public class Function extends Base {
      */
     public Function(LineDetail line) {
         super(line);
+    }
+
+    /**
+     * Create new Function.
+     * @param executable Executable
+     */
+    public Function(Executable executable, String[] parameters) {
+        super(executable);
+        this.paramKey = parameters;
     }
     
     /**
@@ -119,13 +129,22 @@ public class Function extends Base {
      * @throws org.cajuscript.CajuScriptException Errors ocurred on execution
      */
     public Value invoke(CajuScript caju, Context context, Syntax syntax, Value... paramValue) throws CajuScriptException {
-        caju.setRunningLine(getLineDetail());
-        for (int x = 0; x < paramValue.length; x++) {
-            context.setVar(paramKey[x], paramValue[x]);
+        if (executable == null) {
+            caju.setRunningLine(getLineDetail());
         }
-        for (Element element : elements) {
-            Value v = element.execute(caju, context, syntax);
-            if (v != null && canElementReturn(element)) {
+        for (int i = 0; i < paramValue.length; i++) {
+            context.setVar(paramKey[i], paramValue[i]);
+        }
+        if (executable == null) {
+            for (Element element : elements) {
+                Value v = element.execute(caju, context, syntax);
+                if (v != null && canElementReturn(element)) {
+                    return v;
+                }
+            }
+        } else {
+            Value v = executable.execute(caju, context, syntax);
+            if (v != null) {
                 return v;
             }
         }
