@@ -135,6 +135,7 @@ public class Operation extends Base {
      * @throws org.cajuscript.CajuScriptException Errors ocurred on comparation
      */
     public static void compare(Value v, Value v1, Operator operator, Value v2) throws CajuScriptException {
+        v.setValue(null);
         switch (operator) {
             case ADDITION:
                 if (v1.getType() == Value.Type.NUMBER && v2.getType() == Value.Type.NUMBER) {

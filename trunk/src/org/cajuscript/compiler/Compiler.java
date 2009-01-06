@@ -430,14 +430,14 @@ public class Compiler {
             source.append("try {");
             source.append("\n");
             compileElement(valueKeys, tryCatch.getTry());
-            source.append("} catch (Exception ");
+            source.append("} catch (Throwable ");
             source.append(key);
-            source.append("exp) {");
+            source.append("t) {");
             source.append("\n");
             source.append(key);
             source.append(".setValue(");
             source.append(key);
-            source.append("exp);");
+            source.append("t);");
             source.append("\n");
             source.append("context.setVar(");
             source.append(toString(tryCatch.getError().getKey()));

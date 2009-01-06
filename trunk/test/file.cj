@@ -1,3 +1,4 @@
+caju.syntax: Caju
 
 x = 1
 

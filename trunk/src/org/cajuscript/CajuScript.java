@@ -271,6 +271,7 @@ public class CajuScript {
      * @throws org.cajuscript.CajuScriptException Errors ocurred on script execution.
      */
     public Value eval(String script, Syntax syntax, boolean execute) throws CajuScriptException {
+        Syntax syntaxBackup = getSyntax();
         try {
             String originalScript = script;
             if (script.equals("")) {
@@ -318,6 +319,7 @@ public class CajuScript {
                             } else {
                                 throw CajuScriptException.create(this, context, "Syntax \"".concat(syntaxName).concat("\" not found."));
                             }
+                            setSyntax(syntax);
                         } else if (configLine.startsWith("caju.cache")) {
                             cacheId = configLine.substring(configLine.lastIndexOf(' ') + 1);
                             cacheParser = cacheParsers.get(cacheId);
@@ -493,10 +495,10 @@ public class CajuScript {
             }
         } catch (CajuScriptException e) {
             throw e;
-        } catch (Exception e) {
-            throw CajuScriptException.create(this, context, e.getMessage(), e);
-        } catch (Error e) {
-            throw CajuScriptException.create(this, context, e.getMessage(), e);
+        } catch (Throwable t) {
+            throw CajuScriptException.create(this, context, t.getMessage(), t);
+        } finally {
+            setSyntax(syntaxBackup);
         }
     }
     
@@ -832,6 +834,15 @@ public class CajuScript {
     public static void error(String msg) throws CajuScriptException {
         throw new CajuScriptException(msg);
     }
+
+    /**
+     * Generate an specific throwable.
+     * @param t Throwable instance.
+     * @throws Throwable Throwable generated.
+     */
+    public static void error(Throwable t) throws Throwable {
+        throw t;
+    }
     
     /**
      * If two Class are from same type.
@@ -1085,6 +1096,7 @@ public class CajuScript {
     }
     
     static {
+        globalSyntaxs.put("Caju", new Syntax());
         Syntax syntaxJ = new Syntax();
         syntaxJ.setIf(Pattern.compile("if\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{"));
         syntaxJ.setElseIf(Pattern.compile("\\}\\s*else\\s+if\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{"));

@@ -222,6 +222,7 @@ public class Value implements Cloneable {
      * @throws org.cajuscript.CajuScriptException Errors loading command.
      */
     public void setCommand(String script) throws CajuScriptException {
+        _isCommand = true;
         Value v = null;
         boolean varMode = false;
         if (scriptCommand == null) {
@@ -334,7 +335,6 @@ public class Value implements Cloneable {
             value = v.getValue();
         }
         setValue(value);
-        _isCommand = true;
     }
     
     /**
