@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import org.cajuscript.parser.Function;
@@ -297,6 +298,7 @@ public class CajuScript {
             Base cacheParser = null;
             String cacheScript = null;
             String compilePath = null;
+            String staticVarsUUID = UUID.randomUUID().toString().replace("-", "").concat("_");
             lines: for (String line : lines) {
                 line = line.trim();
                 lineNumber++;
@@ -403,7 +405,7 @@ public class CajuScript {
                                     if (staticVarsStringCounter == Long.MAX_VALUE) {
                                         staticVarsStringCounter = 0;
                                     }
-                                    staticStringKey = CAJU_VARS_STATIC_STRING + staticVarsStringCounter;
+                                    staticStringKey = CAJU_VARS_STATIC_STRING.concat(staticVarsUUID).concat(Long.toString(staticVarsStringCounter));
                                     staticVarsStringCounter++;
                                 }
                             } else if (isString2 || cO == '\\') {
@@ -426,7 +428,7 @@ public class CajuScript {
                                     if (staticVarsStringCounter == Long.MAX_VALUE) {
                                         staticVarsStringCounter = 0;
                                     }
-                                    staticStringKey = CAJU_VARS_STATIC_STRING + staticVarsStringCounter;
+                                    staticStringKey = CAJU_VARS_STATIC_STRING.concat(staticVarsUUID).concat(Long.toString(staticVarsStringCounter));
                                     staticVarsStringCounter++;
                                 }
                             } else if (isString1 || cO == '\\') {
