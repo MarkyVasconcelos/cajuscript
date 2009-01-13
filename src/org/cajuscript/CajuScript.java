@@ -742,7 +742,19 @@ public class CajuScript {
     public Object get(String key) throws CajuScriptException {
         return getVar(key).getValue();
     }
-    
+
+    /**
+     * Variable exists?
+     * @param key Variable name.
+     * @throws org.cajuscript.CajuScriptException Errors.
+     */
+    public boolean exists(String key) throws CajuScriptException {
+        if (getVar(key) != null) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Get list of all imports used by script in execution.
      * @return List of imports defined.
