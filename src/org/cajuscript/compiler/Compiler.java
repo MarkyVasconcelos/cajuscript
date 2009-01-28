@@ -1,3 +1,22 @@
+/*
+ * Compiler.java
+ *
+ * This file is part of CajuScript.
+ *
+ * CajuScript is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3, or (at your option)
+ * any later version.
+ *
+ * CajuScript is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with CajuScript.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.cajuscript.compiler;
 
 import java.io.File;
@@ -33,9 +52,12 @@ import org.cajuscript.parser.Return;
 import org.cajuscript.parser.TryCatch;
 import org.cajuscript.parser.Variable;
 
+/**
+ * CajuScript Compiler
+ * @author eduveks
+ */
 public class Compiler {
-    private static String classPath = "";
-    private static File baseDir = new File("cajuscript-classes");
+    private File baseDir = null;
     private static Map<String, Class> classes = new HashMap<String, Class>();
     private StringBuilder source = new StringBuilder();
     private String packagePath = null;
@@ -45,8 +67,17 @@ public class Compiler {
     private File scriptFile = null;
     private File classFile = null;
     private CajuScript caju = null;
+    private long varCount = 1;
+    private LineDetail lastLiteDetail = null;
 
-    public Compiler(String path) {
+    /**
+     * Compiler an script.
+     * @param cajuScript CajuScript instance
+     * @param path Class path to be created new class from the script.
+     */
+    public Compiler(CajuScript cajuScript, String path) {
+        this.caju = cajuScript;
+        baseDir = new File(caju.getCompileBaseDirectory());
         if (path.lastIndexOf(".") > -1) {
             packagePath = path.substring(0, path.lastIndexOf("."));
             className = path.substring(path.lastIndexOf(".") + 1);
@@ -61,27 +92,18 @@ public class Compiler {
         classFile = new File(packageDir.getAbsolutePath().concat(Character.toString(File.separatorChar)).concat(className).concat(".class"));
     }
 
-    public static File getBaseDir() {
-        return baseDir;
-    }
-
-    public static void setBaseDir(File baseDir) {
-        Compiler.baseDir = baseDir;
-    }
-
-    public static String getClassPath() {
-        return classPath;
-    }
-
-    public static void setClassPath(String classPath) {
-        Compiler.classPath = classPath;
-    }
-
-    public Value execute(CajuScript caju, Context context, Syntax syntax) throws CajuScriptException {
+    /**
+     * Execute an script compiled.
+     * @param context Context
+     * @param syntax Syntax
+     * @return Value returned by the script
+     * @throws org.cajuscript.CajuScriptException Script executing exceptions
+     */
+    public Value execute(Context context, Syntax syntax) throws CajuScriptException {
         try {
             String path = packagePath.equals("") ? className : packagePath.concat(".").concat(className);
             if (classes.get(path) == null) {
-                loadClass(caju, context);
+                loadClass(context);
             }
             return ((org.cajuscript.compiler.Executable)classes.get(path).newInstance()).execute(caju, context, syntax);
         } catch (Exception e) {
@@ -89,7 +111,7 @@ public class Compiler {
         }
     }
 
-    private void loadClass(CajuScript caju, Context context) throws CajuScriptException {
+    private void loadClass(Context context) throws CajuScriptException {
         try {
             String path = packagePath.equals("") ? className : packagePath.concat(".").concat(className);
             URLClassLoader urlClassLoader = new URLClassLoader(new URL[] { baseDir.toURI().toURL() }, CajuScript.class.getClassLoader());
@@ -100,6 +122,12 @@ public class Compiler {
         }
     }
 
+    /**
+     * The class compiled is the latest version
+     * @param script Script
+     * @return Is latest version
+     * @throws org.cajuscript.CajuScriptException Looking if is latest version exceptions.
+     */
     public boolean isLatest(String script) throws CajuScriptException {
         if (!scriptFile.exists() || !classFile.exists()) {
             return false;
@@ -123,8 +151,14 @@ public class Compiler {
         return scriptClass.equals(script);
     }
 
-    public void compile(CajuScript c, Context staticContext, String script, Element base) throws CajuScriptException {
-        caju = c;
+    /**
+     * Compile an script.
+     * @param staticContext Static context
+     * @param script Script to be compiled
+     * @param base Parser base
+     * @throws org.cajuscript.CajuScriptException Compiling exceptions
+     */
+    public void compile(Context staticContext, String script, Element base) throws CajuScriptException {
         List<String> valueKeys = new ArrayList<String>();
         for (String key : caju.getContext().getFuncs().keySet()) {
             compileElement(valueKeys, caju.getContext().getFuncs().get(key));
@@ -138,33 +172,22 @@ public class Compiler {
                 out.print("package ");
                 out.print(packagePath);
                 out.print(";");
-                out.println();
             }
             out.print("import org.cajuscript.CajuScript;");
-            out.println();
             out.print("import org.cajuscript.CajuScriptException;");
-            out.println();
             out.print("import org.cajuscript.Context;");
-            out.println();
             out.print("import org.cajuscript.Syntax;");
-            out.println();
             out.print("import org.cajuscript.Value;");
-            out.println();
             out.print("import org.cajuscript.compiler.DefaultExecutable;");
-            out.println();
             out.print("import org.cajuscript.parser.Function;");
-            out.println();
             out.print("import org.cajuscript.parser.Operation;");
-            out.println();
             out.print("public class ");
             out.print(className);
-            out.print(" implements org.cajuscript.compiler.Executable {");
-            out.println();
+            out.print(" implements org.cajuscript.compiler.Executable{");
             out.print("public ");
             out.print(className);
-            out.print("() { }");
-            out.println();
-            out.print("public Value execute(CajuScript caju, Context context, Syntax syntax) throws CajuScriptException { ");
+            out.print("(){}");
+            out.print("public Value execute(CajuScript caju,Context context,Syntax syntax)throws CajuScriptException{");
             out.println();
             for (String key : staticContext.getAllKeys(true)) {
                 out.print("caju.set(");
@@ -177,17 +200,15 @@ public class Compiler {
             for (String key : valueKeys) {
                 out.print("Value ");
                 out.print(key);
-                out.print(" = new Value(caju, context, syntax);");
+                out.print("=new Value(caju,context,syntax);");
                 out.println();
             }
             out.print(source.toString());
             out.println();
             if (!__return.equals("__return")) {
                 out.println("return null;");
-                out.println();
             }
             out.print("}");
-            out.println();
             out.print("}");
         } catch (IOException ex) {
             throw new CajuScriptException(ex);
@@ -212,18 +233,17 @@ public class Compiler {
             }
         }
         Writer swJavaC = new StringWriter();
-        com.sun.tools.javac.Main.compile(!classPath.equals("") ? new String[] {
-            "-classpath", classPath, javaFile.getAbsolutePath() }
+        com.sun.tools.javac.Main.compile(!caju.getCompileClassPath().equals("") ? new String[] {
+            "-classpath", caju.getCompileClassPath(), javaFile.getAbsolutePath() }
             : new String[] { javaFile.getAbsolutePath() }
         , new PrintWriter(swJavaC));
         String outputJavaC = swJavaC.toString();
         if (!outputJavaC.trim().equals("")) {
             throw new CajuScriptException(outputJavaC);
         }
-        loadClass(caju, staticContext);
+        loadClass(staticContext);
     }
 
-    //private List<String> valueKeys = new ArrayList<String>();
     private String compileElement(List<String> valueKeys, Element element) {
         String key = "";
         if (element == null) {
@@ -236,7 +256,7 @@ public class Compiler {
         if (element instanceof Command) {
             compileElements(valueKeys, element);
             Command command = (Command)element;
-            key = "command".concat(Integer.toString(command.hashCode()));
+            key = "c".concat(Long.toString(varCount++));
             source.append(lineDetail(element.getLineDetail()));
             source.append(key);
             source.append(".setScript(");
@@ -259,7 +279,7 @@ public class Compiler {
                     source.append("context.setVar(");
                     source.append(toString(variable.getKey()));
                 }
-                source.append(", ");
+                source.append(",");
                 if (keyValue == null || keyValue.equals("")) {
                     source.append("null");
                 } else {
@@ -271,17 +291,17 @@ public class Compiler {
         } else if (element instanceof Operation) {
             compileElements(valueKeys, element);
             Operation operation = (Operation)element;
-            key = "operation".concat(Integer.toString(operation.hashCode()));
+            key = "o".concat(Long.toString(varCount++));
             String firstCommand = compileElement(valueKeys, operation.getFirstCommand());
             String secondCommand = compileElement(valueKeys, operation.getSecondCommand());
             source.append(lineDetail(element.getLineDetail()));
             source.append("Operation.compare(");
             source.append(key);
-            source.append(", ");
+            source.append(",");
             source.append(firstCommand);
-            source.append(", Operation.Operator.");
+            source.append(",Operation.Operator.");
             source.append(operation.getOperator().name());
-            source.append(", ");
+            source.append(",");
             source.append(secondCommand);
             source.append(");");
             source.append("\n");
@@ -329,13 +349,14 @@ public class Compiler {
             source.append("\n");
         } else if (element instanceof IfGroup) {
             source.append(lineDetail(element.getLineDetail()));
-            source.append("for (int ");
-            source.append("ifGroup".concat(Integer.toString(element.hashCode())));
-            source.append("= 0; ");
-            source.append("ifGroup".concat(Integer.toString(element.hashCode())));
-            source.append(" < 1; ");
-            source.append("ifGroup".concat(Integer.toString(element.hashCode())));
-            source.append("++) {");
+            String keyCode = Long.toString(varCount++);
+            source.append("for(int ");
+            source.append("i".concat(keyCode));
+            source.append("=0;");
+            source.append("i".concat(keyCode));
+            source.append("<1;");
+            source.append("i".concat(keyCode));
+            source.append("++){");
             source.append("\n");
             compileElements(valueKeys, element);
             source.append("}");
@@ -344,9 +365,9 @@ public class Compiler {
             If _if = (If)element;
             String conditionKey = compileElement(valueKeys, _if.getCondition());
             source.append(lineDetail(element.getLineDetail()));
-            source.append("if (");
+            source.append("if(");
             source.append(conditionKey);
-            source.append(".getBooleanValue()) {");
+            source.append(".getBooleanValue()){");
             source.append("\n");
             String __key = compileElements(valueKeys, element);
             if (!__key.equals("__return")
@@ -364,12 +385,12 @@ public class Compiler {
                 source.append(loop.getLabel());
                 source.append(" : ");
             }
-            source.append("while (true) {");
+            source.append("while(true){");
             source.append("\n");
             String conditionKey = compileElement(valueKeys, loop.getCondition());
-            source.append("if (!");
+            source.append("if(!");
             source.append(conditionKey);
-            source.append(".getBooleanValue()) {");
+            source.append(".getBooleanValue()){");
             source.append("\n");
             source.append("break;");
             source.append("\n");
@@ -382,15 +403,15 @@ public class Compiler {
         } else if (element instanceof Function) {
             addKey = false;
             Function function = (Function)element;
-            key = "function".concat(Integer.toString(function.hashCode()));
+            key = "f".concat(Long.toString(varCount++));
             source.append(lineDetail(element.getLineDetail()));
             source.append("context.setFunc(");
             source.append(toString(function.getName()));
-            source.append(", new Function (new DefaultExecutable() {");
+            source.append(",new Function(new DefaultExecutable(){");
             source.append("\n");
             source.append("@Override");
             source.append("\n");
-            source.append("public Value execute(CajuScript caju, Context context, Syntax syntax) throws CajuScriptException {");
+            source.append("public Value execute(CajuScript caju,Context context,Syntax syntax)throws CajuScriptException{");
             source.append("\n");
             source.append("<<[".concat(key).concat("]>>"));
             List<String> funcValueKeys = new ArrayList<String>();
@@ -400,7 +421,7 @@ public class Compiler {
             for (String valueKey : funcValueKeys) {
                 source.append("Value ");
                 source.append(valueKey);
-                source.append(" = new Value(caju, context, syntax);");
+                source.append("=new Value(caju,context,syntax);");
                 source.append("\n");
             }
             String funcKeys = source.toString();
@@ -412,7 +433,7 @@ public class Compiler {
             }
             source.append("}");
             source.append("\n");
-            source.append("}, new String[] {");
+            source.append("},new String[]{");
             for (int i = 0; i < function.getParameters().length; i++) {
                 if (i > 0) {
                     source.append(",");
@@ -424,15 +445,15 @@ public class Compiler {
             source.append("\n");
         } else if (element instanceof TryCatch) {
             TryCatch tryCatch = (TryCatch)element;
-            key = "tryCatch".concat(Integer.toString(tryCatch.hashCode()));
+            key = "t".concat(Long.toString(varCount++));
             compileElement(valueKeys, tryCatch.getError());
             source.append(lineDetail(element.getLineDetail()));
-            source.append("try {");
+            source.append("try{");
             source.append("\n");
             compileElement(valueKeys, tryCatch.getTry());
-            source.append("} catch (Throwable ");
+            source.append("}catch(Throwable ");
             source.append(key);
-            source.append("t) {");
+            source.append("t){");
             source.append("\n");
             source.append(key);
             source.append(".setValue(");
@@ -446,7 +467,7 @@ public class Compiler {
             source.append(");");
             source.append("\n");
             compileElement(valueKeys, tryCatch.getCatch());
-            source.append("} finally {");
+            source.append("}finally{");
             source.append("\n");
             compileElement(valueKeys, tryCatch.getFinally());
             source.append("}");
@@ -483,6 +504,12 @@ public class Compiler {
     }
 
     private String lineDetail(LineDetail lineDetail) {
+        if (lastLiteDetail != null
+                && lastLiteDetail.getNumber() == lineDetail.getNumber()
+                && lastLiteDetail.getContent().equals(lineDetail.getContent())) {
+            return "";
+        }
+        lastLiteDetail = lineDetail;
         String cmd = "caju.getRunningLine().set(";
         cmd = cmd.concat(Integer.toString(lineDetail.getNumber()));
         cmd = cmd.concat(",");

@@ -71,7 +71,7 @@ public class CajuScript {
     /**
      * Core version.
      */
-    public static final String VERSION = "0.3.1";
+    public static final String VERSION = "0.3.5";
     
     /**
      * Language version.
@@ -111,7 +111,16 @@ public class CajuScript {
      * the final value when the line is interpreted.
      */
     public static final String CAJU_VARS_MATH = CAJU_VARS.concat("_math_");
-    
+
+    /**
+     * Variable name to configure the base directory to store classes compiled.
+     */
+    public static final String CAJU_VAR_COMPILE_BASEDIRECTORY = "caju.compile.baseDirectory";
+
+    /**
+     * Variable name to configure the class path to be used for compile scripts in runtime.
+     */
+    public static final String CAJU_VAR_COMPILE_CLASSPATH = "caju.compile.classPath";
     /**
      * Functions parameters are going to variables setting with this name.
      */
@@ -128,6 +137,8 @@ public class CajuScript {
     private static Map<String, Base> cacheParsers = new HashMap<String, Base>();
     private static Map<String, Context> cacheStaticContexts = new HashMap<String, Context>();
     private static long staticVarsStringCounter = 1;
+    private String compileBaseDirectory = "cajuscript-classes";
+    private String compileClassPath = "";
     
     /**
      * Create a newly instance of Caju Script. The variables caju and array
@@ -214,6 +225,38 @@ public class CajuScript {
     public Base getParserBase() {
         return parserBase;
     }
+
+    /**
+     * Get compile base directory.
+     * @return Directory to put classes compiled
+     */
+    public String getCompileBaseDirectory() {
+        return compileBaseDirectory;
+    }
+
+    /**
+     * Set compile base directory.
+     * @param baseDirectory Directory to put classes compiled
+     */
+    public void setCompileBaseDirectory(String baseDirectory) {
+        compileBaseDirectory = baseDirectory;
+    }
+
+    /**
+     * Get compile class path.
+     * @return Class path with dependencies to be used by the compiler can be used.
+     */
+    public String getCompileClassPath() {
+        return compileClassPath;
+    }
+
+    /**
+     * Set compile class path.
+     * @param classPath Class path with dependencies to be used by the compiler can be used.
+     */
+    public void setCompileClassPath(String classPath) {
+        compileClassPath = classPath;
+    }
     
     /**
      * Get line detail in execution.
@@ -238,7 +281,7 @@ public class CajuScript {
      * @throws org.cajuscript.CajuScriptException Errors ocurred on script execution.
      */
     public Value eval(String script) throws CajuScriptException {
-        return eval(script, syntax, true);
+        return eval(script, getGlobalSyntax("Caju"), true);
     }
     
     /**
@@ -249,7 +292,7 @@ public class CajuScript {
      * @throws org.cajuscript.CajuScriptException Errors ocurred on script execution.
      */
     public Value eval(String script, boolean execute) throws CajuScriptException {
-        return eval(script, syntax, execute);
+        return eval(script, getGlobalSyntax("Caju"), execute);
     }
     
     /**
@@ -332,6 +375,12 @@ public class CajuScript {
                                 staticContexts = new Context();
                             }
                         } else if (configLine.startsWith("caju.compile")) {
+                            if (exists(CAJU_VAR_COMPILE_BASEDIRECTORY)) {
+                                setCompileBaseDirectory((String)get(CAJU_VAR_COMPILE_BASEDIRECTORY));
+                            }
+                            if (exists(CAJU_VAR_COMPILE_CLASSPATH)) {
+                                setCompileClassPath((String)get(CAJU_VAR_COMPILE_CLASSPATH));
+                            }
                             compilePath = configLine.substring(configLine.lastIndexOf(' ') + 1).trim();
                             staticContexts = new Context();
                         } else {
@@ -363,9 +412,9 @@ public class CajuScript {
                     return finalValue;
                 }
                 if (!config && compilePath != null) {
-                    Compiler compiler = new Compiler(compilePath);
+                    Compiler compiler = new Compiler(this, compilePath);
                     if (compiler.isLatest(originalScript)) {
-                        return compiler.execute(this, context, syntax);
+                        return compiler.execute(context, syntax);
                     }
                 }
                 if (isString1 || isString2) {
@@ -478,8 +527,8 @@ public class CajuScript {
                 cacheStaticContexts.put(cacheId, staticContexts);
             }
             if (compilePath != null) {
-                Compiler compiler = new Compiler(compilePath);
-                compiler.compile(this, staticContexts, originalScript, parserBase);
+                Compiler compiler = new Compiler(this, compilePath);
+                compiler.compile(staticContexts, originalScript, parserBase);
             }
             if (execute) {
                 Value finalValue = parserBase.execute(this, context, syntax);
@@ -591,7 +640,7 @@ public class CajuScript {
      * @throws org.cajuscript.CajuScriptException File cannot be executed or error ocurred on execution.
      */
     public Value evalFile(String path) throws CajuScriptException {
-        return evalFile(path, syntax);
+        return evalFile(path, getGlobalSyntax("Caju"));
     }
     
     /**
@@ -602,7 +651,7 @@ public class CajuScript {
      * @throws org.cajuscript.CajuScriptException File cannot be executed or error ocurred on execution.
      */
     public Value evalFile(String path, boolean execute) throws CajuScriptException {
-        return evalFile(path, syntax, execute);
+        return evalFile(path, getGlobalSyntax("Caju"), execute);
     }
     
     /**
