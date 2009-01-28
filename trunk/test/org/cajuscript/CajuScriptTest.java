@@ -34,19 +34,8 @@ import static org.junit.Assert.*;
  */
 public class CajuScriptTest {
 
-    public enum Enum {
-        TEST
-    }
-
     public CajuScriptTest() throws CajuScriptException {
         
-    }
-
-    public boolean testEnum(Enum e) {
-        if (e.equals(Enum.TEST)) {
-            return true;
-        }
-        return false;
     }
 
     @BeforeClass
@@ -84,7 +73,8 @@ public class CajuScriptTest {
             } catch (Exception e) {
                 throw new Error(e);
             }
-        }*/
+        }
+        */
     }
 
     /**
@@ -1592,7 +1582,6 @@ public class CajuScriptTest {
     }
 
     private void syntaxCheckImportCache(CajuScript caju, String script) throws CajuScriptException {
-        /*
         syntaxReload(caju);
         caju.eval("caju.cache: test;"+ script);
         syntaxCheckImport(caju);
@@ -1602,7 +1591,7 @@ public class CajuScriptTest {
         caju = new CajuScript();
         syntaxReload(caju);
         caju.eval("caju.cache: test;"+ script);
-        syntaxCheckImport(caju);*/
+        syntaxCheckImport(caju);
     }
 
     private void syntaxCheckImportCompile(CajuScript caju, String script) throws CajuScriptException {
@@ -1634,7 +1623,7 @@ public class CajuScriptTest {
     }
     
     private void syntaxCheckIfCache(CajuScript caju, String script) throws CajuScriptException {
-        /*syntaxReload(caju);
+        syntaxReload(caju);
         caju.eval("caju.cache: test;"+ script);
         syntaxCheckIf(caju);
         syntaxReload(caju);
@@ -1643,7 +1632,7 @@ public class CajuScriptTest {
         caju = new CajuScript();
         syntaxReload(caju);
         caju.eval("caju.cache: test;"+ script);
-        syntaxCheckIf(caju);*/
+        syntaxCheckIf(caju);
     }
 
     private void syntaxCheckIfCompile(CajuScript caju, String script) throws CajuScriptException {
@@ -1664,7 +1653,7 @@ public class CajuScriptTest {
     }
 
     private void syntaxCheckLoopCache(CajuScript caju, String script) throws CajuScriptException {
-        /*syntaxReload(caju);
+        syntaxReload(caju);
         caju.eval("caju.cache: test;"+ script);
         syntaxCheckLoop(caju);
         syntaxReload(caju);
@@ -1673,7 +1662,7 @@ public class CajuScriptTest {
         caju = new CajuScript();
         syntaxReload(caju);
         caju.eval("caju.cache: test;"+ script);
-        syntaxCheckLoop(caju);*/
+        syntaxCheckLoop(caju);
     }
 
     private void syntaxCheckLoopCompile(CajuScript caju, String script) throws CajuScriptException {
@@ -1694,7 +1683,7 @@ public class CajuScriptTest {
     }
 
     private void syntaxCheckFunctionCache(CajuScript caju, String script) throws CajuScriptException {
-        /*syntaxReload(caju);
+        syntaxReload(caju);
         caju.eval("caju.cache: test;"+ script);
         syntaxCheckFunction(caju);
         syntaxReload(caju);
@@ -1703,7 +1692,7 @@ public class CajuScriptTest {
         caju = new CajuScript();
         syntaxReload(caju);
         caju.eval("caju.cache: test;"+ script);
-        syntaxCheckFunction(caju);*/
+        syntaxCheckFunction(caju);
     }
 
     private void syntaxCheckFunctionCompile(CajuScript caju, String script) throws CajuScriptException {
@@ -1724,7 +1713,7 @@ public class CajuScriptTest {
     }
     
     private void syntaxCheckTryCatchCache(CajuScript caju, String script) throws CajuScriptException {
-        /*syntaxReload(caju);
+        syntaxReload(caju);
         caju.eval("caju.cache: test;"+ script);
         syntaxCheckTryCatch(caju);
         syntaxReload(caju);
@@ -1733,7 +1722,7 @@ public class CajuScriptTest {
         caju = new CajuScript();
         syntaxReload(caju);
         caju.eval("caju.cache: test;"+ script);
-        syntaxCheckTryCatch(caju);*/
+        syntaxCheckTryCatch(caju);
     }
 
     private void syntaxCheckTryCatchCompile(CajuScript caju, String script) throws CajuScriptException {
@@ -2318,6 +2307,81 @@ public class CajuScriptTest {
         }
         if (instance.isInstance("test", Integer.class)) {
             fail("Returned true when should return false.");
+        }
+    }
+
+    public enum Enum {
+        TEST1,
+        TEST2,
+    }
+
+    public Enum testEnum(Enum e) {
+        if (e == Enum.TEST1) {
+            return Enum.TEST1;
+        } else if (e == Enum.TEST2) {
+            return Enum.TEST2;
+        }
+        fail("Invalid enumeration.");
+        throw new Error("Invalid enumeration.");
+    }
+
+    /**
+     * Test of enumerations.
+     */
+    @Test
+    public void enums() throws CajuScriptException {
+        System.out.println("enums");
+        CajuScript caju = new CajuScript();
+        caju.set("tester", this);
+        caju.set("enum1", Enum.TEST1);
+        caju.set("enum2", Enum.TEST2);
+        String script = "";
+        script += "enum1s = 0;";
+        script += "enum2s = 0;";
+        script += "enum1 = org.cajuscript.CajuScriptTest.Enum.TEST1 ?;";
+        script += "  enum1s += 2;";
+        script += "?;";
+        script += "enum2 = org.cajuscript.CajuScriptTest.Enum.TEST2 ?;";
+        script += "  enum2s += 3;";
+        script += "?;";
+        script += "tester.testEnum(org.cajuscript.CajuScriptTest.Enum.TEST1) ! org.cajuscript.CajuScriptTest.Enum.TEST2 ?;";
+        script += "  enum1s += 2;";
+        script += "?;";
+        script += "tester.testEnum(org.cajuscript.CajuScriptTest.Enum.TEST2) ! org.cajuscript.CajuScriptTest.Enum.TEST1 ?;";
+        script += "  enum2s += 3;";
+        script += "?;";
+        script += "i = 0;";
+        script += "i < 10 @;";
+        script += "  enum = $;";
+        script += "  i % 2 = 0 ?;";
+        script += "    enum1s += 1;";
+        script += "  ??;";
+        script += "    enum2s += 1;";
+        script += "  ?;";
+        script += "  i += 1;";
+        script += "@;";
+        caju.eval(script);
+        enumsCheck(caju);
+        caju = new CajuScript();
+        caju.set("tester", this);
+        caju.set("enum1", Enum.TEST1);
+        caju.set("enum2", Enum.TEST2);
+        caju.eval("caju.cache: Test;" + script);
+        enumsCheck(caju);
+        caju = new CajuScript();
+        caju.set("tester", this);
+        caju.set("enum1", Enum.TEST1);
+        caju.set("enum2", Enum.TEST2);
+        caju.eval("caju.compile: Test;" + script);
+        enumsCheck(caju);
+    }
+
+    private void enumsCheck(CajuScript caju) throws CajuScriptException {
+        if (((Integer)caju.get("enum1s")).intValue() != 9) {
+            fail("enum1s is "+ caju.get("enum1s") +". Need be 7!");
+        }
+        if (((Integer)caju.get("enum2s")).intValue() != 11) {
+            fail("enum2s is "+ caju.get("enum2s") +". Need be 8!");
         }
     }
 }
