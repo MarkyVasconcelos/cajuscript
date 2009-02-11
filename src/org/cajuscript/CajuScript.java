@@ -374,6 +374,10 @@ public class CajuScript {
                             } else if (!cacheId.equals("")) {
                                 staticContexts = new Context();
                             }
+                        } else if (configLine.startsWith("caju.compile.baseDirectory")) {
+                            set(CAJU_VAR_COMPILE_BASEDIRECTORY, configLine.substring(configLine.lastIndexOf(' ') + 1).trim());
+                        } else if (configLine.startsWith("caju.compile.classPath")) {
+                            set(CAJU_VAR_COMPILE_CLASSPATH, configLine.substring(configLine.lastIndexOf(' ') + 1).trim());
                         } else if (configLine.startsWith("caju.compile")) {
                             if (exists(CAJU_VAR_COMPILE_BASEDIRECTORY)) {
                                 setCompileBaseDirectory((String)get(CAJU_VAR_COMPILE_BASEDIRECTORY));
