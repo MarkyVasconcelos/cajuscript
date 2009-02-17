@@ -185,6 +185,7 @@ public class Reflection {
                                 sc.setClassReference(oParam.getClass());
                                 sc.setClassPath(oParam.getClass().getName());
                             }
+                            sc.setValue(cajuScript.toValue(oParam));
                             Object o = invokeNative(cajuScript, context, syntax, oParam, script, sc);
                             scriptCommand.setNextScriptCommand(sc);
                             return o;
@@ -219,7 +220,7 @@ public class Reflection {
             } else {
                 c = scriptCommand.getClassReference();
                 if (scriptCommand.getMethod() != null) {
-                    Object[] values = invokeValues(cajuScript, context, syntax,null, scriptCommand);
+                    Object[] values = invokeValues(cajuScript, context, syntax, null, scriptCommand);
                     return invokeMethod(cajuScript, c, value, null, values, null, scriptCommand);
                 } else if (scriptCommand.getConstructor() != null) {
                     Object[] values = invokeValues(cajuScript, context, syntax, null, scriptCommand);
