@@ -6,7 +6,7 @@
 *VERSION 0.3.5*
 
   * Compiler.
-  * For each.
+  * [tutorialForEach For each].
   * Suport to Java Enumerations.
   * Bug with statement not closed was solved.
   * Bug with call of Java parameters in cascade was solved.
