@@ -131,7 +131,6 @@ public class Operation extends Base {
      * @param v1 First value to be compared
      * @param operator Operator of comparation
      * @param v2 Second value to be compared
-     * @return Comparation result
      * @throws org.cajuscript.CajuScriptException Errors ocurred on comparation
      */
     public static void compare(Value v, Value v1, Operator operator, Value v2) throws CajuScriptException {
