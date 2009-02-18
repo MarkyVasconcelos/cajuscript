@@ -3,9 +3,9 @@
 
 =For Each=
 
-CajuScript haves the *caju.each("MY_CUSTOM_VAR", MY_ARRAY)* method to do *"for each"*, that does the interaction and load into an custom variable with the value of the current position.
+CajuScript haves the *caju.each(*_"MY_CUSTOM_VAR"_, _MY_ARRAY_*)* method to do *"for each"*, that does the interaction and load into an custom variable with the value of the current position.
 
-Is possible know the current index and with _MAPs_ the current _KEY_, using *caju.index("MY_CUSTOM_VAR")* for know the current index and *caju.key("MY_CUSTOM_VAR")* for know the current _KEY_ from an _MAP_.
+Is possible know the current index and with _MAPs_ the current _KEY_, using *caju.index(*_"MY_CUSTOM_VAR"_*)* for know the current index and *caju.key(*_"MY_CUSTOM_VAR"_*)* for know the current _KEY_ from an _MAP_.
 
 === Array ===
 
