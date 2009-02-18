@@ -1,0 +1,5 @@
+org.cajuscript
+org.cajuscript.cmd
+org.cajuscript.compiler
+org.cajuscript.math
+org.cajuscript.parser
