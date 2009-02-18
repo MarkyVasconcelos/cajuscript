@@ -3,6 +3,14 @@
 
 = Changelog =
 
+*VERSION 0.3.5*
+
+  * Compiler.
+  * For each.
+  * Suport to Java Enumerations.
+  * Bug with statement not closed was solved.
+  * Bug with call of Java parameters in cascade was solved.
+
 *VERSION 0.3*
 
   * [tutorialCache Parser can be cached] to high performance with scrits executed many times.
