@@ -913,8 +913,8 @@ public class CajuScript {
     
     /**
      * If two Class are from same type.
-     * @param type1 First type, Class.
-     * @param type2 Second type, Class.
+     * @param c1 First type, Class.
+     * @param c2 Second type, Class.
      * @return Is from same type or not.
      */
     public static boolean isSameType(Class c1, Class c2) {
@@ -923,8 +923,8 @@ public class CajuScript {
     
     /**
      * If two Object are from same type.
-     * @param type1 First type, Object.
-     * @param type2 Second type, Object.
+     * @param obj1 First type, Object.
+     * @param obj2 Second type, Object.
      * @return Is from same type or not.
      */
     public static boolean isSameType(Object obj1, Object obj2) {
