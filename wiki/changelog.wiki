@@ -7,9 +7,10 @@
 
   * Compiler.
   * [tutorialForEach For each].
-  * Suport to Java Enumerations.
+  * Suport to Java Enums.
   * Bug with statement not closed was solved.
   * Bug with call of Java parameters in cascade was solved.
+  * Bug with exception vs erros was solved.
 
 *VERSION 0.3*
 
