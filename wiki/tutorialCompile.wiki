@@ -34,7 +34,7 @@ Will be created an folder *./cajuscript-classes/mypackage/* with this files:
 
 The MyClass*.cj* is for comparing with the script in executing for know if is need rebuild or not. The MyClass*.class* is the result from Java compiler. The MyClass*.java* is the source Java generated and compiled.
 
-To define another folder have two ways:
+To define another folder have two ways (the folders are created automatically):
 
   * Defining the folder path into of CajuScript instance:
 {{{
