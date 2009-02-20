@@ -1,4 +1,5 @@
 #summary Compile scripts.
+#labels Tutorial
 
 = Compile =
 
@@ -6,26 +7,61 @@ Is possible compile an script to Java Class.
 
 Actually is a code generator, building the code Java from the Parser. Final result is an Java Class that can load the Parser faster to be executed.
 
-To compila an script is very easly. Just start the script with:
+To work with compiled scripts is very easy. Just start the script with *caju.compile* like that sample:
 
 {{{
-    caju.compile: test.Compiler
-    System.out.println('Compiler ok!');
+    caju.compile: mypackage.MyClass
+    System.out.println("Compile ok!");
 }}}
 
 Unix/Linux:
+
 {{{
 java -cp "___YOUR_JDK___\lib\tools.jar:cajuscript-0.3.5.jar" org.cajuscript.CajuScript YOUR_SCRIPT_FILE.cj
 }}}
 
 Windows:
+
 {{{
 java -cp "___YOUR_JDK___\lib\tools.jar;cajuscript-0.3.5.jar" org.cajuscript.CajuScript YOUR_SCRIPT_FILE.cj
 }}}
 
-= Details =
+Will be created an folder *./cajuscript-classes/mypackage/* with this files:
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+  * MyClass.cj
+  * MyClass.class
+  * MyClass.java
+
+The MyClass*.cj* is for comparing with the script in executing for know if is need rebuild or not. The MyClass*.class* is the result from Java compiler. The MyClass*.java* is the source Java generated and compiled.
+
+To define another folder have two ways:
+
+  * Defining the folder path into of CajuScript instance:
+
+    {{{
+        org.cajuscript.CajuScript caju = new org.cajuscript.CajuScript();
+        caju.setCompileBaseDirectory("MY/PATH/TO/FILES/COMPILED");
+    }}}
+
+  * Or defining the folder path into of Script header:
+    {{{
+        caju.compile.baseDirectory: MY/PATH/TO/FILES/COMPILED
+        caju.compile: mypackage.MyClass
+        System.out.println("Compile ok!");
+    }}}
+
+Running CajuScript into an web container (GlassFish, Jetty, Tomcat) because of the ClassLoader the com.sun.tools.javac.Main.compile can't found the cajuscript.jar and can't compile. Wherefore to solve this problem is necessary set the cajuscript.jar into of class path this ways:
+
+  * Defining the class path into of CajuScript instance:
+
+    {{{
+        org.cajuscript.CajuScript caju = new org.cajuscript.CajuScript();
+        caju.setCompileClassPath("PATH/TO/CAJUSCRIPT/JAR/cajuscript.jar");
+    }}}
+
+  * Or defining the class path into of Script header::
+    {{{
+        caju.compile.classPath: PATH/TO/CAJUSCRIPT/JAR/cajuscript.jar
+        caju.compile: mypackage.MyClass
+        System.out.println("Compile ok!");
+    }}}
