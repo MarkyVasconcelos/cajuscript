@@ -34,6 +34,8 @@ Will be created an folder *./cajuscript-classes/mypackage/* with this files:
 
 The MyClass*.cj* is for comparing with the script in executing for know if is need rebuild or not. The MyClass*.class* is the result from Java compiler. The MyClass*.java* is the source Java generated and compiled.
 
+=== Directory ===
+
 To define another folder have two ways (the folders are created automatically):
 
   * Defining the folder path into of CajuScript instance:
@@ -48,6 +50,8 @@ To define another folder have two ways (the folders are created automatically):
     caju.compile: mypackage.MyClass
     System.out.println("Compile ok!");
 }}}
+
+=== Class Path ===
 
 Running CajuScript into an web container (GlassFish, Jetty, Tomcat) because of the ClassLoader the com.sun.tools.javac.Main.compile can't found the cajuscript.jar and can't compile. Wherefore to solve this problem is necessary set the cajuscript.jar into of class path this ways:
 
