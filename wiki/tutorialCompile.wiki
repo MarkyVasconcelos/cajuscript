@@ -37,11 +37,10 @@ The MyClass*.cj* is for comparing with the script in executing for know if is ne
 To define another folder have two ways:
 
   * Defining the folder path into of CajuScript instance:
-
-    {{{
-        org.cajuscript.CajuScript caju = new org.cajuscript.CajuScript();
-        caju.setCompileBaseDirectory("MY/PATH/TO/FILES/COMPILED");
-    }}}
+{{{
+    org.cajuscript.CajuScript caju = new org.cajuscript.CajuScript();
+    caju.setCompileBaseDirectory("MY/PATH/TO/FILES/COMPILED");
+}}}
 
   * Or defining the folder path into of Script header:
 {{{
@@ -53,13 +52,12 @@ To define another folder have two ways:
 Running CajuScript into an web container (GlassFish, Jetty, Tomcat) because of the ClassLoader the com.sun.tools.javac.Main.compile can't found the cajuscript.jar and can't compile. Wherefore to solve this problem is necessary set the cajuscript.jar into of class path this ways:
 
   * Defining the class path into of CajuScript instance:
-
 {{{
     org.cajuscript.CajuScript caju = new org.cajuscript.CajuScript();
     caju.setCompileClassPath("PATH/TO/CAJUSCRIPT/JAR/cajuscript.jar");
 }}}
 
-  * Or defining the class path into of Script header::
+  * Or defining the class path into of Script header:
 {{{
     caju.compile.classPath: PATH/TO/CAJUSCRIPT/JAR/cajuscript.jar
     caju.compile: mypackage.MyClass
