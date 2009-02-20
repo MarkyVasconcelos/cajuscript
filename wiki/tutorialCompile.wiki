@@ -54,10 +54,10 @@ Running CajuScript into an web container (GlassFish, Jetty, Tomcat) because of t
 
   * Defining the class path into of CajuScript instance:
 
-    {{{
-        org.cajuscript.CajuScript caju = new org.cajuscript.CajuScript();
-        caju.setCompileClassPath("PATH/TO/CAJUSCRIPT/JAR/cajuscript.jar");
-    }}}
+{{{
+    org.cajuscript.CajuScript caju = new org.cajuscript.CajuScript();
+    caju.setCompileClassPath("PATH/TO/CAJUSCRIPT/JAR/cajuscript.jar");
+}}}
 
   * Or defining the class path into of Script header::
 {{{
