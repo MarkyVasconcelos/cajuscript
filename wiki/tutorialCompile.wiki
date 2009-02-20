@@ -11,7 +11,7 @@ To work with compiled scripts is very easy. Just start the script with *caju.com
 
 {{{
     caju.compile: mypackage.MyClass
-    System.out.println("Compile ok!");
+    System.out.println("Hello world!");
 }}}
 
 For compile is necessary the tools.jar that come inside the JDK. Wherefore for compile and run do like that:
