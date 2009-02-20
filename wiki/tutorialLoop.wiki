@@ -3,7 +3,7 @@
 
 =Loop=
 
-See the [tutorialForeach *for each*].
+See the [tutorialForEach *for each*].
 
 Is like "While" and "For" in others languages. In CajuScript only "While". But an variable can be used to do like "For".
 
