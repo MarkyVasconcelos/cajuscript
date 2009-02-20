@@ -18,12 +18,12 @@ For compile is necessary the tools.jar that come inside the JDK. Wherefore for c
 
   * Unix/Linux:
 {{{
-    java -cp "___YOUR_JDK___\lib\tools.jar:cajuscript-0.3.5.jar" org.cajuscript.CajuScript YOUR_SCRIPT_FILE.cj
+    java -cp "___YOUR_JDK_HOME___\lib\tools.jar:cajuscript-0.3.5.jar" org.cajuscript.CajuScript YOUR_SCRIPT_FILE.cj
 }}}
 
   * Windows:
 {{{
-    java -cp "___YOUR_JDK___\lib\tools.jar;cajuscript-0.3.5.jar" org.cajuscript.CajuScript YOUR_SCRIPT_FILE.cj
+    java -cp "___YOUR_JDK_HOME___\lib\tools.jar;cajuscript-0.3.5.jar" org.cajuscript.CajuScript YOUR_SCRIPT_FILE.cj
 }}}
 
 Will be created an folder *./cajuscript-classes/mypackage/* with this files:
