@@ -44,11 +44,11 @@ To define another folder have two ways:
     }}}
 
   * Or defining the folder path into of Script header:
-    {{{
-        caju.compile.baseDirectory: MY/PATH/TO/FILES/COMPILED
-        caju.compile: mypackage.MyClass
-        System.out.println("Compile ok!");
-    }}}
+{{{
+    caju.compile.baseDirectory: MY/PATH/TO/FILES/COMPILED
+    caju.compile: mypackage.MyClass
+    System.out.println("Compile ok!");
+}}}
 
 Running CajuScript into an web container (GlassFish, Jetty, Tomcat) because of the ClassLoader the com.sun.tools.javac.Main.compile can't found the cajuscript.jar and can't compile. Wherefore to solve this problem is necessary set the cajuscript.jar into of class path this ways:
 
@@ -60,8 +60,8 @@ Running CajuScript into an web container (GlassFish, Jetty, Tomcat) because of t
     }}}
 
   * Or defining the class path into of Script header::
-    {{{
-        caju.compile.classPath: PATH/TO/CAJUSCRIPT/JAR/cajuscript.jar
-        caju.compile: mypackage.MyClass
-        System.out.println("Compile ok!");
-    }}}
+{{{
+    caju.compile.classPath: PATH/TO/CAJUSCRIPT/JAR/cajuscript.jar
+    caju.compile: mypackage.MyClass
+    System.out.println("Compile ok!");
+}}}
