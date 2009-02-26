@@ -5,6 +5,10 @@
 
 http://cajuscript.googlecode.com/svn/trunk/scriptstester/cajuscript035executionmodes.png
 
+For biggest scripts is strongly recomended [tutorialCache Cache] or [tutorialCompile Compile]. [tutorialCache Cache] consumes extra memory.
+
+More information see [tutorialCache Cache] and [tutorialCompile Compile].
+
 ===Output===
 {{{
 ================================
