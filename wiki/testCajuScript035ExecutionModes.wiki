@@ -1,4 +1,4 @@
-#summary Test of performance of the CajuScript 0.3.5 execution modes
+#summary Test of performance with the CajuScript 0.3.5 execution modes
 #labels Test
 
 = CajuScript 0.3.5 Execution Modes =
