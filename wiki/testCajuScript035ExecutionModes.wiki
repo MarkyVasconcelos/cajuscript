@@ -22,6 +22,9 @@ Caju - Compile Next: 110ms - 100000
 }}}
 
 ===Source===
+
+Requires JDK_HOME/lib/tools.jar.
+
 {{{
 public class CajuScript035ExecutionModes {
     public static void main(String[] args) {
