@@ -320,8 +320,7 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
      * @return Object who was returned from the method.
      */
     public Object invokeMethod(Object thiz, String name, Object... args) throws ScriptException, NoSuchMethodException {
-        String uuid = java.util.UUID.randomUUID().toString().replaceAll("\\-", "_");
-        String funcObjectName = CajuScript.CAJU_VARS.concat("_").concat(uuid);
+        String funcObjectName = CajuScript.CAJU_VARS.concat("_").concat(caju.nextVarsCounter());
         try {
             caju.set(funcObjectName, thiz);
         } catch (Exception e) {
@@ -341,13 +340,12 @@ public class CajuScriptEngine implements ScriptEngine, Invocable {
      */
     public Object invokeFunction(String name, Object... args) throws ScriptException, NoSuchMethodException {
         String cmd = "";
-        String uuid = java.util.UUID.randomUUID().toString().replace('-', '_');
-        String funcReturnName = CAJU_VARS_FUNC_RETURN.concat(uuid);
+        String funcReturnName = CAJU_VARS_FUNC_RETURN.concat(caju.nextVarsCounter());
         cmd = cmd.concat(funcReturnName).concat(" = ");
         cmd = cmd.concat(name).concat("(");
         if (args != null) {
             for (int i = 0; i < args.length; i++) {
-                String funcParamName = CAJU_VARS_FUNC_PARAM.concat(Integer.toString(i)).concat("_").concat(uuid);
+                String funcParamName = CAJU_VARS_FUNC_PARAM.concat(caju.nextVarsCounter()).concat(Integer.toString(i));
                 cmd = cmd.concat(i > 0 ? "," : "").concat(funcParamName);
                 try {
                     caju.set(funcParamName, args[i]);
