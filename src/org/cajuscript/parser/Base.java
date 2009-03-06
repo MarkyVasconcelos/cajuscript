@@ -21,7 +21,6 @@ package org.cajuscript.parser;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import org.cajuscript.CajuScript;
 import org.cajuscript.Context;
 import org.cajuscript.Syntax;
@@ -41,7 +40,6 @@ public class Base implements Element, java.io.Serializable, Cloneable {
     private static long varsGroupCounter = 0;
     private static long varsMathCounter = 0;
     protected Executable executable = null;
-    private String staticVarsUUID = "";
     
     /**
      * Base
@@ -130,7 +128,6 @@ public class Base implements Element, java.io.Serializable, Cloneable {
      * @throws org.cajuscript.CajuScriptException Errors ocurred on parsing
      */
     public void parse(CajuScript caju, String script, Syntax syntax) throws CajuScriptException {
-        staticVarsUUID = UUID.randomUUID().toString().replace("-", "").concat("_");
         parse(null, caju, null, script, syntax);
     }
     private LineDetail parseLastLineDetail = null;
@@ -517,7 +514,7 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                     }
                     Operation o = new Operation(lineDetail);
                     o.setCommands(value1, firstOperator.getOperator(), value2);
-                    String varParamKey = CajuScript.CAJU_VARS_MATH.concat(staticVarsUUID).concat(Long.toString(varsMathCounter));
+                    String varParamKey = CajuScript.CAJU_VARS_MATH.concat(caju.nextVarsCounter()).concat(Long.toString(varsMathCounter));
                     varsMathCounter++;
                     Variable varParam = new Variable(lineDetail);
                     varParam.setKey(varParamKey);
@@ -549,7 +546,7 @@ public class Base implements Element, java.io.Serializable, Cloneable {
         }
         SyntaxPosition syntaxPosition = null;
         if ((syntaxPosition = syntax.matcherPosition(script, syntax.getFunctionCall())).getStart() > -1) {
-            String varKey = CajuScript.CAJU_VARS_GROUP.concat(staticVarsUUID).concat(Long.toString(varsGroupCounter));
+            String varKey = CajuScript.CAJU_VARS_GROUP.concat(caju.nextVarsCounter()).concat(Long.toString(varsGroupCounter));
             varsGroupCounter++;
             Variable var = new Variable(lineDetail);
             var.setKey(varKey);
@@ -590,7 +587,7 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                         if (varsGroupCounter == Long.MAX_VALUE) {
                             varsGroupCounter = 0;
                         }
-                        String varParamKey = CajuScript.CAJU_VARS_GROUP.concat(staticVarsUUID).concat(Long.toString(varsGroupCounter));
+                        String varParamKey = CajuScript.CAJU_VARS_GROUP.concat(caju.nextVarsCounter()).concat(Long.toString(varsGroupCounter));
                         varsGroupCounter++;
                         Variable varParam = new Variable(lineDetail);
                         varParam.setKey(varParamKey);
@@ -615,7 +612,7 @@ public class Base implements Element, java.io.Serializable, Cloneable {
             base.addElement(var);
             return evalValueGroup(base, caju, lineDetail, syntax, script.replace((CharSequence)cmdBase, (CharSequence)varKey));
         } else if ((syntaxPosition = syntax.matcherPosition(script, syntax.getGroup())).getStart() > -1) {
-            String varKey = CajuScript.CAJU_VARS_GROUP.concat(staticVarsUUID).concat(Long.toString(varsGroupCounter));
+            String varKey = CajuScript.CAJU_VARS_GROUP.concat(caju.nextVarsCounter()).concat(Long.toString(varsGroupCounter));
             varsGroupCounter++;
             Variable var = new Variable(lineDetail);
             var.setKey(varKey);
