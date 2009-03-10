@@ -68,7 +68,8 @@ public class Command extends Base {
      * @return Value returned by execution
      * @throws org.cajuscript.CajuScriptException Errors ocurred on execution
      */
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Value execute(CajuScript caju, Context context, Syntax syntax) throws CajuScriptException {
         caju.setRunningLine(getLineDetail());
         Value contextsValue = context.getVar(contextsKey);

@@ -22,8 +22,9 @@ package org.cajuscript;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 
 /**
  * Details about Caju Script Engine.<br/>
@@ -66,7 +67,7 @@ public class CajuScriptEngineFactory implements ScriptEngineFactory {
      * @return List of extensions to CajuScript files.
      */
     public List<String> getExtensions() {
-        Vector<String> v = new Vector<String>();
+        List<String> v = new ArrayList<String>();
         v.add("cj");
         v.add("caju");
         v.add("cjs");
@@ -78,7 +79,7 @@ public class CajuScriptEngineFactory implements ScriptEngineFactory {
      * @return All mime types to CajuScript.
      */
     public List<String> getMimeTypes() {
-        Vector<String> v = new Vector<String>();
+        List<String> v = new ArrayList<String>();
         v.add("text/cajuscript");
         v.add("text/plain");
         return v;
@@ -89,7 +90,7 @@ public class CajuScriptEngineFactory implements ScriptEngineFactory {
      * @return All names to CajuScript.
      */
     public List<String> getNames() {
-        Vector<String> v = new Vector<String>();
+        List<String> v = new ArrayList<String>();
         v.add("Caju");
         v.add("caju");
         v.add("CajuScript");
@@ -154,7 +155,7 @@ public class CajuScriptEngineFactory implements ScriptEngineFactory {
      */
     public String getMethodCallSyntax(String obj, String m, String... args) {
         String cmd = "";
-        if (obj != null && !obj.equals("")) {
+        if (obj != null && obj.length() != 0) {
             cmd = cmd.concat(obj).concat(".");
         }
         cmd = cmd.concat(m).concat("(");

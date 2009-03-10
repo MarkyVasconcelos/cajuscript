@@ -120,7 +120,7 @@ public class Value implements Cloneable {
             }
             script = s;
             script = script.trim();
-            if (script.equals("")) {
+            if (script.length() == 0) {
                 return;
             } else if ((script.startsWith("'") && script.endsWith("'"))
                         || (script.startsWith("\"") && script.endsWith("\""))) {

@@ -30,6 +30,7 @@ import org.cajuscript.CajuScriptException;
  * Script element of type operation.
  * @author eduveks
  */
+@SuppressWarnings("unchecked")
 public class Operation extends Base {
     /**
      * Operators.
@@ -101,7 +102,7 @@ public class Operation extends Base {
      * @return Value returned by execution
      * @throws org.cajuscript.CajuScriptException Errors ocurred on execution
      */
-    @Override
+	@Override
     public Value execute(CajuScript caju, Context context, Syntax syntax) throws CajuScriptException {
         caju.setRunningLine(getLineDetail());
         for (Element element : elements) {
@@ -151,7 +152,7 @@ public class Operation extends Base {
                         v.setValue(new Double(v1.getNumberDoubleValue() + v2.getNumberDoubleValue()));
                         return;
                     }
-                } else if (v1.getType() == Value.Type.OBJECT && v2.getType() == Value.Type.OBJECT && v1.getValue() instanceof Operable && v2.getValue() instanceof Operable) {
+                } else if (v1.getValue() instanceof Operable && v2.getValue() instanceof Operable) {
                     v.setValue(Operable.class.cast(v1.getValue()).plus(v2.getValue()));
                     return;
                 } else if ((v1.getType() == Value.Type.STRING || v1.getType() == Value.Type.NUMBER || v1.getType() == Value.Type.OBJECT) && (v2.getType() == Value.Type.STRING || v2.getType() == Value.Type.NUMBER || v2.getType() == Value.Type.OBJECT)) {

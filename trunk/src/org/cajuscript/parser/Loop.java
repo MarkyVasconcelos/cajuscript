@@ -89,11 +89,11 @@ public class Loop extends Base {
                 for (Element element : elements) {
                     Value v = element.execute(caju, context, syntax);
                     if (v != null && canElementReturn(element)) {
-                        if (element instanceof Break && v.getFlag().equals("")) {
+                        if (element instanceof Break && v.getFlag().length() == 0) {
                             break loop;
-                        } else if (element instanceof Continue && v.getFlag().equals("")) {
+                        } else if (element instanceof Continue && v.getFlag().length() == 0) {
                             continue loop;
-                        } else if (!v.getFlag().equals("")) {
+                        } else if (v.getFlag().length() != 0) {
                             String act, lbl = "";
                             int f = v.getFlag().indexOf(':');
                             if (f > -1) {
