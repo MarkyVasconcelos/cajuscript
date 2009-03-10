@@ -158,8 +158,8 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                 SyntaxPosition syntaxPositionIf = syntaxPosition;
                 String scriptIFCondition = syntaxPositionIf.getGroup();
                 StringBuffer scriptIF = new StringBuffer();
-                List<String> ifsConditions = new ArrayList();
-                List<String> ifsStatements = new ArrayList();
+                List<String> ifsConditions = new ArrayList<String>();
+                List<String> ifsStatements = new ArrayList<String>();
                 int ifLevel = 0;
                 boolean ifClosed = false;
                 for (int z = y + 1; z < lines.length; z++) {
@@ -173,7 +173,7 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                         ifsConditions.add(scriptIFCondition);
                         ifsStatements.add(scriptIF.toString());
                         String condition = syntaxPositionElseIf.getGroup();
-                        if (condition.trim().equals("")) {
+                        if (condition.trim().length() == 0) {
                             condition = "true";
                         }
                         scriptIFCondition = condition;
@@ -384,7 +384,7 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                 c.setLabel(line.substring(syntaxPosition.getEnd()).trim());
                 base.addElement(c);
             } else {
-                if (!line.equals("")) {
+                if (line.length() != 0) {
                     base.addElement(evalValue(base, caju, lineDetail, syntax, line));
                 }
             }
@@ -437,7 +437,7 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                 Operation o = new Operation(lineDetail);
                 o.setCommands(condition(base, caju, lineDetail, syntax, script.substring(0, syntaxPositionLogical.getStart())), syntaxPositionLogical.getOperator(), condition(base, caju, lineDetail, syntax, script.substring(syntaxPositionLogical.getEnd())));
                 return o;
-            } else if (!script.equals("")) {
+            } else if (script.length() != 0) {
                 SyntaxPosition syntaxPosition = syntax.firstOperatorConditional(script);
                 if (syntaxPosition.getStart() > -1) {
                     Element e1 = evalValue(base, caju, lineDetail, syntax, script.substring(0, syntaxPosition.getStart()));
@@ -583,7 +583,7 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                         lenParamSeparatorEnd = params.length();
                     }
                     
-                    if (!params.trim().equals("")) {
+                    if (params.trim().length() != 0) {
                         if (varsGroupCounter == Long.MAX_VALUE) {
                             varsGroupCounter = 0;
                         }

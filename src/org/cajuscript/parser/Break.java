@@ -68,7 +68,7 @@ public class Break extends Base {
     public Value execute(CajuScript caju, Context context, Syntax syntax) throws CajuScriptException {
         caju.setRunningLine(getLineDetail());
         Value v = new Value(caju, context, syntax);
-        if (!getLabel().equals("")) {
+        if (getLabel().length() != 0) {
             v.setFlag("break:".concat(getLabel()));
         } else {
             v.setFlag("break");

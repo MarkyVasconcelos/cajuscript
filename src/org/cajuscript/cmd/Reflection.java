@@ -49,8 +49,8 @@ public class Reflection {
         try {
             Class c = null;
             String cName = "";
-            if (scriptCommand.getClassReference() == null || (scriptCommand.getMethod() == null && scriptCommand.getConstructor() == null && scriptCommand.getParamName().equals(""))) {
-                if (script == null || script.equals("")) {
+            if (scriptCommand.getClassReference() == null || (scriptCommand.getMethod() == null && scriptCommand.getConstructor() == null && scriptCommand.getParamName().length() == 0)) {
+                if (script == null || script.length() == 0) {
                     return value;
                 }
                 String realClassName = "";
@@ -149,10 +149,10 @@ public class Reflection {
                     scriptCommand.setClassReference(c);
                     break;
                 }
-                if (!cName.equals("") && value == null) {
+                if (cName.length() != 0 && value == null) {
                     Object[] values = invokeValues(cajuScript, context, syntax, scriptPart.substring(cName.length()), scriptCommand);
                     return invokeConstructor(cajuScript, c, values, script, scriptCommand);
-                } else if (!cName.equals("") && value != null) {
+                } else if (cName.length() != 0 && value != null) {
                     Object[] values = invokeValues(cajuScript, context, syntax, script, scriptCommand);
                     return invokeMethod(cajuScript, c, value, cName, values, script, scriptCommand);
                 } else {
@@ -225,7 +225,7 @@ public class Reflection {
                 } else if (scriptCommand.getConstructor() != null) {
                     Object[] values = invokeValues(cajuScript, context, syntax, null, scriptCommand);
                     return invokeConstructor(cajuScript, c, values, script, scriptCommand);
-                } else if (!scriptCommand.getParamName().equals("")) {
+                } else if (scriptCommand.getParamName().length() != 0) {
                     if (scriptCommand.getValue() != null) {
                         return invokeNative(cajuScript, context, syntax, c.getField(scriptCommand.getParamName()).get(scriptCommand.getValue().getValue()), scriptCommand.getScript().substring(scriptCommand.getScript().indexOf(".".concat(script)) + script.length() + 1), scriptCommand.getNextScriptCommand());
                     } else {
@@ -371,7 +371,7 @@ public class Reflection {
         int lenBegin = (syntax.matcherPosition(script, syntax.getFunctionCallParametersBegin())).getEnd();
         int lenEnd = (syntax.matcherPosition(script, syntax.getFunctionCallParametersEnd())).getStart();
         String params = script.substring(lenBegin, lenEnd);
-        if (params.trim().equals("")) {
+        if (params.trim().length() == 0) {
             scriptCommand.setParams(new Value[0]);
             return new Object[0];
         }

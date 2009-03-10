@@ -80,7 +80,7 @@ public class Variable extends Base {
      * @return If is to root context return true
      */
     public Boolean isKeyRootContext(Syntax syntax) {
-        if (!key.equals("")) {
+        if (key.length() != 0) {
             SyntaxPosition syntaxPosition = syntax.matcherPosition(key, syntax.getRootContext());
             if (syntaxPosition.getStart() == 0) {
                 return true;
@@ -97,7 +97,7 @@ public class Variable extends Base {
      * @return Key name
      */
     public String getKeyRootContext(Syntax syntax) {
-        if (!key.equals("")) {
+        if (key.length() != 0) {
             SyntaxPosition syntaxPosition = syntax.matcherPosition(key, syntax.getRootContext());
             if (syntaxPosition.getStart() == 0) {
                 return key.substring(syntaxPosition.getEnd());
@@ -121,7 +121,7 @@ public class Variable extends Base {
             element.execute(caju, context, syntax);
         }
         Value v = value.execute(caju, context, syntax);
-        if (!key.equals("")) {
+        if (key.length() != 0) {
             SyntaxPosition syntaxPosition = syntax.matcherPosition(key, syntax.getRootContext());
             if (syntaxPosition.getStart() == 0) {
                 caju.setVar(key.substring(syntaxPosition.getEnd()), v);
