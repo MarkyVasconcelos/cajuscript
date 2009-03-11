@@ -19,6 +19,7 @@
 
 package org.cajuscript;
 
+import java.io.Reader;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -32,6 +33,7 @@ import java.util.Iterator;
 import java.util.WeakHashMap;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+
 import org.cajuscript.parser.Function;
 import org.cajuscript.parser.Base;
 import org.cajuscript.compiler.Compiler;
@@ -1501,5 +1503,17 @@ public class CajuScript {
 		syntaxB.setContinue(Pattern.compile("continue"));
 		syntaxB.setBreak(Pattern.compile("break"));
 		globalSyntaxs.put("CajuBasic", syntaxB);
+	}
+	
+	public <T> T asObject(Reader script, Class<T> superClasz) throws Exception{
+		CajuScriptEngine engine = new CajuScriptEngine();
+		engine.eval(script);
+		return engine.getInterface(superClasz);
+	}
+
+	public <T> T asObject(String script, Class<T> superClasz) throws Exception{
+		CajuScriptEngine engine = new CajuScriptEngine();
+		engine.eval(script);
+		return engine.getInterface(superClasz);
 	}
 }
