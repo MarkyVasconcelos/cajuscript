@@ -47,7 +47,7 @@ public class Reflection {
      */
     public static Object invokeNative(CajuScript cajuScript, Context context, Syntax syntax, Object value, String script, ScriptCommand scriptCommand) throws CajuScriptException {
         try {
-            Class c = null;
+            Class<?> c = null;
             String cName = "";
             if (scriptCommand.getClassReference() == null || (scriptCommand.getMethod() == null && scriptCommand.getConstructor() == null && scriptCommand.getParamName().length() == 0)) {
                 if (script == null || script.length() == 0) {
@@ -241,7 +241,7 @@ public class Reflection {
         }
     }
 
-    private static boolean foundMethod(CajuScript cajuScript, Object[] values, Class[] cx, boolean allowAutoPrimitiveCast, ScriptCommand scriptCommand) {
+    private static boolean foundMethod(CajuScript cajuScript, Object[] values, Class<?>[] cx, boolean allowAutoPrimitiveCast, ScriptCommand scriptCommand) {
         int count = 0;
         for (int x = 0; x < values.length; x++) {
             if (values[x] == null && !CajuScript.isPrimitiveType(cx[x].getName())) {
@@ -271,11 +271,11 @@ public class Reflection {
         }
     }
 
-    private static Object invokeConstructor(CajuScript cajuScript, Class c, Object[] values, String script, ScriptCommand scriptCommand) throws Exception {
+    private static Object invokeConstructor(CajuScript cajuScript, Class<?> c, Object[] values, String script, ScriptCommand scriptCommand) throws Exception {
         if (scriptCommand.getConstructor() != null) {
             return scriptCommand.getConstructor().newInstance(getParams(cajuScript, values, scriptCommand.getConstructor().getParameterTypes(), scriptCommand));
         }
-        Constructor[] cn = c.getDeclaredConstructors();
+        Constructor<?>[] cn = c.getDeclaredConstructors();
         boolean allowAutoPrimitiveCast = true;
         for (int i = 0; i < cn.length; i++) {
             if (i == 0) {
@@ -289,7 +289,7 @@ public class Reflection {
             if (i == cn.length -1 && !allowAutoPrimitiveCast) {
                 i = -1;
             }
-            Class cx[] = cn[x].getParameterTypes();
+            Class<?> cx[] = cn[x].getParameterTypes();
             if (values.length != cx.length) {
                 continue;
             }
@@ -302,14 +302,14 @@ public class Reflection {
         throw new Exception("Constructor \"".concat(c.getName()).concat("\" cannot be invoked"));
     }
 
-    private static Object invokeMethod(CajuScript cajuScript, Class c, Object o, String name, Object[] values, String script, ScriptCommand scriptCommand) throws Exception {
+    private static Object invokeMethod(CajuScript cajuScript, Class<?> c, Object o, String name, Object[] values, String script, ScriptCommand scriptCommand) throws Exception {
         if (scriptCommand.getMethod() != null) {
             Object r = scriptCommand.getMethod().invoke(o, getParams(cajuScript, values, scriptCommand.getMethod().getParameterTypes(), scriptCommand));
             return r;
         }
-        Class[] classes = null;
+        Class<?>[] classes = null;
         if (c.isMemberClass()) {
-            Class[] interfaces = c.getInterfaces();
+            Class<?>[] interfaces = c.getInterfaces();
             classes = new Class[interfaces.length + 1];
             for (int i = 0; i < interfaces.length; i++) {
                 classes[i] = interfaces[i];
@@ -318,17 +318,13 @@ public class Reflection {
         } else {
             classes = new Class[] {c};
         }
-        for (Class cls : classes) {
+        for (Class<?> cls : classes) {
             Method[] mt = cls.getMethods();
             boolean allowAutoPrimitiveCast = true;
             for (int i = 0; i < mt.length; i++) {
-                if (i == 0) {
-                    if (allowAutoPrimitiveCast) {
-                        allowAutoPrimitiveCast = false;
-                    } else {
-                        allowAutoPrimitiveCast = true;
-                    }
-                }
+                if (i == 0)
+                   allowAutoPrimitiveCast = !allowAutoPrimitiveCast;
+                
                 int x = i;
                 if (i == mt.length -1 && !allowAutoPrimitiveCast) {
                     i = -1;
@@ -336,7 +332,7 @@ public class Reflection {
                 if (!mt[x].getName().equals(name)) {
                     continue;
                 }
-                Class[] cx = mt[x].getParameterTypes();
+                Class<?>[] cx = mt[x].getParameterTypes();
                 if (values.length != cx.length) {
                     continue;
                 }
@@ -396,7 +392,7 @@ public class Reflection {
         return values;
     }
 
-    private static Object[] getParams(CajuScript cajuScript, Object[] values, Class[] cx, ScriptCommand scriptCommand) throws Exception {
+    private static Object[] getParams(CajuScript cajuScript, Object[] values, Class<?>[] cx, ScriptCommand scriptCommand) throws Exception {
         if (Arrays.equals(values, scriptCommand.getParamsValues())) {
             return scriptCommand.getParamsFinal();
         }

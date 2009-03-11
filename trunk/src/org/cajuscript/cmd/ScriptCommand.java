@@ -43,10 +43,9 @@ public class ScriptCommand {
     private String classPath = "";
     private String var = "";
     private String paramName = "";
-    private Class classReference = null;
-    private String object = "";
+    private Class<?> classReference = null;
     private Value value = null;
-    private Constructor constructor = null;
+    private Constructor<?> constructor = null;
     private Method method = null;
     private ScriptCommand nextScriptCommand = null;
 
@@ -120,8 +119,7 @@ public class ScriptCommand {
      * @param method Method.
      * @param params Parameters.
      */
-    public void setMethod(String object, Method method, Value[] params) {
-        this.object = object;
+    public void setMethod(Method method, Value[] params) {
         this.method = method;
         this.params = params;
     }
@@ -132,7 +130,7 @@ public class ScriptCommand {
      * @param constructor Constructor.
      * @param params Parameters.
      */
-    public void setNewInstance(String classPath, Constructor constructor, Value[] params) {
+    public void setNewInstance(String classPath, Constructor<?> constructor, Value[] params) {
         this.classPath = classPath;
         this.constructor = constructor;
         this.params = params;
@@ -142,7 +140,7 @@ public class ScriptCommand {
      * Get class reference.
      * @return Class reference.
      */
-    public Class getClassReference() {
+    public Class<?> getClassReference() {
         return classReference;
     }
 
@@ -150,7 +148,7 @@ public class ScriptCommand {
      * Set class reference.
      * @param classReference Class reference.
      */
-    public void setClassReference(Class classReference) {
+    public void setClassReference(Class<?> classReference) {
         this.classReference = classReference;
     }
 
@@ -158,7 +156,7 @@ public class ScriptCommand {
      * Get constructor.
      * @return Constructor.
      */
-    public Constructor getConstructor() {
+    public Constructor<?> getConstructor() {
         return constructor;
     }
 
@@ -166,7 +164,7 @@ public class ScriptCommand {
      * Set constructor.
      * @param constructor Constructor.
      */
-    public void setConstructor(Constructor constructor) {
+    public void setConstructor(Constructor<?> constructor) {
         this.constructor = constructor;
     }
 
