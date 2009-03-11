@@ -20,7 +20,6 @@
 package org.cajuscript;
 
 import java.io.Reader;
-import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Enumeration;
 import org.cajuscript.parser.LineDetail;
@@ -30,7 +29,6 @@ import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import java.util.Iterator;
-import java.util.WeakHashMap;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
@@ -157,9 +155,9 @@ public class CajuScript {
 	private Syntax syntax = new Syntax();
 	private org.cajuscript.parser.Base parserBase = null;
 	private Map<String, Syntax> syntaxs = new HashMap<String, Syntax>();
-	private static Map<String, WeakReference<String>> cacheScripts = new WeakHashMap<String, WeakReference<String>>();
-	private static Map<String, WeakReference<Base>> cacheParsers = new WeakHashMap<String, WeakReference<Base>>();
-	private static Map<String, WeakReference<Context>> cacheStaticContexts = new WeakHashMap<String, WeakReference<Context>>();
+	private static Map<String, String> cacheScripts = new HashMap<String, String>();
+	private static Map<String, Base> cacheParsers = new HashMap<String, Base>();
+	private static Map<String, Context> cacheStaticContexts = new HashMap<String, Context>();
 	private static long staticVarsStringCounter = 1;
 	private String compileBaseDirectory = "cajuscript-classes";
 	private String compileClassPath = "";
@@ -453,12 +451,12 @@ public class CajuScript {
 						} else if (configLine.startsWith("caju.cache")) {
 							cacheId = configLine.substring(configLine
 									.lastIndexOf(' ') + 1);
-							cacheParser = cacheParsers.get(cacheId).get();
-							cacheScript = cacheScripts.get(cacheId).get();
+							cacheParser = cacheParsers.get(cacheId);
+							cacheScript = cacheScripts.get(cacheId);
 							if (cacheParser != null
 									&& originalScript.equals(cacheScript)) {
-								staticContexts = cacheStaticContexts.get(
-										cacheId).get();
+								staticContexts = cacheStaticContexts
+										.get(cacheId);
 							} else if (!(cacheId.length() == 0)) {
 								staticContexts = new Context();
 							}
@@ -656,12 +654,10 @@ public class CajuScript {
 			parserBase = new org.cajuscript.parser.Base(new LineDetail(-1, ""));
 			parserBase.parse(this, script, syntax);
 			if (!(cacheId.length() == 0)) {
-				cacheScripts.put(cacheId, new WeakReference<String>(
-						originalScript));
-				cacheParsers.put(cacheId, new WeakReference<Base>(
-						(Base) parserBase.cloneSerialization()));
-				cacheStaticContexts.put(cacheId, new WeakReference<Context>(
-						staticContexts));
+				cacheScripts.put(cacheId, originalScript);
+				cacheParsers.put(cacheId, (Base) parserBase
+						.cloneSerialization());
+				cacheStaticContexts.put(cacheId, staticContexts);
 			}
 			if (compilePath != null) {
 				Compiler compiler = new Compiler(this, compilePath);
@@ -672,8 +668,7 @@ public class CajuScript {
 				if (!(cacheId.length() == 0)) {
 					Map<String, Function> funcs = context.getFuncs();
 					Set<String> keys = funcs.keySet();
-					Context cacheContext = cacheStaticContexts.get(cacheId)
-							.get();
+					Context cacheContext = cacheStaticContexts.get(cacheId);
 					for (String key : keys) {
 						cacheContext.setFunc(key, funcs.get(key));
 					}
@@ -1264,10 +1259,10 @@ public class CajuScript {
 		return false;
 	}
 
-	private Map<String, WeakReference<Value>> eachValues = new WeakHashMap<String, WeakReference<Value>>();
-	private Map<String, WeakReference<Integer>> eachIndexs = new WeakHashMap<String, WeakReference<Integer>>();
-	private Map<String, WeakReference<Iterator<Object>>> eachIterators = new WeakHashMap<String, WeakReference<Iterator<Object>>>();
-	private Map<String, WeakReference<Enumeration<Object>>> eachEnumerations = new WeakHashMap<String, WeakReference<Enumeration<Object>>>();
+	private Map<String, Value> eachValues = new HashMap<String, Value>();
+	private Map<String, Integer> eachIndexs = new HashMap<String, Integer>();
+	private Map<String, Iterator<Object>> eachIterators = new HashMap<String, Iterator<Object>>();
+	private Map<String, Enumeration<Object>> eachEnumerations = new HashMap<String, Enumeration<Object>>();
 
 	/**
 	 * To do loops like "for each":
@@ -1313,20 +1308,19 @@ public class CajuScript {
 		boolean isToContinue = false;
 		int index = -1;
 		if (array instanceof Collection) {
-			Integer iIndex = eachIndexs.get(var).get();
-			Iterator<Object> iterator = eachIterators.get(var).get();
-			Value value = eachValues.get(var).get();
+			Integer iIndex = eachIndexs.get(var);
+			Iterator<Object> iterator = eachIterators.get(var);
+			Value value = eachValues.get(var);
 			if (iIndex == null) {
 				iterator = ((Collection<Object>) array).iterator();
 				iIndex = Integer.valueOf(index);
 				value = toValue(null);
-				eachValues.put(var, new WeakReference<Value>(value));
-				eachIterators.put(var, new WeakReference<Iterator<Object>>(
-						iterator));
+				eachValues.put(var, value);
+				eachIterators.put(var, iterator);
 			}
 			if (iterator.hasNext()) {
 				index = iIndex.intValue() + 1;
-				value = eachValues.get(var).get();
+				value = eachValues.get(var);
 				value.setValue(iterator.next());
 				setVar(var, value);
 				isToContinue = true;
@@ -1335,24 +1329,22 @@ public class CajuScript {
 					index = iIndex.intValue();
 				}
 			}
-			eachIndexs.put(var, new WeakReference<Integer>(Integer
-					.valueOf(index)));
+			eachIndexs.put(var, Integer.valueOf(index));
 			return isToContinue;
 		} else if (array instanceof Enumeration) {
-			Integer iIndex = eachIndexs.get(var).get();
-			Enumeration enumeration = eachEnumerations.get(var).get();
-			Value value = eachValues.get(var).get();
+			Integer iIndex = eachIndexs.get(var);
+			Enumeration enumeration = eachEnumerations.get(var);
+			Value value = eachValues.get(var);
 			if (iIndex == null) {
 				enumeration = (Enumeration) array;
 				iIndex = Integer.valueOf(index);
 				value = toValue(null);
-				eachValues.put(var, new WeakReference<Value>(value));
-				eachEnumerations.put(var,
-						new WeakReference<Enumeration<Object>>(enumeration));
+				eachValues.put(var, value);
+				eachEnumerations.put(var, enumeration);
 			}
 			if (enumeration.hasMoreElements()) {
 				index = iIndex.intValue() + 1;
-				value = eachValues.get(var).get();
+				value = eachValues.get(var);
 				value.setValue(enumeration.nextElement());
 				setVar(var, value);
 				isToContinue = true;
@@ -1361,8 +1353,7 @@ public class CajuScript {
 					index = iIndex.intValue();
 				}
 			}
-			eachIndexs.put(var, new WeakReference<Integer>(Integer
-					.valueOf(index)));
+			eachIndexs.put(var, Integer.valueOf(index));
 			return isToContinue;
 		} else if (array instanceof Map) {
 			String iteratorKey = CajuScript.CAJU_VARS.concat("_").concat(var)
@@ -1372,11 +1363,11 @@ public class CajuScript {
 				set(iteratorKey, ((Map) array).keySet().iterator());
 			}
 			Iterator iterator = (Iterator) get(iteratorKey);
-			Integer iIndex = eachIndexs.get(var).get();
+			Integer iIndex = eachIndexs.get(var);
 			if (iterator.hasNext()) {
 				if (iIndex == null) {
 					iIndex = Integer.valueOf(index);
-					eachIndexs.put(var, new WeakReference<Integer>(iIndex));
+					eachIndexs.put(var, iIndex);
 				}
 				index = iIndex.intValue();
 				index++;
@@ -1391,16 +1382,15 @@ public class CajuScript {
 					index = iIndex.intValue();
 				}
 			}
-			eachIndexs.put(var, new WeakReference<Integer>(Integer
-					.valueOf(index)));
+			eachIndexs.put(var, Integer.valueOf(index));
 			return isToContinue;
 		} else {
 			int len = Array.size(array);
 			if (len > 0) {
-				Integer iIndex = eachIndexs.get(var).get();
+				Integer iIndex = eachIndexs.get(var);
 				if (iIndex == null) {
 					iIndex = Integer.valueOf(index);
-					eachIndexs.put(var, new WeakReference<Integer>(iIndex));
+					eachIndexs.put(var, iIndex);
 				}
 				index = iIndex.intValue();
 				if (index < len - 1) {
@@ -1409,8 +1399,7 @@ public class CajuScript {
 					isToContinue = true;
 				}
 			}
-			eachIndexs.put(var, new WeakReference<Integer>(Integer
-					.valueOf(index)));
+			eachIndexs.put(var, Integer.valueOf(index));
 			return isToContinue;
 		}
 	}
@@ -1423,7 +1412,7 @@ public class CajuScript {
 	 * @return Index from the current interaction.
 	 */
 	public int index(String var) {
-		return eachIndexs.get(var).get();
+		return eachIndexs.get(var);
 	}
 
 	/**
@@ -1504,14 +1493,14 @@ public class CajuScript {
 		syntaxB.setBreak(Pattern.compile("break"));
 		globalSyntaxs.put("CajuBasic", syntaxB);
 	}
-	
-	public <T> T asObject(Reader script, Class<T> superClasz) throws Exception{
+
+	public <T> T asObject(Reader script, Class<T> superClasz) throws Exception {
 		CajuScriptEngine engine = new CajuScriptEngine();
 		engine.eval(script);
 		return engine.getInterface(superClasz);
 	}
 
-	public <T> T asObject(String script, Class<T> superClasz) throws Exception{
+	public <T> T asObject(String script, Class<T> superClasz) throws Exception {
 		CajuScriptEngine engine = new CajuScriptEngine();
 		engine.eval(script);
 		return engine.getInterface(superClasz);

@@ -90,7 +90,31 @@ public class Array {
 	 *            Size of the new array.
 	 * @return Newly array created is returned.
 	 */
-	public static Object create(int size) {
+	public static Object create(String type, int size) {
+		if (type.equalsIgnoreCase("int") || type.equalsIgnoreCase("i")) {
+            return new int[size];
+        }
+        if (type.equalsIgnoreCase("long") || type.equalsIgnoreCase("l")) {
+            return new long[size];
+        }
+        if (type.equalsIgnoreCase("double") || type.equalsIgnoreCase("d")) {
+            return new double[size];
+        }
+        if (type.equalsIgnoreCase("float") || type.equalsIgnoreCase("f")) {
+            return new float[size];
+        }
+        if (type.equalsIgnoreCase("char") || type.equalsIgnoreCase("c")) {
+            return new char[size];
+        }
+        if (type.equalsIgnoreCase("boolean") || type.equalsIgnoreCase("b") || type.equalsIgnoreCase("bool")) {
+            return new boolean[size];
+        }
+        if (type.equalsIgnoreCase("byte") || type.equalsIgnoreCase("bt")) {
+            return new byte[size];
+        }
+        if (type.equalsIgnoreCase("string") || type.equalsIgnoreCase("s")) {
+            return new String[size];
+        }
 		return java.lang.reflect.Array.newInstance(Object.class, size);
 	}
 
