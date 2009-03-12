@@ -1,0 +1,29 @@
+#summary How to compile CajuScript
+#labels compile,cajuscript,compilinggetting
+
+= Introduction =
+
+This pages teachs you how to get and compile CajuScript on your machine.
+You will need:
+
+1. Java - JDK (http://www.java.sun.com)
+2. Apache Ant (http://ant.apache.org)
+3. Subversion
+4. CajuScript
+
+= Getting CajuScript =
+
+1.	Open a prompt (DOS, Bash, etc) and go to the desired folder.
+2.	Type the command:
+
+svn checkout http://cajuscript.googlecode.com/svn/trunk/ cajuscript
+
+3.	Now, you will have a folder named “cajuscript”. Enter it.
+4.	Inside the folder, type the command:
+
+ant
+
+5.	It will compile all files and generate a .jar file inside the “dist” folder.
+6.	Now, let´s have some fun:
+
+java –cp dist/cajuscript-DATE.jar   irc.CajuConsole
