@@ -1,4 +1,4 @@
-#summary How to compile CajuScript
+#summary How to get and compile CajuScript from source
 #labels compile,cajuscript,compilinggetting
 
 = Introduction =
