@@ -42,7 +42,7 @@
     <mkdir dir="${dist}/lib"/>
 
     <!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
-    <jar jarfile="${dist}/lib/cajuscript-${DSTAMP}.jar" basedir="${build}">
+    <jar jarfile="${dist}/cajuscript-${DSTAMP}.jar" basedir="${build}">
       
       <manifest>
         <attribute name="Main-Class" value="org.cajuscript.CajuScript"/>
