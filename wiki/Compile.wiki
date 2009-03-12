@@ -13,17 +13,17 @@ You will need:
 
 == Getting CajuScript ==
 
-1.	Open a prompt (DOS, Bash, etc) and go to the desired folder.
-2.	Type the command:
+  # Open a prompt (DOS, Bash, etc) and go to the desired folder.
+  # Type the command:
 
 `svn checkout http://cajuscript.googlecode.com/svn/trunk/ cajuscript`
 
-3.	Now, you will have a folder named “cajuscript”. Enter it.
-4.	Inside the folder, type the command:
+  # Now, you will have a folder named “cajuscript”. Enter it.
+  # Inside the folder, type the command:
 
 `ant`
 
-5.	It will compile all files and generate a .jar file inside the “dist” folder.
-6.	Now, let´s have some fun:
+  # It will compile all files and generate a .jar file inside the “dist” folder.
+  # Now, let´s have some fun:
 
 `java –cp dist/cajuscript-DATE.jar   irc.CajuConsole`
