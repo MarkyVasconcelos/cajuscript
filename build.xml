@@ -1,0 +1,62 @@
+<project name="CajuScript" default="dist" basedir=".">
+  <description>
+    A script language for the JVM that is FAST!
+    And, of course, really cool!
+  </description>
+
+  <property name="src" location="src"/>
+  <property name="build" location="build"/>
+  <property name="dist"  location="dist"/>
+
+  <path id="compile.classpath">
+    <pathelement path="${classpath}"/>
+    <pathelement location="lib/helper.jar"/>
+    <dirset dir=".">
+        <include name="src/**"/>
+        <include name="src/irc/**"/>
+        <include name="src/org/cajuscript/**"/>
+        <include name="src/org/cajuscript/cmd/**"/>
+        <include name="src/org/cajuscript/compiler/**"/>
+        <include name="src/org/cajuscript/math/**"/>
+        <include name="src/org/cajuscript//**"/>
+    </dirset>
+
+  </path>
+
+  <target name="init">
+    <!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${build}"/>
+  </target>
+
+  <target name="compile" depends="init"
+        description="compile the source " >
+    <!-- Compile the java code from ${src} into ${build} -->
+    <javac srcdir="${src}" destdir="${build}"/>
+  </target>
+
+  <target name="dist" depends="compile"
+        description="generate the distribution" >
+    <!-- Create the distribution directory -->
+    <mkdir dir="${dist}/lib"/>
+
+    <!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
+    <jar jarfile="${dist}/lib/cajuscript-${DSTAMP}.jar" basedir="${build}">
+      
+      <manifest>
+        <attribute name="Main-Class" value="org.cajuscript.CajuScript"/>
+      </manifest>
+
+    </jar>
+  </target>
+
+  <target name="clean"
+        description="clean up" >
+    <!-- Delete the ${build} and ${dist} directory trees -->
+    <delete dir="${build}"/>
+    <delete dir="${dist}"/>
+  </target>
+
+</project>
+
