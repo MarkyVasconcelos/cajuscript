@@ -10,6 +10,7 @@ You will need:
   # Apache Ant (http://ant.apache.org)
   # Subversion
   # CajuScript
+  # Put your JDK "lib/tools.jar" in the CLASSPATH
 
 == Getting CajuScript ==
 
