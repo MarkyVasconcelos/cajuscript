@@ -27,4 +27,4 @@ You will need:
   * It will compile all files and generate a .jar file inside the “dist” folder.
   * Now, let´s have some fun:
 
-`java –cp dist/cajuscript-DATE.jar   irc.CajuConsole`
+`java –cp dist/cajuscript-DATE.jar   org.cajuscript.irc.CajuConsole`
