@@ -18,21 +18,19 @@ import org.cajuscript.CajuScript;
 import org.cajuscript.Value;
 
 public class CajuConsole extends JFrame implements ActionListener {
-
     private JTextArea output, script;
     private JScrollPane outputField, scriptField;
     private JButton run, clean, cleanOutput;
 
     public CajuConsole() {
         super("CajuConsole");
-        System.setOut(fieldPrintStream);
-        setMinimumSize(new Dimension(800, 500));
+        System.setOut(outputPrintStream);
         setResizable(false);
         setLayout(new BorderLayout(10, 10));
         outputField = new JScrollPane();
         scriptField = new JScrollPane();
-        scriptField.setViewportView(script = new JTextArea(15, 20));
-        outputField.setViewportView(output = new JTextArea(7, 80));
+        scriptField.setViewportView(script = new JTextArea(20, 20));
+        outputField.setViewportView(output = new JTextArea(15, 80));
         output.setLineWrap(true);
         output.setEditable(false);
         JPanel outputArea = new JPanel(new BorderLayout());
@@ -79,11 +77,12 @@ public class CajuConsole extends JFrame implements ActionListener {
                     }
                 }
             } catch (Exception e) {
-                e.printStackTrace(fieldPrintStream);
+                e.printStackTrace(outputPrintStream);
             }
             long fin = System.currentTimeMillis();
             System.out.println("---");
-            System.out.println("Proccess time: " + (fin - ini) + " ms");
+            System.out.println("Execution time: " + (fin - ini) + " ms");
+            System.out.println("");
         }
         if (arg0.getSource() == clean) {
             script.setText("");
@@ -93,7 +92,7 @@ public class CajuConsole extends JFrame implements ActionListener {
         }
     }
     
-    private PrintStream fieldPrintStream = new PrintStream(new OutputStream() {
+    private PrintStream outputPrintStream = new PrintStream(new OutputStream() {
         @Override
         public void write(int b) throws IOException {
             output.append(String.valueOf((char) b));
