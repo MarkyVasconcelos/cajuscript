@@ -1,4 +1,6 @@
 package org.cajuscript.irc;
+
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -6,88 +8,95 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-
 import org.cajuscript.CajuScript;
 import org.cajuscript.Value;
 
 public class CajuConsole extends JFrame implements ActionListener {
-	private JTextArea result, field;
-	private JScrollPane panel, runField;
-	private JButton button, clean, cleanResult;
 
-	public CajuConsole() {
-		super("CajuConsole");
-		System.setOut(fieldPrintStream);
-		setMinimumSize(new Dimension(800, 400));
-		panel = new JScrollPane();
-		runField = new JScrollPane();
-		runField.setViewportView(field = new JTextArea(10, 20));
-		panel.setViewportView(result = new JTextArea(20, 80));
-		result.setLineWrap(true);
-		result.setEditable(false);
-		add(panel, "South");
+    private JTextArea output, script;
+    private JScrollPane outputField, scriptField;
+    private JButton run, clean, cleanOutput;
 
-		JPanel buttons = new JPanel(new GridLayout(3, 1));
-		buttons.add(button = new JButton("Run"));
-		buttons.add(clean = new JButton("Clean Field"));
-		buttons.add(cleanResult = new JButton("Clean Console"));
+    public CajuConsole() {
+        super("CajuConsole");
+        System.setOut(fieldPrintStream);
+        setMinimumSize(new Dimension(800, 500));
+        setResizable(false);
+        setLayout(new BorderLayout(10, 10));
+        outputField = new JScrollPane();
+        scriptField = new JScrollPane();
+        scriptField.setViewportView(script = new JTextArea(15, 20));
+        outputField.setViewportView(output = new JTextArea(7, 80));
+        output.setLineWrap(true);
+        output.setEditable(false);
+        JPanel outputArea = new JPanel(new BorderLayout());
+        outputArea.add(new JLabel("Output:"), BorderLayout.NORTH);
+        outputArea.add(outputField, BorderLayout.SOUTH);
+        add(outputArea, BorderLayout.SOUTH);
+        JPanel scriptArea = new JPanel(new BorderLayout());
+        scriptArea.add(new JLabel("Script:"), BorderLayout.NORTH);
+        scriptArea.add(scriptField, BorderLayout.SOUTH);
+        add(outputArea, BorderLayout.SOUTH);
+        JPanel buttons = new JPanel(new GridLayout(2, 1, 10, 10));
+        buttons.add(clean = new JButton("Clean Script"));
+        buttons.add(cleanOutput = new JButton("Clean Output"));
+        JPanel buttonsMain = new JPanel(new GridLayout(1, 2, 10, 10));
+        buttonsMain.add(run = new JButton("Run"));
+        buttonsMain.add(buttons);
+        JPanel header = new JPanel(new BorderLayout(10, 10));
+        header.add(scriptArea, BorderLayout.CENTER);
+        header.add(buttonsMain, BorderLayout.SOUTH);
+        add(header, BorderLayout.CENTER);
+        run.addActionListener(this);
+        clean.addActionListener(this);
+        cleanOutput.addActionListener(this);
+        pack();
+        setLocationRelativeTo(null);
+        setVisible(true);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
 
-		JPanel header = new JPanel();
-		header.add(runField);
-		header.add(buttons);
-		add(header, "North");
-		button.addActionListener(this);
-		clean.addActionListener(this);
-		cleanResult.addActionListener(this);
+    public static void main(String[] args) {
+        new CajuConsole();
+    }
 
-		pack();
-		setLocationRelativeTo(null);
-		setVisible(true);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	}
-
-	public static void main(String[] args) {
-		new CajuConsole();
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent arg0) {
-		if (arg0.getSource() == button) {
-			long ini = System.currentTimeMillis();
-			try {
-				String script = field.getText();
-
-				CajuScript caju = new CajuScript();
-
-				Value v = caju.eval(script);
-				if (v != null)
-					if (v.getValue() != null)
-						System.out.println(v.getValue().toString());
-
-			} catch (Exception e) {
-				e.printStackTrace(fieldPrintStream);
-			}
-			long fin = System.currentTimeMillis();
-			System.out.println("Proccess time:" + (fin - ini) + " ms");
-		}
-		if (arg0.getSource() == clean) {
-			field.setText("");
-		}
-		if (arg0.getSource() == cleanResult) {
-			result.setText("");
-		}
-	}
-
-	private PrintStream fieldPrintStream = new PrintStream(new OutputStream() {
-		@Override
-		public void write(int b) throws IOException {
-			result.append(String.valueOf((char) b));
-		}
-	});
+    @Override
+    public void actionPerformed(ActionEvent arg0) {
+        if (arg0.getSource() == run) {
+            long ini = System.currentTimeMillis();
+            try {
+                CajuScript caju = new CajuScript();
+                Value v = caju.eval(script.getText());
+                if (v != null) {
+                    if (v.getValue() != null) {
+                        System.out.println(v.getValue().toString());
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace(fieldPrintStream);
+            }
+            long fin = System.currentTimeMillis();
+            System.out.println("---");
+            System.out.println("Proccess time: " + (fin - ini) + " ms");
+        }
+        if (arg0.getSource() == clean) {
+            script.setText("");
+        }
+        if (arg0.getSource() == cleanOutput) {
+            output.setText("");
+        }
+    }
+    
+    private PrintStream fieldPrintStream = new PrintStream(new OutputStream() {
+        @Override
+        public void write(int b) throws IOException {
+            output.append(String.valueOf((char) b));
+        }
+    });
 }
