@@ -4,13 +4,13 @@
 
 All tasks in development:
 
-  * Better compiler using jassist. (_marcos_)
-  * Array support. (_eduveks and ?_):
+  * Better compiler using javassist. (_mark.vscs_)
+  * Array support. (_eduveks_):
 {{{
       array = {'a', 1, true}
       map = {'key1' = 'a', 'key2' = 1, 'key3' = true}
 }}}
-  * Class implementation. (?)
+  * Class implementation. (_?_)
 {{{
       Class : InterfaceClass, ExtendsClass ##
         param = ''
