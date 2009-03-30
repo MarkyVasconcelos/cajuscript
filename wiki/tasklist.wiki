@@ -1,0 +1,28 @@
+#summary Task list
+
+= Task list =
+
+All tasks in development:
+
+  * Better compiler using jassist. (_marcos_)
+  * Array support. (_eduveks and ?_):
+{{{
+      array = {'a', 1, true}
+      map = {'key1' = 'a', 'key2' = 1, 'key3' = true}
+}}}
+  * Class implementation. (?)
+{{{
+      Class : InterfaceClass, ExtendsClass ##
+        param = ''
+
+        \ Useful methods:
+
+        classInit #
+          param = 'x'
+        #
+        methodMissing (method, args) #
+        #
+        paramMissing (param, value) #
+        #
+      ##
+}}}
