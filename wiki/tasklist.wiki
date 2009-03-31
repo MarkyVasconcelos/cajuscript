@@ -4,7 +4,7 @@
 
 All tasks in development:
 
-  * Better compiler using javassist. (_mark.vscs_)
+  * Better compiler using ASM. (_mark.vscs_)
   * Array support. (_eduveks_):
 {{{
       array = {'a', 1, true}
