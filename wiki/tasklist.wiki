@@ -10,6 +10,10 @@ All tasks in development:
       array = {'a', 1, true}
       map = {'key1' = 'a', 'key2' = 1, 'key3' = true}
 }}}
+  * Safe-null-operators (_mark.vscs_, _eduveks_)
+{{{
+      s = person?.getAddress()?:defaultAddress.getPostalCode()?.getValue();
+}}}
   * Class implementation. (_?_)
 {{{
       Class : InterfaceClass, ExtendsClass ##
