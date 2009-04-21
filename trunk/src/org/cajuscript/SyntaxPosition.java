@@ -33,6 +33,7 @@ public class SyntaxPosition {
     private String group = "";
     private String allContent = "";
     private Operator operator = null;
+    private Pattern pattern = null;
     
     /**
      * Newly instance to save useful data to manipulate dynamically the sintax.
@@ -40,6 +41,7 @@ public class SyntaxPosition {
      * @param pattern Parttern was matcher.
      */
     public SyntaxPosition(Syntax syntax, Pattern pattern) {
+        this.pattern = pattern;
         if (pattern.equals(syntax.getOperatorAnd())) {
             operator = Operator.AND;
         } else if (pattern.equals(syntax.getOperatorOr())) {
@@ -139,5 +141,13 @@ public class SyntaxPosition {
      */
     public Operator getOperator() {
         return operator;
+    }
+
+    /**
+     * Get pattern.
+     * @return Operator
+     */
+    public Pattern getPattern() {
+        return pattern;
     }
 }

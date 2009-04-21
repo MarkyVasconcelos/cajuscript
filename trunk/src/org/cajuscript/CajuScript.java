@@ -90,12 +90,12 @@ public class CajuScript {
 	/**
 	 * Core version.
 	 */
-	public static final String VERSION = "0.3.5";
+	public static final String VERSION = "0.4";
 
 	/**
 	 * Language version.
 	 */
-	public static final String LANGUAGE_VERSION = "0.2";
+	public static final String LANGUAGE_VERSION = "0.3";
 
 	/**
 	 * Line Limiter.
