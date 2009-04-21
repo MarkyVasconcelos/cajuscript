@@ -24,6 +24,7 @@ import org.cajuscript.Context;
 import org.cajuscript.Value;
 import org.cajuscript.Syntax;
 import org.cajuscript.CajuScriptException;
+import org.cajuscript.SyntaxPosition;
 import org.cajuscript.compiler.Executable;
 
 /**
@@ -55,18 +56,14 @@ public class Function extends Base {
      * Set the function definition, name and parameters.
      * @param funcDef Function definition
      */
-    public void setDefinition(String funcDef) {
+    public void setDefinition(String funcDef, Syntax syntax) {
         funcDef = funcDef.trim();
-        int p1 = funcDef.indexOf('(');
-        if (p1 > -1) {
-            int p2 = funcDef.lastIndexOf(')');
-            name = funcDef.substring(0, p1).trim();
-            String param = funcDef.substring(p1 + 1, p2).trim();
-            if (param.indexOf(',') > -1) {
-                paramKey = param.split("\\,");
-            } else {
-                paramKey = param.split(" ");
-            }
+        SyntaxPosition syntaxPositionStart = syntax.matcherPosition(funcDef, syntax.getFunctionCallParametersBegin());
+        if (syntaxPositionStart.getStart() > -1) {
+            SyntaxPosition syntaxPositionEnd = syntax.matcherPosition(funcDef, syntax.getFunctionCallParametersEnd());
+            name = funcDef.substring(0, syntaxPositionStart.getStart()).trim();
+            String param = funcDef.substring(syntaxPositionStart.getEnd(), syntaxPositionEnd.getStart()).trim();
+            paramKey = syntax.getFunctionCallParametersSeparator().split(param);
             for (int x = 0; x < paramKey.length; x++) {
                 paramKey[x] = paramKey[x].trim();
             }
@@ -75,11 +72,7 @@ public class Function extends Base {
             if (p > -1) {
                 name = funcDef.substring(0, p).trim();
                 String param = funcDef.substring(p + 1).trim();
-                if (param.indexOf(',') > -1) {
-                    paramKey = param.split("\\,");
-                } else {
-                    paramKey = param.split(" ");
-                }
+                paramKey = syntax.getFunctionCallParametersSeparator().split(param);
                 for (int x = 0; x < paramKey.length; x++) {
                     paramKey[x] = paramKey[x].trim();
                 }

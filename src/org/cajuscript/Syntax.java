@@ -118,6 +118,7 @@ public class Syntax {
     private Pattern functionCallParametersBegin = Pattern.compile("\\(");
     private Pattern functionCallParametersSeparator = Pattern.compile("\\,");
     private Pattern functionCallParametersEnd = Pattern.compile("\\)");
+    private Pattern array = Pattern.compile("\\[([[^\\[\\]]|[.]]*)\\]");
 
     /**
      * Create new Syntax.
@@ -483,6 +484,14 @@ public class Syntax {
     }
 
     /**
+     * Get array. Default: "\\{([[^\\{\\}]|[.]]*)\\}".
+     * @return Array.
+     */
+    public Pattern getArray() {
+        return array;
+    }
+
+    /**
      * Set If. Default "([^\\?\\@\\#\\^]+)\\?".
      * Basic: "^[\\s+i|i]f\\s*([\\s+|[\\s*\\(]].+)\\s*".
      * Java: "if\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{".
@@ -836,6 +845,14 @@ public class Syntax {
      */
     public void setFunctionCallParametersSeparator(Pattern functionCallParametersSeparator) {
         this.functionCallParametersSeparator = functionCallParametersSeparator;
+    }
+    
+    /**
+     * Set array. Default: "\\{([[^\\{\\}]|[.]]*)\\}".
+     * @param array Array.
+     */
+    public void setArray(Pattern array) {
+        this.array = array;
     }
 
     /**

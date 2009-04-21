@@ -275,7 +275,7 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                     throw CajuScriptException.create(caju, caju.getContext(), "\"Function\" statement sintax error, maybe any \"function\" statement was not closed.");
                 }
                 Function func = new Function(lineDetail);
-                func.setDefinition(scriptFuncDef);
+                func.setDefinition(scriptFuncDef, syntax);
                 parse(func, caju, lineDetail, scriptFUNC.toString(), syntax);
                 caju.setFunc(func.getName(), func);
             } else if ((syntaxPosition = syntax.matcherPosition(line, syntax.getTry())).getStart() == 0) {
@@ -456,6 +456,10 @@ public class Base implements Element, java.io.Serializable, Cloneable {
             throw CajuScriptException.create(caju, caju.getContext(), "Sintax error", e);
         }
     }
+
+    private Element array(Element base, CajuScript caju, LineDetail lineDetail, Syntax syntax, String script) throws CajuScriptException {
+        throw new Error("Not implemented yet.");
+    }
     
     private Element evalValue(Element base, CajuScript caju, LineDetail lineDetail, Syntax syntax, String script) throws CajuScriptException {
         return evalValueGroup(base, caju, lineDetail, syntax, script);
@@ -611,7 +615,8 @@ public class Base implements Element, java.io.Serializable, Cloneable {
             var.setValue(c);
             base.addElement(var);
             return evalValueGroup(base, caju, lineDetail, syntax, script.replace((CharSequence)cmdBase, (CharSequence)varKey));
-        } else if ((syntaxPosition = syntax.matcherPosition(script, syntax.getGroup())).getStart() > -1) {
+        } else if ((syntaxPosition = syntax.matcherPosition(script, syntax.getGroup())).getStart() > -1 || (syntaxPosition = syntax.matcherPosition(script, syntax.getArray())).getStart() > -1) {
+            syntaxPosition.
             String varKey = CajuScript.CAJU_VARS_GROUP.concat(caju.nextVarsCounter()).concat(Long.toString(varsGroupCounter));
             varsGroupCounter++;
             Variable var = new Variable(lineDetail);
@@ -620,6 +625,9 @@ public class Base implements Element, java.io.Serializable, Cloneable {
             base.addElement(var);
             return evalValueGroup(base, caju, lineDetail, syntax, script.replace((CharSequence)syntaxPosition.getAllContent(), (CharSequence)varKey));
         } else {
+            if ((syntaxPosition = syntax.matcherPosition(script, syntax.getFunctionCallParametersSeparator())).getStart() > -1) {
+                return array(base, caju, lineDetail, syntax, script);
+            }
             if ((syntaxPosition = syntax.firstOperatorConditional(script)).getStart() > -1
                 || (syntaxPosition = syntax.firstOperatorLogical(script)).getStart() > -1) {
                 return condition(base, caju, lineDetail, syntax, script);
