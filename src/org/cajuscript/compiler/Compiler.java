@@ -520,6 +520,7 @@ public class Compiler {
     }
 
     private String toString(String str) {
+        str = str.replace("\\", "\\\\");
         str = str.replace("\"", "\\\"");
         str = str.replace("\r", "\\r");
         str = str.replace("\n", "\\n");
