@@ -616,7 +616,6 @@ public class Base implements Element, java.io.Serializable, Cloneable {
             base.addElement(var);
             return evalValueGroup(base, caju, lineDetail, syntax, script.replace((CharSequence)cmdBase, (CharSequence)varKey));
         } else if ((syntaxPosition = syntax.matcherPosition(script, syntax.getGroup())).getStart() > -1 || (syntaxPosition = syntax.matcherPosition(script, syntax.getArray())).getStart() > -1) {
-            syntaxPosition.
             String varKey = CajuScript.CAJU_VARS_GROUP.concat(caju.nextVarsCounter()).concat(Long.toString(varsGroupCounter));
             varsGroupCounter++;
             Variable var = new Variable(lineDetail);
