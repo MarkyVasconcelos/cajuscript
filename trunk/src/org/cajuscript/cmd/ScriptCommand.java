@@ -32,7 +32,7 @@ public class ScriptCommand {
      * Type of script commands.
      */
     public static enum Type {
-        VARIABLE, VARIABLE_ROOT, FUNCTION, NATIVE_CLASS, NATIVE_OBJECT, NATIVE_OBJECT_ROOT
+        VARIABLE, VARIABLE_ROOT, FUNCTION, NATIVE_CLASS, NATIVE_OBJECT, NATIVE_OBJECT_ROOT, ARRAY, ARRAY_TYPE
     }
     private String script = "";
     private Type type = null;

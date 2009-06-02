@@ -45,7 +45,7 @@ public class Value implements Cloneable {
      * Types of values.
      */
     public static enum Type {
-        NULL, NUMBER, BOOLEAN, STRING, OBJECT
+        NULL, NUMBER, BOOLEAN, STRING, OBJECT, ARRAY
     }
     /**
      * Types of numbers.
@@ -235,7 +235,10 @@ public class Value implements Cloneable {
             SyntaxPosition syntaxPathSeparator = syntax.matcherPosition(script, syntax.getFunctionCallPathSeparator());
             SyntaxPosition syntaxParamBegin = syntax.matcherPosition(script, syntax.getFunctionCallParametersBegin());
             SyntaxPosition syntaxParamEnd = syntax.matcherPosition(script, syntax.getFunctionCallParametersEnd());
-            if ((syntaxParamBegin.getStart() > -1 && syntaxParamBegin.getStart() < syntaxParamEnd.getStart()) || syntaxPathSeparator.getStart() > -1) {
+            SyntaxPosition syntaxArrayParamBegin = syntax.matcherPosition(script, syntax.getArrayCallParametersBegin());
+            SyntaxPosition syntaxArrayParamEnd = syntax.matcherPosition(script, syntax.getArrayCallParametersEnd());
+            SyntaxPosition syntaxArrayParamSeparator = syntax.matcherPosition(script, syntax.getArrayCallParametersSeparator());
+            if ((syntaxParamBegin.getStart() > -1 && syntaxParamBegin.getStart() < syntaxParamEnd.getStart()) || (syntaxPathSeparator.getStart() > -1 && syntaxArrayParamBegin.getStart() == -1 && syntaxArrayParamEnd.getStart() == -1)) {
                 String path = syntaxParamBegin.getStart() > -1 ? script.substring(0, syntaxParamBegin.getStart()) : script;
                 if (syntaxRootContext.getStart() == 0) {
                     path = path.substring(syntaxRootContext.getEnd());
@@ -261,7 +264,7 @@ public class Value implements Cloneable {
                 if (func != null) {
                     scriptCommand = new ScriptCommand(script, ScriptCommand.Type.FUNCTION);
                     script = script.substring(path.length());
-                    Reflection.invokeValues(cajuScript, context, syntax, script, scriptCommand);
+                    Reflection.invokeFunctionValues(cajuScript, context, syntax, script, scriptCommand);
                     scriptCommand.setClassPath(path);
                 } else if (val != null) {
                     String _script = script;
@@ -275,11 +278,29 @@ public class Value implements Cloneable {
                     scriptCommand = new ScriptCommand(script, ScriptCommand.Type.NATIVE_CLASS);
                 }
             } else {
-                varMode = true;
-                if (syntaxRootContext.getStart() == 0) {
-                    scriptCommand = new ScriptCommand(script.substring(syntaxRootContext.getEnd()), ScriptCommand.Type.VARIABLE_ROOT);
+                if ((syntaxArrayParamBegin.getStart() > -1 && syntaxArrayParamBegin.getStart() < syntaxArrayParamEnd.getStart()) || syntaxArrayParamSeparator.getStart() > -1) {
+                    String path = syntaxArrayParamBegin.getStart() > -1 ? script.substring(0, syntaxArrayParamBegin.getStart()) : script;
+                    Value val = null;
+                    if (syntaxRootContext.getStart() != 0) {
+                        val = context.getVar(path);
+                        if (val == null) {
+                            val = cajuScript.getVar(path);
+                        }
+                    } else {
+                        val = cajuScript.getVar(path);
+                        script = script.substring(path.length());
+                    }
+                    path = path.trim();
+                    scriptCommand = new ScriptCommand(script, ScriptCommand.Type.ARRAY);
+                    Reflection.invokeArrayValues(cajuScript, context, syntax, script, scriptCommand);
+                    scriptCommand.setValue(val);
                 } else {
-                    scriptCommand = new ScriptCommand(script, ScriptCommand.Type.VARIABLE);
+                    varMode = true;
+                    if (syntaxRootContext.getStart() == 0) {
+                        scriptCommand = new ScriptCommand(script.substring(syntaxRootContext.getEnd()), ScriptCommand.Type.VARIABLE_ROOT);
+                    } else {
+                        scriptCommand = new ScriptCommand(script, ScriptCommand.Type.VARIABLE);
+                    }
                 }
             }
         }
@@ -316,6 +337,10 @@ public class Value implements Cloneable {
                     Context funcContext = new Context();
                     Function func = cajuScript.getFunc(scriptCommand.getClassPath());
                     value = func.invoke(cajuScript, funcContext, syntax, scriptCommand.getParams()).getValue();
+                    break;
+                case ARRAY:
+                    type = Type.ARRAY;
+                    value = new Array(scriptCommand.getValue().getValue(), scriptCommand.getParams());
                     break;
                 default:
                     break;

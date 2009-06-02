@@ -19,6 +19,11 @@
 
 package org.cajuscript;
 
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Map;
+import org.cajuscript.cmd.ScriptCommand;
+
 /**
  * To create a new Array, get the size, get a value or set a value.
  * <p>
@@ -62,11 +67,83 @@ package org.cajuscript;
  * @author eduveks
  */
 public class Array {
-	/**
-	 * Initializes a newly created <code>Array</code>
-	 */
-	public Array() {
-	}
+    public static enum Type {
+        COLLECTION, MAP, ENUMERATION, ARRAY
+    }
+
+    private Type type = null;
+    private Object object = null;
+    private Collection collection = null;
+    private Map map = null;
+
+    public Array() {
+        
+    }
+
+    public Array(Object object, Value[] values) {
+        this.object = object;
+        if (object instanceof Collection) {
+            type = Type.COLLECTION;
+        } else if (object instanceof Map) {
+            type = Type.MAP;
+        } else {
+            type = Type.ARRAY;
+        }
+        for (Value value : values) {
+            set(null, value);
+        }
+    }
+
+    public Object get(Object i) {
+        if (getType() == Type.COLLECTION) {
+            return collection.toArray()[((Integer)i).intValue()];
+        } else if (getType() == Type.MAP) {
+            return map.get(i);
+        } else if (getType() == Type.ARRAY) {
+            return Array.get(object, ((Integer)i).intValue());
+        }
+        return null;
+    }
+
+    public void set(Object i, Object o) {
+        if (getType() == Type.COLLECTION) {
+            if (i == null) {
+                collection.add(o);
+            }
+        } else if (getType() == Type.MAP) {
+            map.put(i, o);
+        } else if (getType() == Type.ARRAY) {
+            if (Array.size(object) < ((Integer)i).intValue()) {
+                set(object, ((Integer)i).intValue(), o);
+            } else {
+                Object newArray = Array.create(object.getClass().getName(), Array.size(object) + 1);
+                System.arraycopy(object, 0, newArray, 0, Array.size(object));
+                object = newArray;
+                set(object, ((Integer)i).intValue(), o);
+            }
+        }
+    }
+    
+    public Type getType() {
+        return type;
+    }
+
+    public void setObject(Object o) {
+        object = o;
+        if (o instanceof Collection) {
+            type = Type.COLLECTION;
+            collection = (Collection)o;
+        } else if (o instanceof Map) {
+            type = Type.MAP;
+            map = (Map)o;
+        } else {
+            type = Type.ARRAY;
+        }
+    }
+
+    public Object getObject() {
+        return object;
+    }
 
 	/**
 	 * Create a new array.
