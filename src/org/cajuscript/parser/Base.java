@@ -21,6 +21,7 @@ package org.cajuscript.parser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 import org.cajuscript.CajuScript;
 import org.cajuscript.Context;
 import org.cajuscript.Syntax;
@@ -456,10 +457,6 @@ public class Base implements Element, java.io.Serializable, Cloneable {
             throw CajuScriptException.create(caju, caju.getContext(), "Sintax error", e);
         }
     }
-
-    private Element array(Element base, CajuScript caju, LineDetail lineDetail, Syntax syntax, String script) throws CajuScriptException {
-        throw new Error("Not implemented yet.");
-    }
     
     private Element evalValue(Element base, CajuScript caju, LineDetail lineDetail, Syntax syntax, String script) throws CajuScriptException {
         return evalValueGroup(base, caju, lineDetail, syntax, script);
@@ -549,14 +546,26 @@ public class Base implements Element, java.io.Serializable, Cloneable {
             varsGroupCounter = 0;
         }
         SyntaxPosition syntaxPosition = null;
-        if ((syntaxPosition = syntax.matcherPosition(script, syntax.getFunctionCall())).getStart() > -1) {
+        if ((syntaxPosition = syntax.matcherPosition(script, syntax.getFunctionCall())).getStart() > -1 || (syntaxPosition = syntax.matcherPosition(script, syntax.getArrayCall())).getStart() > -1) {
+            Pattern callParametersBegin = null;
+            Pattern callParametersEnd = null;
+            Pattern callParametersSeparator = null;
+            if (syntaxPosition.getPattern().equals(syntax.getFunctionCall())) {
+                callParametersBegin = syntax.getFunctionCallParametersBegin();
+                callParametersEnd = syntax.getFunctionCallParametersEnd();
+                callParametersSeparator = syntax.getFunctionCallParametersSeparator();
+            } else if (syntaxPosition.getPattern().equals(syntax.getArrayCall())) {
+                callParametersBegin = syntax.getArrayCallParametersBegin();
+                callParametersEnd = syntax.getArrayCallParametersEnd();
+                callParametersSeparator = syntax.getArrayCallParametersSeparator();
+            }
             String varKey = CajuScript.CAJU_VARS_GROUP.concat(caju.nextVarsCounter()).concat(Long.toString(varsGroupCounter));
             varsGroupCounter++;
             Variable var = new Variable(lineDetail);
             var.setKey(varKey);
             Command c = new Command(lineDetail);
             String cmd = syntaxPosition.getGroup();
-            String functionName = cmd.substring(0, syntax.matcherPosition(cmd, syntax.getFunctionCallParametersBegin()).getStart());
+            String functionName = cmd.substring(0, syntax.matcherPosition(cmd, callParametersBegin).getStart());
             SyntaxPosition syntaxFixOperator = syntax.lastOperatorLogical(functionName);
             if (syntaxFixOperator.getEnd() > -1) {
                 syntaxPosition.setStart(syntaxPosition.getStart() + syntaxFixOperator.getEnd());
@@ -573,13 +582,13 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                 cmd = cmd.substring(syntaxFixOperator.getEnd());
             }
             String cmdBase = cmd;
-            SyntaxPosition syntaxParameterBegin = syntax.matcherPosition(cmdBase, syntax.getFunctionCallParametersBegin());
-            SyntaxPosition syntaxParameterEnd = syntax.matcherPosition(cmdBase, syntax.getFunctionCallParametersEnd());
+            SyntaxPosition syntaxParameterBegin = syntax.matcherPosition(cmdBase, callParametersBegin);
+            SyntaxPosition syntaxParameterEnd = syntax.matcherPosition(cmdBase, callParametersEnd);
             if (syntaxParameterBegin.getStart() > -1 && syntaxParameterBegin.getStart() < syntaxParameterEnd.getStart()) {
                 String params = cmdBase.substring(syntaxParameterBegin.getEnd(), syntaxParameterEnd.getStart());
                 cmd = cmd.substring(0, syntaxParameterBegin.getEnd());
                 while(true) {
-                    SyntaxPosition syntaxPositionParam = syntax.matcherPosition(params, syntax.getFunctionCallParametersSeparator());
+                    SyntaxPosition syntaxPositionParam = syntax.matcherPosition(params, callParametersSeparator);
                     int lenParamSeparatorStart = syntaxPositionParam.getStart();
                     int lenParamSeparatorEnd = syntaxPositionParam.getEnd();
                     if (lenParamSeparatorEnd == -1) {
@@ -624,9 +633,6 @@ public class Base implements Element, java.io.Serializable, Cloneable {
             base.addElement(var);
             return evalValueGroup(base, caju, lineDetail, syntax, script.replace((CharSequence)syntaxPosition.getAllContent(), (CharSequence)varKey));
         } else {
-            if ((syntaxPosition = syntax.matcherPosition(script, syntax.getFunctionCallParametersSeparator())).getStart() > -1) {
-                return array(base, caju, lineDetail, syntax, script);
-            }
             if ((syntaxPosition = syntax.firstOperatorConditional(script)).getStart() > -1
                 || (syntaxPosition = syntax.firstOperatorLogical(script)).getStart() > -1) {
                 return condition(base, caju, lineDetail, syntax, script);

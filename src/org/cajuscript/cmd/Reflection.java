@@ -22,6 +22,7 @@ package org.cajuscript.cmd;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 import org.cajuscript.CajuScript;
 import org.cajuscript.CajuScriptException;
 import org.cajuscript.Context;
@@ -150,10 +151,10 @@ public class Reflection {
                     break;
                 }
                 if (cName.length() != 0 && value == null) {
-                    Object[] values = invokeValues(cajuScript, context, syntax, scriptPart.substring(cName.length()), scriptCommand);
+                    Object[] values = invokeFunctionValues(cajuScript, context, syntax, scriptPart.substring(cName.length()), scriptCommand);
                     return invokeConstructor(cajuScript, c, values, script, scriptCommand);
                 } else if (cName.length() != 0 && value != null) {
-                    Object[] values = invokeValues(cajuScript, context, syntax, script, scriptCommand);
+                    Object[] values = invokeFunctionValues(cajuScript, context, syntax, script, scriptCommand);
                     return invokeMethod(cajuScript, c, value, cName, values, script, scriptCommand);
                 } else {
                     syntaxPathSeparator = syntax.matcherPosition(script, syntax.getFunctionCallPathSeparator());
@@ -212,7 +213,7 @@ public class Reflection {
                             }
                         }
                     } else {
-                        Object[] values = invokeValues(cajuScript, context, syntax, script.substring(syntaxParameterBegin.getStart()), scriptCommand);
+                        Object[] values = invokeFunctionValues(cajuScript, context, syntax, script.substring(syntaxParameterBegin.getStart()), scriptCommand);
                         String propName = script.substring(0, syntaxParameterBegin.getStart());
                         return invokeMethod(cajuScript, c, value, propName, values, script, scriptCommand);
                     }
@@ -220,10 +221,10 @@ public class Reflection {
             } else {
                 c = scriptCommand.getClassReference();
                 if (scriptCommand.getMethod() != null) {
-                    Object[] values = invokeValues(cajuScript, context, syntax, null, scriptCommand);
+                    Object[] values = invokeFunctionValues(cajuScript, context, syntax, null, scriptCommand);
                     return invokeMethod(cajuScript, c, value, null, values, null, scriptCommand);
                 } else if (scriptCommand.getConstructor() != null) {
-                    Object[] values = invokeValues(cajuScript, context, syntax, null, scriptCommand);
+                    Object[] values = invokeFunctionValues(cajuScript, context, syntax, null, scriptCommand);
                     return invokeConstructor(cajuScript, c, values, script, scriptCommand);
                 } else if (scriptCommand.getParamName().length() != 0) {
                     if (scriptCommand.getValue() != null) {
@@ -346,7 +347,7 @@ public class Reflection {
     }
 
     /**
-     * Catch values to be used into invocations.
+     * Catch values from function syntax to be used into invocations.
      * @param cajuScript CajuScript instance.
      * @param context Context
      * @param syntax Syntax
@@ -355,7 +356,38 @@ public class Reflection {
      * @return Objects values from the parameters.
      * @throws org.cajuscript.CajuScriptException Catching values exception
      */
-    public static Object[] invokeValues(CajuScript cajuScript, Context context, Syntax syntax, String script, ScriptCommand scriptCommand) throws CajuScriptException {
+    public static Object[] invokeFunctionValues(CajuScript cajuScript, Context context, Syntax syntax, String script, ScriptCommand scriptCommand) throws CajuScriptException {
+        return invokeValues(cajuScript, context, syntax, script, scriptCommand, syntax.getFunctionCallParametersBegin(), syntax.getFunctionCallParametersSeparator(), syntax.getFunctionCallParametersEnd());
+    }
+
+    /**
+     * Catch values from array syntax to be used into invocations.
+     * @param cajuScript CajuScript instance.
+     * @param context Context
+     * @param syntax Syntax
+     * @param script Parameters script
+     * @param scriptCommand ScriptCommand instance to save the procedure in cache
+     * @return Objects values from the parameters.
+     * @throws org.cajuscript.CajuScriptException Catching values exception
+     */
+    public static Object[] invokeArrayValues(CajuScript cajuScript, Context context, Syntax syntax, String script, ScriptCommand scriptCommand) throws CajuScriptException {
+        return invokeValues(cajuScript, context, syntax, script, scriptCommand, syntax.getArrayCallParametersBegin(), syntax.getArrayCallParametersSeparator(), syntax.getArrayCallParametersEnd());
+    }
+
+    /**
+     * Catch values to be used into invocations.
+     * @param cajuScript CajuScript instance.
+     * @param context Context
+     * @param syntax Syntax
+     * @param script Parameters script
+     * @param scriptCommand ScriptCommand instance to save the procedure in cache
+     * @param parametersBegin Parameters begin syntax
+     * @param parametersSeparator Parameters separator syntax
+     * @param parametersEnd Parameters end syntax
+     * @return Objects values from the parameters.
+     * @throws org.cajuscript.CajuScriptException Catching values exception
+     */
+    public static Object[] invokeValues(CajuScript cajuScript, Context context, Syntax syntax, String script, ScriptCommand scriptCommand, Pattern parametersBegin, Pattern parametersSeparator, Pattern parametersEnd) throws CajuScriptException {
         if (scriptCommand.getParams() != null) {
             Value[] paramsVal = scriptCommand.getParams();
             Object[] values = new Object[paramsVal.length];
@@ -364,14 +396,14 @@ public class Reflection {
             }
             return values;
         }
-        int lenBegin = (syntax.matcherPosition(script, syntax.getFunctionCallParametersBegin())).getEnd();
-        int lenEnd = (syntax.matcherPosition(script, syntax.getFunctionCallParametersEnd())).getStart();
+        int lenBegin = (syntax.matcherPosition(script, parametersBegin)).getEnd();
+        int lenEnd = (syntax.matcherPosition(script, parametersEnd)).getStart();
         String params = script.substring(lenBegin, lenEnd);
         if (params.trim().length() == 0) {
             scriptCommand.setParams(new Value[0]);
             return new Object[0];
         }
-        String[] paramsKeys = syntax.getFunctionCallParametersSeparator().split(params);
+        String[] paramsKeys = parametersSeparator.split(params);
         Value[] paramsVal = new Value[paramsKeys.length];
         Object[] values = new Object[paramsKeys.length];
         for (int x = 0; x < paramsKeys.length; x++) {

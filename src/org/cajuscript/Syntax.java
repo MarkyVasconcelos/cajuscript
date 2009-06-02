@@ -119,6 +119,11 @@ public class Syntax {
     private Pattern functionCallParametersSeparator = Pattern.compile("\\,");
     private Pattern functionCallParametersEnd = Pattern.compile("\\)");
     private Pattern array = Pattern.compile("\\[([[^\\[\\]]|[.]]*)\\]");
+    private Pattern arrayCall = Pattern.compile("[\\w|\\.]+[\\w|\\.|\\s]*\\[[[^\\(\\)]|[.]]*\\]");
+    private Pattern arrayCallParametersBegin = Pattern.compile("\\[");
+    private Pattern arrayCallParametersSeparator = Pattern.compile("\\,");
+    private Pattern arrayCallParametersEnd = Pattern.compile("\\]");
+
 
     /**
      * Create new Syntax.
@@ -492,6 +497,38 @@ public class Syntax {
     }
 
     /**
+     * Get array. Default: "[\\w|\\.]+[\\w|\\.|\\s]*\\[[[^\\(\\)]|[.]]*\\]".
+     * @return Array call.
+     */
+    public Pattern getArrayCall() {
+        return arrayCall;
+    }
+
+    /**
+     * Get array call parameters begin. Default: "\\[".
+     * @return Array call parameters begin.
+     */
+    public Pattern getArrayCallParametersBegin() {
+        return arrayCallParametersBegin;
+    }
+
+    /**
+     * Get array call parameters end. Default: "\\]".
+     * @return Array call parameters end.
+     */
+    public Pattern getArrayCallParametersEnd() {
+        return arrayCallParametersEnd;
+    }
+
+    /**
+     * Get array call parameters separator. Default "\\,".
+     * @return Array call parameters separator.
+     */
+    public Pattern getArrayCallParametersSeparator() {
+        return arrayCallParametersSeparator;
+    }
+
+    /**
      * Set If. Default "([^\\?\\@\\#\\^]+)\\?".
      * Basic: "^[\\s+i|i]f\\s*([\\s+|[\\s*\\(]].+)\\s*".
      * Java: "if\\s*([\\s+|[\\s*\\(]][^\\{]+)\\{".
@@ -853,6 +890,38 @@ public class Syntax {
      */
     public void setArray(Pattern array) {
         this.array = array;
+    }
+
+    /**
+     * Set array call. Default: "[\\w|\\.]+[\\w|\\.|\\s]*\\[[[^\\(\\)]|[.]]*\\]".
+     * @param arrayCall Array call.
+     */
+    public void setArrayCall(Pattern arrayCall) {
+        this.arrayCall = arrayCall;
+    }
+
+    /**
+     * Set array call parameters begin. Default: "\\[".
+     * @param arrayCallParametersBegin Array call parameters begin.
+     */
+    public void setArrayCallParametersBegin(Pattern arrayCallParametersBegin) {
+        this.arrayCallParametersBegin = arrayCallParametersBegin;
+    }
+
+    /**
+     * Set array call parameters end. Default: "\\]".
+     * @param arrayCallParametersEnd Array call parameters end.
+     */
+    public void setArrayCallParametersEnd(Pattern arrayCallParametersEnd) {
+        this.arrayCallParametersEnd = arrayCallParametersEnd;
+    }
+
+    /**
+     * Set array call parameters separator. Default "\\,".
+     * @param arrayCallParametersSeparator Array call parameters separator.
+     */
+    public void setArrayCallParametersSeparator(Pattern arrayCallParametersSeparator) {
+        this.arrayCallParametersSeparator = arrayCallParametersSeparator;
     }
 
     /**
