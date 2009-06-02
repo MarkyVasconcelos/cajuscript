@@ -1596,14 +1596,14 @@ public class CajuScriptTest {
 
     private void syntaxCheckImportCompile(CajuScript caju, String script) throws CajuScriptException {
         syntaxReload(caju);
-        caju.eval("caju.compile: test.TestImport;"+ script);
+        caju.eval("caju.compile.classPath: dist/cajuscript.jar;caju.compile: test.TestImport;"+ script);
         syntaxCheckImport(caju);
         syntaxReload(caju);
-        caju.eval("caju.compile: test.TestImport;"+ script);
+        caju.eval("caju.compile.classPath: dist/cajuscript.jar;caju.compile: test.TestImport;"+ script);
         syntaxCheckImport(caju);
         caju = new CajuScript();
         syntaxReload(caju);
-        caju.eval("caju.compile: test.TestImport;"+ script);
+        caju.eval("caju.compile.classPath: dist/cajuscript.jar;caju.compile: test.TestImport;"+ script);
         syntaxCheckImport(caju);
     }
     
@@ -1637,14 +1637,14 @@ public class CajuScriptTest {
 
     private void syntaxCheckIfCompile(CajuScript caju, String script) throws CajuScriptException {
         syntaxReload(caju);
-        caju.eval("caju.compile: test.TestIf;"+ script);
+        caju.eval("caju.compile.classPath: dist/cajuscript.jar;caju.compile: test.TestIf;"+ script);
         syntaxCheckIf(caju);
         syntaxReload(caju);
-        caju.eval("caju.compile: test.TestIf;"+ script);
+        caju.eval("caju.compile.classPath: dist/cajuscript.jar;caju.compile: test.TestIf;"+ script);
         syntaxCheckIf(caju);
         caju = new CajuScript();
         syntaxReload(caju);
-        caju.eval("caju.compile: test.TestIf;"+ script);
+        caju.eval("caju.compile.classPath: dist/cajuscript.jar;caju.compile: test.TestIf;"+ script);
         syntaxCheckIf(caju);
     }
     
@@ -1667,14 +1667,14 @@ public class CajuScriptTest {
 
     private void syntaxCheckLoopCompile(CajuScript caju, String script) throws CajuScriptException {
         syntaxReload(caju);
-        caju.eval("caju.compile: test.TestLoop;"+ script);
+        caju.eval("caju.compile.classPath: dist/cajuscript.jar;caju.compile: test.TestLoop;"+ script);
         syntaxCheckLoop(caju);
         syntaxReload(caju);
-        caju.eval("caju.compile: test.TestLoop;"+ script);
+        caju.eval("caju.compile.classPath: dist/cajuscript.jar;caju.compile: test.TestLoop;"+ script);
         syntaxCheckLoop(caju);
         caju = new CajuScript();
         syntaxReload(caju);
-        caju.eval("caju.compile: test.TestLoop;"+ script);
+        caju.eval("caju.compile.classPath: dist/cajuscript.jar;caju.compile: test.TestLoop;"+ script);
         syntaxCheckLoop(caju);
     }
 
@@ -1697,14 +1697,14 @@ public class CajuScriptTest {
 
     private void syntaxCheckFunctionCompile(CajuScript caju, String script) throws CajuScriptException {
         syntaxReload(caju);
-        caju.eval("caju.compile: test.TestFunction;"+ script);
+        caju.eval("caju.compile.classPath: dist/cajuscript.jar;caju.compile: test.TestFunction;"+ script);
         syntaxCheckFunction(caju);
         syntaxReload(caju);
-        caju.eval("caju.compile: test.TestFunction;"+ script);
+        caju.eval("caju.compile.classPath: dist/cajuscript.jar;caju.compile: test.TestFunction;"+ script);
         syntaxCheckFunction(caju);
         caju = new CajuScript();
         syntaxReload(caju);
-        caju.eval("caju.compile: test.TestFunction;"+ script);
+        caju.eval("caju.compile.classPath: dist/cajuscript.jar;caju.compile: test.TestFunction;"+ script);
         syntaxCheckFunction(caju);
     }
     
@@ -1727,14 +1727,14 @@ public class CajuScriptTest {
 
     private void syntaxCheckTryCatchCompile(CajuScript caju, String script) throws CajuScriptException {
         syntaxReload(caju);
-        caju.eval("caju.compile: test.TestTryCatch;"+ script);
+        caju.eval("caju.compile.classPath: dist/cajuscript.jar;caju.compile: test.TestTryCatch;"+ script);
         syntaxCheckTryCatch(caju);
         syntaxReload(caju);
-        caju.eval("caju.compile: test.TestTryCatch;"+ script);
+        caju.eval("caju.compile.classPath: dist/cajuscript.jar;caju.compile: test.TestTryCatch;"+ script);
         syntaxCheckTryCatch(caju);
         caju = new CajuScript();
         syntaxReload(caju);
-        caju.eval("caju.compile: test.TestTryCatch;"+ script);
+        caju.eval("caju.compile.classPath: dist/cajuscript.jar;caju.compile: test.TestTryCatch;"+ script);
         syntaxCheckTryCatch(caju);
     }
     
