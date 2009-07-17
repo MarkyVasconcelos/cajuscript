@@ -118,7 +118,7 @@ public class Syntax {
     private Pattern functionCallParametersBegin = Pattern.compile("\\(");
     private Pattern functionCallParametersSeparator = Pattern.compile("\\,");
     private Pattern functionCallParametersEnd = Pattern.compile("\\)");
-    private Pattern array = Pattern.compile("\\[([[^\\[\\]]|[.]]*)\\]");
+    private Pattern array = Pattern.compile("(\\[([[^\\[\\]]|[.]]*)\\])");
     private Pattern arrayCall = Pattern.compile("[\\w|\\.]+[\\w|\\.|\\s]*\\[[[^\\(\\)]|[.]]*\\]");
     private Pattern arrayCallParametersBegin = Pattern.compile("\\[");
     private Pattern arrayCallParametersSeparator = Pattern.compile("\\,");
@@ -948,6 +948,24 @@ public class Syntax {
             position.setStart(-1);
             position.setEnd(-1);
             return position;
+        }
+    }
+
+    /**
+     * Find the last operator.
+     * @param script Script where find the operator.
+     * @return Position.
+     */
+    public SyntaxPosition matcherLastPosition(String script, Pattern pattern) {
+        SyntaxPosition syntaxPositionFinal = new SyntaxPosition(this, Pattern.compile(""));
+        while (true) {
+            SyntaxPosition syntaxPosition = matcherPosition(script, pattern);
+            if (syntaxPosition.getStart() != -1) {
+                script = script.substring(syntaxPosition.getEnd());
+                syntaxPositionFinal = syntaxPosition;
+            } else {
+                return syntaxPositionFinal;
+            }
         }
     }
 

@@ -457,9 +457,13 @@ public class Base implements Element, java.io.Serializable, Cloneable {
             throw CajuScriptException.create(caju, caju.getContext(), "Sintax error", e);
         }
     }
-    
+
     private Element evalValue(Element base, CajuScript caju, LineDetail lineDetail, Syntax syntax, String script) throws CajuScriptException {
-        return evalValueGroup(base, caju, lineDetail, syntax, script);
+        return evalValueGroup(base, caju, lineDetail, syntax, script, false);
+    }
+
+    private Element evalValue(Element base, CajuScript caju, LineDetail lineDetail, Syntax syntax, String script, boolean isArray) throws CajuScriptException {
+        return evalValueGroup(base, caju, lineDetail, syntax, script, true);
     }
     
     private Element evalValueSingle(Element base, CajuScript caju, LineDetail lineDetail, Syntax syntax, String script) throws CajuScriptException {
@@ -540,10 +544,22 @@ public class Base implements Element, java.io.Serializable, Cloneable {
             throw CajuScriptException.create(caju, caju.getContext(), "Sintax error", e);
         }
     }
-    
+
     private Element evalValueGroup(Element base, CajuScript caju, LineDetail lineDetail, Syntax syntax, String script) throws CajuScriptException {
+        return evalValueGroup(base, caju, lineDetail, syntax, script, false);
+    }
+
+    private Element evalValueGroup(Element base, CajuScript caju, LineDetail lineDetail, Syntax syntax, String script, boolean isArray) throws CajuScriptException {
         if (varsGroupCounter == Long.MAX_VALUE) {
             varsGroupCounter = 0;
+        }
+        String scriptBackup = script;
+        if (isArray) {
+            SyntaxPosition arrayBegin = syntax.matcherPosition(script, syntax.getArrayCallParametersBegin());
+            SyntaxPosition arrayEnd = syntax.matcherLastPosition(script, syntax.getArrayCallParametersEnd());
+            if (arrayBegin.getEnd() > -1 && arrayEnd.getStart() > -1) {
+                script = script.substring(arrayBegin.getEnd(), arrayEnd.getStart());
+            }
         }
         SyntaxPosition syntaxPosition = null;
         if ((syntaxPosition = syntax.matcherPosition(script, syntax.getFunctionCall())).getStart() > -1 || (syntaxPosition = syntax.matcherPosition(script, syntax.getArrayCall())).getStart() > -1) {
@@ -629,10 +645,13 @@ public class Base implements Element, java.io.Serializable, Cloneable {
             varsGroupCounter++;
             Variable var = new Variable(lineDetail);
             var.setKey(varKey);
-            var.setValue(evalValue(base, caju, lineDetail, syntax, syntaxPosition.getGroup()));
+            var.setValue(evalValue(base, caju, lineDetail, syntax, syntaxPosition.getGroup(), syntaxPosition.getPattern().equals(syntax.getArray())));
             base.addElement(var);
             return evalValueGroup(base, caju, lineDetail, syntax, script.replace((CharSequence)syntaxPosition.getAllContent(), (CharSequence)varKey));
         } else {
+            if (isArray) {
+                script = scriptBackup;
+            }
             if ((syntaxPosition = syntax.firstOperatorConditional(script)).getStart() > -1
                 || (syntaxPosition = syntax.firstOperatorLogical(script)).getStart() > -1) {
                 return condition(base, caju, lineDetail, syntax, script);
