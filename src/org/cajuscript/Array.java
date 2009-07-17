@@ -19,8 +19,10 @@
 
 package org.cajuscript;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Map;
 import org.cajuscript.cmd.ScriptCommand;
 
@@ -68,59 +70,32 @@ import org.cajuscript.cmd.ScriptCommand;
  */
 public class Array {
     public static enum Type {
-        COLLECTION, MAP, ENUMERATION, ARRAY
+        ARRAY, MAP
     }
-
-    private Type type = null;
-    private Object object = null;
-    private Collection collection = null;
-    private Map map = null;
+    
+    private ArrayList arrayList = new ArrayList();
+    private HashMap map = new HashMap();
 
     public Array() {
         
     }
 
-    public Array(Object object, Value[] values) {
-        this.object = object;
-        if (object instanceof Collection) {
-            type = Type.COLLECTION;
-        } else if (object instanceof Map) {
-            type = Type.MAP;
-        } else {
-            type = Type.ARRAY;
-        }
-        for (Value value : values) {
-            set(null, value);
-        }
-    }
-
     public Object get(Object i) {
-        if (getType() == Type.COLLECTION) {
-            return collection.toArray()[((Integer)i).intValue()];
+        if (getType() == Type.ARRAY) {
+            return arrayList.get((Integer)i);
         } else if (getType() == Type.MAP) {
             return map.get(i);
-        } else if (getType() == Type.ARRAY) {
-            return Array.get(object, ((Integer)i).intValue());
         }
         return null;
     }
 
     public void set(Object i, Object o) {
-        if (getType() == Type.COLLECTION) {
+        if (getType() == Type.ARRAY) {
             if (i == null) {
-                collection.add(o);
+                arrayList.add(o);
             }
         } else if (getType() == Type.MAP) {
             map.put(i, o);
-        } else if (getType() == Type.ARRAY) {
-            if (Array.size(object) < ((Integer)i).intValue()) {
-                set(object, ((Integer)i).intValue(), o);
-            } else {
-                Object newArray = Array.create(object.getClass().getName(), Array.size(object) + 1);
-                System.arraycopy(object, 0, newArray, 0, Array.size(object));
-                object = newArray;
-                set(object, ((Integer)i).intValue(), o);
-            }
         }
     }
     
