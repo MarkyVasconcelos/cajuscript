@@ -340,8 +340,9 @@ public class Value implements Cloneable {
                     break;
                 case ARRAY:
                     type = Type.ARRAY;
-                    value = new Array(scriptCommand.getValue().getValue(), scriptCommand.getParams());
-                    break;
+                    throw new Error("Array constructor not implemented yet.");
+                    //value = new Array(scriptCommand.getParams(), scriptCommand.getParamsValues());
+                    //break;
                 default:
                     break;
             }

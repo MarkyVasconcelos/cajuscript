@@ -69,55 +69,54 @@ import org.cajuscript.cmd.ScriptCommand;
  * @author eduveks
  */
 public class Array {
-    public static enum Type {
-        ARRAY, MAP
-    }
-    
     private ArrayList arrayList = new ArrayList();
+    private HashMap mapRelation = new HashMap();
     private HashMap map = new HashMap();
 
     public Array() {
         
     }
 
-    public Object get(Object i) {
-        if (getType() == Type.ARRAY) {
-            return arrayList.get((Integer)i);
-        } else if (getType() == Type.MAP) {
-            return map.get(i);
-        }
-        return null;
+    public Object get(int i) {
+        return arrayList.get((Integer)i);
     }
 
-    public void set(Object i, Object o) {
-        if (getType() == Type.ARRAY) {
-            if (i == null) {
-                arrayList.add(o);
+    public Object get(Object i) {
+        return map.get(i);
+    }
+
+    public void set(int i, Object o) {
+        if (i >= arrayList.size()) {
+            for (int j = arrayList.size() - 1; j < i; j++) {
+                arrayList.add(null);
             }
-        } else if (getType() == Type.MAP) {
+            arrayList.add(o);
+            mapRelation.put(i, null);
+            map.put(i, o);
+        } else {
+            arrayList.set(i, o);
+            mapRelation.put(i, null);
             map.put(i, o);
         }
     }
-    
-    public Type getType() {
-        return type;
-    }
 
-    public void setObject(Object o) {
-        object = o;
-        if (o instanceof Collection) {
-            type = Type.COLLECTION;
-            collection = (Collection)o;
-        } else if (o instanceof Map) {
-            type = Type.MAP;
-            map = (Map)o;
-        } else {
-            type = Type.ARRAY;
+    public void set(Object i, Object o) {
+        if (i instanceof Integer) {
+            int index = ((Integer)i).intValue();
+            if (index >= arrayList.size()) {
+                for (int j = arrayList.size() - 1; j < index; j++) {
+                    arrayList.add(null);
+                }
+                arrayList.add(o);
+            } else {
+                arrayList.set(index, o);
+            }
         }
+        map.put(i, o);
     }
 
-    public Object getObject() {
-        return object;
+    public void add(Object o) {
+        arrayList.add(o);
     }
 
 	/**
