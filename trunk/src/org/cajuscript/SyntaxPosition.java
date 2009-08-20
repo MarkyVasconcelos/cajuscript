@@ -23,131 +23,153 @@ import java.util.regex.Pattern;
 import org.cajuscript.parser.Operation.Operator;
 
 /**
- * Sintax matchers return an instance from this class with useful data to 
+ * Sintax matchers return an instance from this class with useful data to
  * manipulate dynamically the sintax.
+ * 
  * @author eduveks
  */
 public class SyntaxPosition {
-    private int start = -1;
-    private int end = -1;
-    private String group = "";
-    private String allContent = "";
-    private Operator operator = null;
-    private Pattern pattern = null;
-    
-    /**
-     * Newly instance to save useful data to manipulate dynamically the sintax.
-     * @param syntax Current syntax.
-     * @param pattern Parttern was matcher.
-     */
-    public SyntaxPosition(Syntax syntax, Pattern pattern) {
-        this.pattern = pattern;
-        if (pattern.equals(syntax.getOperatorAnd())) {
-            operator = Operator.AND;
-        } else if (pattern.equals(syntax.getOperatorOr())) {
-            operator = Operator.OR;
-        } else if (pattern.equals(syntax.getOperatorEqual())) {
-            operator = Operator.EQUAL;
-        } else if (pattern.equals(syntax.getOperatorNotEqual())) {
-            operator = Operator.NOT_EQUAL;
-        } else if (pattern.equals(syntax.getOperatorGreater())) {
-            operator = Operator.GREATER;
-        } else if (pattern.equals(syntax.getOperatorLess())) {
-            operator = Operator.LESS;
-        } else if (pattern.equals(syntax.getOperatorGreaterEqual())) {
-            operator = Operator.GREATER_EQUAL;
-        } else if (pattern.equals(syntax.getOperatorLessEqual())) {
-            operator = Operator.LESS_EQUAL;
-        } else if (pattern.equals(syntax.getOperatorAddition())) {
-            operator = Operator.ADDITION;
-        } else if (pattern.equals(syntax.getOperatorSubtraction())) {
-            operator = Operator.SUBTRACTION;
-        } else if (pattern.equals(syntax.getOperatorMultiplication())) {
-            operator = Operator.MULTIPLICATION;
-        } else if (pattern.equals(syntax.getOperatorDivision())) {
-            operator = Operator.DIVISION;
-        } else if (pattern.equals(syntax.getOperatorModules())) {
-            operator = Operator.MODULES;
-        }
-    }
-    
-    /**
-     * Get end of text that was caught from the matcher pattern.
-     * @return End index.
-     */
-    public int getEnd() {
-        return end;
-    }
-    
-    /**
-     * Set end of text that was caught from the matcher pattern.
-     * @param end End index.
-     */
-    public void setEnd(int end) {
-        this.end = end;
-    }
+	private int start = -1;
+	private int end = -1;
+	private String group = "";
+	private String allContent = "";
+	private Operator operator = null;
+	private Pattern pattern = null;
 
-    /**
-     * Get start of text that was caught from the matcher pattern.
-     * @return start index.
-     */
-    public int getStart() {
-        return start;
-    }
+	/**
+	 * Newly instance to save useful data to manipulate dynamically the sintax.
+	 * 
+	 * @param syntax
+	 *            Current syntax.
+	 * @param pattern
+	 *            Parttern was matcher.
+	 */
+	public SyntaxPosition(Syntax syntax, Pattern pattern) {
+		this.pattern = pattern;
+		operator = getOperator(syntax, pattern);
+	}
 
-    /**
-     * Set start of text that was caught from the matcher pattern.
-     * @param start Start index.
-     */
-    public void setStart(int start) {
-        this.start = start;
-    }
+	private Operator getOperator(Syntax syntax, Pattern pattern) {
+		if (pattern.equals(syntax.getOperatorAnd()))
+			return Operator.AND;
+		if (pattern.equals(syntax.getOperatorOr()))
+			return Operator.OR;
+		if (pattern.equals(syntax.getOperatorEqual()))
+			return Operator.EQUAL;
+		if (pattern.equals(syntax.getOperatorNotEqual()))
+			return Operator.NOT_EQUAL;
+		if (pattern.equals(syntax.getOperatorGreater()))
+			return Operator.GREATER;
+		if (pattern.equals(syntax.getOperatorLess()))
+			return Operator.LESS;
+		if (pattern.equals(syntax.getOperatorGreaterEqual()))
+			return Operator.GREATER_EQUAL;
+		if (pattern.equals(syntax.getOperatorLessEqual()))
+			return Operator.LESS_EQUAL;
+		if (pattern.equals(syntax.getOperatorAddition()))
+			return Operator.ADDITION;
+		if (pattern.equals(syntax.getOperatorSubtraction()))
+			return Operator.SUBTRACTION;
+		if (pattern.equals(syntax.getOperatorMultiplication()))
+			return Operator.MULTIPLICATION;
+		if (pattern.equals(syntax.getOperatorDivision()))
+			return Operator.DIVISION;
+		if (pattern.equals(syntax.getOperatorModules()))
+			return Operator.MODULES;
+		return null;
+	}
 
-    /**
-     * Get text was caught from the matcher pattern.
-     * @return Text caught.
-     */
-    public String getGroup() {
-        return group;
-    }
+	/**
+	 * Get end of text that was caught from the matcher pattern.
+	 * 
+	 * @return End index.
+	 */
+	public int getEnd() {
+		return end;
+	}
 
-    /**
-     * Set text group was caught from the matcher pattern.
-     * @param group Text group caught.
-     */
-    public void setGroup(String group) {
-        this.group = group;
-    }
+	/**
+	 * Set end of text that was caught from the matcher pattern.
+	 * 
+	 * @param end
+	 *            End index.
+	 */
+	public void setEnd(int end) {
+		this.end = end;
+	}
 
-    /**
-     * Get all content was caught from the matcher pattern.
-     * @return Content caught.
-     */
-    public String getAllContent() {
-        return allContent;
-    }
+	/**
+	 * Get start of text that was caught from the matcher pattern.
+	 * 
+	 * @return start index.
+	 */
+	public int getStart() {
+		return start;
+	}
 
-    /**
-     * Set all content was caught from the matcher pattern.
-     * @param allContent Content caught.
-     */
-    public void setAllContent(String allContent) {
-        this.allContent = allContent;
-    }
+	/**
+	 * Set start of text that was caught from the matcher pattern.
+	 * 
+	 * @param start
+	 *            Start index.
+	 */
+	public void setStart(int start) {
+		this.start = start;
+	}
 
-    /**
-     * Get operator from the pattern.
-     * @return Operator
-     */
-    public Operator getOperator() {
-        return operator;
-    }
+	/**
+	 * Get text was caught from the matcher pattern.
+	 * 
+	 * @return Text caught.
+	 */
+	public String getGroup() {
+		return group;
+	}
 
-    /**
-     * Get pattern.
-     * @return Operator
-     */
-    public Pattern getPattern() {
-        return pattern;
-    }
+	/**
+	 * Set text group was caught from the matcher pattern.
+	 * 
+	 * @param group
+	 *            Text group caught.
+	 */
+	public void setGroup(String group) {
+		this.group = group;
+	}
+
+	/**
+	 * Get all content was caught from the matcher pattern.
+	 * 
+	 * @return Content caught.
+	 */
+	public String getAllContent() {
+		return allContent;
+	}
+
+	/**
+	 * Set all content was caught from the matcher pattern.
+	 * 
+	 * @param allContent
+	 *            Content caught.
+	 */
+	public void setAllContent(String allContent) {
+		this.allContent = allContent;
+	}
+
+	/**
+	 * Get operator from the pattern.
+	 * 
+	 * @return Operator
+	 */
+	public Operator getOperator() {
+		return operator;
+	}
+
+	/**
+	 * Get pattern.
+	 * 
+	 * @return Operator
+	 */
+	public Pattern getPattern() {
+		return pattern;
+	}
 }
