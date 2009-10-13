@@ -35,6 +35,8 @@ import org.cajuscript.CajuScriptException;
 public class Operation extends Base {
 	private Element firstCommand = null;
 	private Element secondCommand = null;
+        private static final Boolean BOOLEAN_TRUE = new Boolean(true);
+        private static final Boolean BOOLEAN_FALSE = new Boolean(false);
 	private Operator operator = null;
 	private String contextsKey;
 	private String valueKey;
@@ -348,8 +350,10 @@ public class Operation extends Base {
 				} else if ((v1.getType() == Value.Type.STRING || (v2.getType() == Value.Type.STRING))) {
 					v.setValue(v1.getStringValue().equals(v2.getStringValue()));
 				} else if (v1.getValue() == null || v2.getValue() == null) {
-					v.setValue(false);
-				}
+                                        v.setValue(v1.getValue() == v2.getValue());
+				} else {
+                                        v.setValue(v1.getValue().equals(v2.getValue()));
+                                }
 			}
 		},
 		NOT_EQUAL {
@@ -363,12 +367,13 @@ public class Operation extends Base {
 						&& v2.getType() == Value.Type.NUMBER) {
 					v.setValue(v1.getNumberValue() != v2.getNumberValue());
 				} else if ((v1.getType() == Value.Type.STRING || (v2.getType() == Value.Type.STRING))) {
-					v
-							.setValue(!v1.getStringValue().equals(
+					v.setValue(!v1.getStringValue().equals(
 									v2.getStringValue()));
 				} else if (v1.getValue() == null || v2.getValue() == null) {
-					v.setValue(false);
-				}
+                                        v.setValue(v1.getValue() != v2.getValue());
+				} else {
+                                        v.setValue(!v1.getValue().equals(v2.getValue()));
+                                }
 			}
 		},
 		LESS {
