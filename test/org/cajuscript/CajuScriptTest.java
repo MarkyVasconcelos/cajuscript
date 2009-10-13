@@ -2378,10 +2378,10 @@ public class CajuScriptTest {
 
     private void enumsCheck(CajuScript caju) throws CajuScriptException {
         if (((Integer)caju.get("enum1s")).intValue() != 9) {
-            fail("enum1s is "+ caju.get("enum1s") +". Need be 7!");
+            fail("enum1s is "+ caju.get("enum1s") +". Need be 9!");
         }
         if (((Integer)caju.get("enum2s")).intValue() != 11) {
-            fail("enum2s is "+ caju.get("enum2s") +". Need be 8!");
+            fail("enum2s is "+ caju.get("enum2s") +". Need be 11!");
         }
     }
 }

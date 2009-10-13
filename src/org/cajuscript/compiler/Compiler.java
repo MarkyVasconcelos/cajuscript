@@ -295,12 +295,12 @@ public class Compiler {
             String firstCommand = compileElement(valueKeys, operation.getFirstCommand());
             String secondCommand = compileElement(valueKeys, operation.getSecondCommand());
             source.append(lineDetail(element.getLineDetail()));
-            source.append("Operation.compare(");
+            source.append("Operation.Operator.");
+            source.append(operation.getOperator().name());
+            source.append(".compare(");
             source.append(key);
             source.append(",");
             source.append(firstCommand);
-            source.append(",Operation.Operator.");
-            source.append(operation.getOperator().name());
             source.append(",");
             source.append(secondCommand);
             source.append(");");
