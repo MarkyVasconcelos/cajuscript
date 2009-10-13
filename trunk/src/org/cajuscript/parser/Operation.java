@@ -35,8 +35,6 @@ import org.cajuscript.CajuScriptException;
 public class Operation extends Base {
 	private Element firstCommand = null;
 	private Element secondCommand = null;
-        private static final Boolean BOOLEAN_TRUE = new Boolean(true);
-        private static final Boolean BOOLEAN_FALSE = new Boolean(false);
 	private Operator operator = null;
 	private String contextsKey;
 	private String valueKey;
