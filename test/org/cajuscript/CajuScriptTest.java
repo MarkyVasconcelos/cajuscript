@@ -294,6 +294,7 @@ public class CajuScriptTest {
     
     @Test
     public void syntaxLoop() throws CajuScriptException {
+        try {
         System.out.println("syntaxLoop");
         CajuScript caju = new CajuScript();
         syntaxReload(caju);
@@ -370,6 +371,9 @@ public class CajuScriptTest {
         syntaxCheckLoop(caju);
         syntaxCheckLoopCache(caju, scriptLoop);
         syntaxCheckLoopCompile(caju, scriptLoop);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     
     @Test

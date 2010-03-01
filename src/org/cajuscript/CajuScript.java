@@ -384,6 +384,7 @@ public class CajuScript {
      */
     public Value eval(String script, Syntax syntax, boolean execute)
             throws CajuScriptException {
+        long time = System.currentTimeMillis();
         Syntax syntaxBackup = getSyntax();
         try {
             String originalScript = script;
@@ -474,6 +475,10 @@ public class CajuScript {
                 }
                 if (!config && cacheParser != null && originalScript.equals(cacheScript)) {
                     Set<String> keys = staticContexts.getAllKeys(true);
+                    for (String key : keys) {
+                        context.setVar(key, staticContexts.getVar(key));
+                    }
+                    keys = staticContexts.getStaticStrings().keySet();
                     for (String key : keys) {
                         context.setVar(key, staticContexts.getVar(key));
                     }
@@ -615,6 +620,7 @@ public class CajuScript {
                 Compiler compiler = new Compiler(this, compilePath);
                 compiler.compile(staticContexts, originalScript, parserBase);
             }
+            System.out.println(Long.toString(System.currentTimeMillis() - time).concat(" ms"));
             if (execute) {
                 Value finalValue = parserBase.execute(this, context, syntax);
                 if (!(cacheId.length() == 0)) {
@@ -828,8 +834,12 @@ public class CajuScript {
      *            Variable name.
      * @return Variable object.
      */
-    public Value getVar(String key) {
-        return context.getVar(key);
+    public Value getVar(String key) throws CajuScriptException {
+        if (key.startsWith(CAJU_VARS_STATIC_STRING)) {
+            return context.getStaticStringValue(key);
+        } else {
+            return context.getVar(key);
+        }
     }
 
     /**
@@ -912,7 +922,11 @@ public class CajuScript {
      *             Errors.
      */
     public void set(String key, Object value) throws CajuScriptException {
-        setVar(key.trim(), toValue(value));
+        if (key.startsWith(CAJU_VARS_STATIC_STRING)) {
+            context.setStaticString(key, value.toString());
+        } else {
+            setVar(key.trim(), toValue(value));
+        }
     }
 
     /**
@@ -925,7 +939,11 @@ public class CajuScript {
      *             Errors.
      */
     public Object get(String key) throws CajuScriptException {
-        return getVar(key).getValue();
+        if (key.startsWith(CAJU_VARS_STATIC_STRING)) {
+            return context.getStaticStringValue(key).getValue();
+        } else {
+            return getVar(key).getValue();
+        }
     }
 
     /**

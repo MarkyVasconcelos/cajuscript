@@ -79,9 +79,9 @@ public class Reflection {
                         path = path.concat(".");
                         realPath = realPath.concat(".");
                     }
-                    if (realPath.endsWith(".".concat("."))) {
+                    if (realPath.endsWith("..")) {
                         realClassName = path.substring(0, path.lastIndexOf('.') - 1);
-                        throw new Exception("Cannot invoke ".concat(realClassName));
+                        c = Class.forName(realClassName);
                     }
                     SyntaxPosition syntaxParameterBegin = syntax.matcherPosition(scriptPart, syntax.getFunctionCallParametersBegin());
                     if (syntaxParameterBegin.getStart() > -1 && value == null) {
@@ -100,28 +100,35 @@ public class Reflection {
                     }
                     if (value == null) {
                         try {
-                            try {
-                                c = Class.forName(path);
-                            } catch (Exception e) {
-                                for(String i : cajuScript.getImports()) {
-                                    if (i.endsWith(path)) {
-                                        try {
-                                            c = Class.forName(i);
-                                        } catch (Exception ex) { }
-                                    } else {
-                                        try {
-                                            c = Class.forName(i.concat(".").concat(path));
-                                        } catch (Exception ex) { }
+                            if (context.getClassCache(path) != null) {
+                                c = context.getClassCache(path);
+                            } else {
+                                try {
+                                    c = Class.forName(path);
+                                    context.setClassCache(path, c);
+                                } catch (Throwable e) {
+                                    for(String i : cajuScript.getImports()) {
+                                        if (i.endsWith(path)) {
+                                            try {
+                                                c = Class.forName(i);
+                                                context.setClassCache(path, c);
+                                            } catch (Throwable ex) { }
+                                        } else {
+                                            try {
+                                                c = Class.forName(i.concat(".").concat(path));
+                                                context.setClassCache(path, c);
+                                            } catch (Throwable ex) { }
+                                        }
+                                        if (c != null) {
+                                            break;
+                                        }
                                     }
-                                    if (c != null) {
-                                        break;
+                                    if (c == null) {
+                                        throw new Exception();
                                     }
-                                }
-                                if (c == null) {
-                                    throw new Exception();
                                 }
                             }
-                        } catch (Exception e) {
+                        } catch (Throwable e) {
                             boolean isRootContext = false;
                             Value _value = context.getVar(path);
                             if (_value == null) {
@@ -338,7 +345,6 @@ public class Reflection {
                     continue;
                 }
                 if (foundMethod(cajuScript, values, cx, allowAutoPrimitiveCast, scriptCommand)) {
-                    scriptCommand.setMethod(mt[x]);
                     return mt[x].invoke(o, getParams(cajuScript, values, cx, scriptCommand));
                 }
             }

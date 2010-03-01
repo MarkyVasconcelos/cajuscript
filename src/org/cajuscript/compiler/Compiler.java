@@ -161,9 +161,9 @@ public class Compiler {
     public void compile(Context staticContext, String script, Element base) throws CajuScriptException {
         List<String> valueKeys = new ArrayList<String>();
         for (String key : caju.getContext().getFuncs().keySet()) {
-            compileElement(valueKeys, caju.getContext().getFuncs().get(key));
+            compileElement(valueKeys, caju.getContext().getFuncs().get(key), 0);
         }
-        String __return = compileElement(valueKeys, base);
+        String __return = compileElement(valueKeys, base, 0);
         packageDir.mkdirs();
         PrintWriter out = null;
         try {
@@ -189,6 +189,14 @@ public class Compiler {
             out.print("(){}");
             out.print("public Value execute(CajuScript caju,Context context,Syntax syntax)throws CajuScriptException{");
             out.println();
+            for (String key : staticContext.getStaticStrings().keySet()) {
+                out.print("caju.set(");
+                out.print(toString(key));
+                out.print(",");
+                out.print(toString(staticContext.getStaticStrings().get(key)));
+                out.print(");");
+                out.println();
+            }
             for (String key : staticContext.getAllKeys(true)) {
                 out.print("caju.set(");
                 out.print(toString(key));
@@ -244,7 +252,7 @@ public class Compiler {
         loadClass(staticContext);
     }
 
-    private String compileElement(List<String> valueKeys, Element element) {
+    private String compileElement(List<String> valueKeys, Element element, int level) {
         String key = "";
         if (element == null) {
             return null;
@@ -253,20 +261,21 @@ public class Compiler {
         boolean isReturn = false;
         boolean isBreak = false;
         boolean isContinue = false;
+        int nextLevel = level + 1;
         if (element instanceof Command) {
-            compileElements(valueKeys, element);
-            Command command = (Command)element;
-            key = "c".concat(Long.toString(varCount++));
             source.append(lineDetail(element.getLineDetail()));
+            compileElements(valueKeys, element, nextLevel);
+            Command command = (Command)element;
+            key = "c".concat(Integer.toString(level)).concat("_").concat(Long.toString(varCount++));
             source.append(key);
             source.append(".setScript(");
             source.append(toString(command.getCommand()));
             source.append(");");
             source.append("\n");
         } else if (element instanceof Variable) {
-            compileElements(valueKeys, element);
+            compileElements(valueKeys, element, nextLevel);
             Variable variable = (Variable)element;
-            String keyValue = compileElement(valueKeys, variable.getValue());
+            String keyValue = compileElement(valueKeys, variable.getValue(), nextLevel);
             if (variable.getKey().equals("")) {
                 addKey = false;
                 key = keyValue;
@@ -289,12 +298,12 @@ public class Compiler {
                 source.append("\n");
             }
         } else if (element instanceof Operation) {
-            compileElements(valueKeys, element);
-            Operation operation = (Operation)element;
-            key = "o".concat(Long.toString(varCount++));
-            String firstCommand = compileElement(valueKeys, operation.getFirstCommand());
-            String secondCommand = compileElement(valueKeys, operation.getSecondCommand());
             source.append(lineDetail(element.getLineDetail()));
+            compileElements(valueKeys, element, nextLevel);
+            Operation operation = (Operation)element;
+            key = "o".concat(Integer.toString(level)).concat("_").concat(Long.toString(varCount++));
+            String firstCommand = compileElement(valueKeys, operation.getFirstCommand(), nextLevel);
+            String secondCommand = compileElement(valueKeys, operation.getSecondCommand(), nextLevel);
             source.append("Operation.Operator.");
             source.append(operation.getOperator().name());
             source.append(".compare(");
@@ -306,9 +315,9 @@ public class Compiler {
             source.append(");");
             source.append("\n");
         } else if (element instanceof Return) {
-            compileElements(valueKeys, element);
+            compileElements(valueKeys, element, nextLevel);
             Return _return = (Return)element;
-            String valueKey = compileElement(valueKeys, _return.getValue());
+            String valueKey = compileElement(valueKeys, _return.getValue(), nextLevel);
             source.append(lineDetail(element.getLineDetail()));
             source.append("return ");
             source.append(valueKey);
@@ -316,7 +325,7 @@ public class Compiler {
             source.append("\n");
             isReturn = true;
         } else if (element instanceof Break) {
-            compileElements(valueKeys, element);
+            compileElements(valueKeys, element, nextLevel);
             Break _break = (Break)element;
             source.append(lineDetail(element.getLineDetail()));
             source.append("break ");
@@ -325,7 +334,7 @@ public class Compiler {
             source.append("\n");
             isBreak = true;
         } else if (element instanceof Continue) {
-            compileElements(valueKeys, element);
+            compileElements(valueKeys, element, nextLevel);
             Continue _continue = (Continue)element;
             source.append(lineDetail(element.getLineDetail()));
             source.append("continue ");
@@ -334,7 +343,7 @@ public class Compiler {
             source.append("\n");
             isContinue = true;
         } else if (element instanceof Import) {
-            compileElements(valueKeys, element);
+            compileElements(valueKeys, element, nextLevel);
             Import _import = (Import)element;
             source.append(lineDetail(element.getLineDetail()));
             if (_import.getPath().startsWith(CajuScript.CAJU_VARS)) {
@@ -349,7 +358,7 @@ public class Compiler {
             source.append("\n");
         } else if (element instanceof IfGroup) {
             source.append(lineDetail(element.getLineDetail()));
-            String keyCode = Long.toString(varCount++);
+            String keyCode = Integer.toString(element.hashCode());
             source.append("for(int ");
             source.append("i".concat(keyCode));
             source.append("=0;");
@@ -358,18 +367,18 @@ public class Compiler {
             source.append("i".concat(keyCode));
             source.append("++){");
             source.append("\n");
-            compileElements(valueKeys, element);
+            compileElements(valueKeys, element, nextLevel);
             source.append("}");
             source.append("\n");
         } else if (element instanceof If) {
             If _if = (If)element;
-            String conditionKey = compileElement(valueKeys, _if.getCondition());
+            String conditionKey = compileElement(valueKeys, _if.getCondition(), nextLevel);
             source.append(lineDetail(element.getLineDetail()));
             source.append("if(");
             source.append(conditionKey);
             source.append(".getBooleanValue()){");
             source.append("\n");
-            String __key = compileElements(valueKeys, element);
+            String __key = compileElements(valueKeys, element, nextLevel);
             if (!__key.equals("__return")
                 && !__key.equals("__break")
                 && !__key.equals("__continue")) {
@@ -387,7 +396,7 @@ public class Compiler {
             }
             source.append("while(true){");
             source.append("\n");
-            String conditionKey = compileElement(valueKeys, loop.getCondition());
+            String conditionKey = compileElement(valueKeys, loop.getCondition(), nextLevel);
             source.append("if(!");
             source.append(conditionKey);
             source.append(".getBooleanValue()){");
@@ -396,15 +405,15 @@ public class Compiler {
             source.append("\n");
             source.append("}");
             source.append("\n");
-            compileElements(valueKeys, element);
+            compileElements(valueKeys, element, nextLevel);
             source.append("\n");
             source.append("}");
             source.append("\n");
         } else if (element instanceof Function) {
+            source.append(lineDetail(element.getLineDetail()));
             addKey = false;
             Function function = (Function)element;
-            key = "f".concat(Long.toString(varCount++));
-            source.append(lineDetail(element.getLineDetail()));
+            key = "f".concat(Integer.toString(level)).concat("_").concat(Long.toString(varCount++));
             source.append("context.setFunc(");
             source.append(toString(function.getName()));
             source.append(",new Function(new DefaultExecutable(){");
@@ -415,7 +424,7 @@ public class Compiler {
             source.append("\n");
             source.append("<<[".concat(key).concat("]>>"));
             List<String> funcValueKeys = new ArrayList<String>();
-            String __return = compileElements(funcValueKeys, function);
+            String __return = compileElements(funcValueKeys, function, nextLevel);
             String _source = source.toString();
             source.delete(0, source.length());
             for (String valueKey : funcValueKeys) {
@@ -444,13 +453,13 @@ public class Compiler {
             source.append("));");
             source.append("\n");
         } else if (element instanceof TryCatch) {
-            TryCatch tryCatch = (TryCatch)element;
-            key = "t".concat(Long.toString(varCount++));
-            compileElement(valueKeys, tryCatch.getError());
             source.append(lineDetail(element.getLineDetail()));
+            TryCatch tryCatch = (TryCatch)element;
+            key = "t".concat(Integer.toString(level)).concat("_").concat(Long.toString(varCount++));
+            compileElement(valueKeys, tryCatch.getError(), nextLevel);
             source.append("try{");
             source.append("\n");
-            compileElement(valueKeys, tryCatch.getTry());
+            compileElement(valueKeys, tryCatch.getTry(), nextLevel);
             source.append("}catch(Throwable ");
             source.append(key);
             source.append("t){");
@@ -466,16 +475,16 @@ public class Compiler {
             source.append(key);
             source.append(");");
             source.append("\n");
-            compileElement(valueKeys, tryCatch.getCatch());
+            compileElement(valueKeys, tryCatch.getCatch(), nextLevel);
             source.append("}finally{");
             source.append("\n");
-            compileElement(valueKeys, tryCatch.getFinally());
+            compileElement(valueKeys, tryCatch.getFinally(), nextLevel);
             source.append("}");
             source.append("\n");
         } else if (element instanceof Base) {
-            compileElements(valueKeys, element);
+            compileElements(valueKeys, element, nextLevel);
         }
-        if (!key.equals("") && addKey) {
+        if (!key.equals("") && addKey && !valueKeys.contains(key)) {
             valueKeys.add(key);
         }
         if (isReturn) {
@@ -490,10 +499,11 @@ public class Compiler {
         return key;
     }
 
-    private String compileElements(List<String> valueKeys, Element elements) {
+    private String compileElements(List<String> valueKeys, Element elements, int level) {
         String key = "";
+        int nextLevel = level + 1;
         for (Element element : elements.getElements()) {
-            key = compileElement(valueKeys, element);
+            key = compileElement(valueKeys, element, nextLevel);
             if (key.equals("__return")
                 || key.equals("__break")
                 || key.equals("__continue")) {
@@ -516,6 +526,7 @@ public class Compiler {
         cmd = cmd.concat(toString(lineDetail.getContent()));
         cmd = cmd.concat(");");
         cmd = cmd.concat("\n");
+        varCount = 1;
         return cmd;
     }
 

@@ -566,11 +566,11 @@ public class Base implements Element, java.io.Serializable, Cloneable {
             Pattern callParametersBegin = null;
             Pattern callParametersEnd = null;
             Pattern callParametersSeparator = null;
-            if (syntaxPosition.getPattern().equals(syntax.getFunctionCall())) {
+            if (syntaxPosition.getPatternHashCode() == SyntaxPosition.getPatternHashCode(syntax.getFunctionCall())) {
                 callParametersBegin = syntax.getFunctionCallParametersBegin();
                 callParametersEnd = syntax.getFunctionCallParametersEnd();
                 callParametersSeparator = syntax.getFunctionCallParametersSeparator();
-            } else if (syntaxPosition.getPattern().equals(syntax.getArrayCall())) {
+            } else if (syntaxPosition.getPatternHashCode() == SyntaxPosition.getPatternHashCode(syntax.getArrayCall())) {
                 callParametersBegin = syntax.getArrayCallParametersBegin();
                 callParametersEnd = syntax.getArrayCallParametersEnd();
                 callParametersSeparator = syntax.getArrayCallParametersSeparator();
@@ -645,7 +645,7 @@ public class Base implements Element, java.io.Serializable, Cloneable {
             varsGroupCounter++;
             Variable var = new Variable(lineDetail);
             var.setKey(varKey);
-            var.setValue(evalValue(base, caju, lineDetail, syntax, syntaxPosition.getGroup(), syntaxPosition.getPattern().equals(syntax.getArray())));
+            var.setValue(evalValue(base, caju, lineDetail, syntax, syntaxPosition.getGroup(), syntaxPosition.getPatternHashCode() == SyntaxPosition.getPatternHashCode(syntax.getArray())));
             base.addElement(var);
             return evalValueGroup(base, caju, lineDetail, syntax, script.replace((CharSequence)syntaxPosition.getAllContent(), (CharSequence)varKey));
         } else {

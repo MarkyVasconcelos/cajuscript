@@ -36,11 +36,15 @@ public class Context {
     private List<String> imports = new ArrayList<String>();
     private Map<String, Value> vars = new HashMap<String, Value>();
     private Map<String, Function> funcs = new HashMap<String, Function>();
-    
+    private Map<String, Class> classCache = new HashMap<String, Class>();
+    private Value staticString = null;
+    private Map<String, String> staticStrings = new HashMap<String, String>();
+
     /**
      * New context instance.
      */
     public Context() {
+        staticString = new Value(null, null, null);
         imports.add("java.lang");
     }
     
@@ -91,8 +95,12 @@ public class Context {
      * @param key Variable name.
      * @return Variable object.
      */
-    public Value getVar(String key) {
-        return vars.get(key);
+    public Value getVar(String key) throws CajuScriptException {
+        if (key.startsWith(CajuScript.CAJU_VARS_STATIC_STRING)) {
+            return getStaticStringValue(key);
+        } else {
+            return vars.get(key);
+        }
     }
     
     /**
@@ -127,7 +135,11 @@ public class Context {
      * @param value Variable value.
      */
     public void setVar(String key, Value value) {
-        vars.put(key.trim(), value);
+        if (key.startsWith(CajuScript.CAJU_VARS_STATIC_STRING)) {
+            setStaticString(key, value.toString());
+        } else {
+            vars.put(key.trim(), value);
+        }
     }
     
     /**
@@ -144,5 +156,31 @@ public class Context {
      */
     public void removeImport(String s) {
         imports.remove(s);
+    }
+
+    public void setClassCache(String path, Class c) {
+        classCache.put(path, c);
+    }
+    public Class getClassCache(String path) {
+        return classCache.get(path);
+    }
+
+    public void setStaticString(String key, String value) {
+        staticStrings.put(key, value);
+    }
+    public String getStaticString(String key) {
+        return staticStrings.get(key);
+    }
+
+    public Map<String, String> getStaticStrings() {
+        return staticStrings;
+    }
+
+    public Value getStaticStringValue(String key) throws CajuScriptException {
+        if (!staticStrings.containsKey(key)) {
+            return null;
+        }
+        staticString.setValue(staticStrings.get(key));
+        return staticString;
     }
 }
