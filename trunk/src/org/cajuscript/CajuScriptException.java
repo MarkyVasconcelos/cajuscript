@@ -87,7 +87,7 @@ public class CajuScriptException extends Exception {
         return new CajuScriptException(message.concat(" > ").concat(Integer.toString(caju.getRunningLine().getNumber())).concat(": ").concat(formatScript(context, caju.getRunningLine().getContent())), cause);
     }
     
-    private static String formatScript(Context context, String script) {
+    private static String formatScript(Context context, String script) throws CajuScriptException {
         for (String key : context.getAllKeys(true)) {
             if (key.startsWith(CajuScript.CAJU_VARS)) {
                 script = script.replace(key, "\"".concat(context.getVar(key).toString()).concat("\""));

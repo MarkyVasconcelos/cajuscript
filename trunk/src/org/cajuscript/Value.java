@@ -19,6 +19,8 @@
 
 package org.cajuscript;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.cajuscript.cmd.Reflection;
 import org.cajuscript.cmd.ScriptCommand;
 import org.cajuscript.parser.Function;
@@ -70,7 +72,13 @@ public class Value implements Cloneable {
     private String flag = "";
     private ScriptCommand scriptCommand = null;
     private String script = null;
-    
+    private static Pattern unicodePattern = Pattern.compile("\\\\u[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]");
+
+    /**
+     * Create a new value.
+     */
+    public Value() { }
+
     /**
      * Create a new value.
      * @param caju CajuScript.
@@ -130,8 +138,7 @@ public class Value implements Cloneable {
                 script = script.replace((CharSequence)"\\\"", (CharSequence)"\"");
                 script = script.replace((CharSequence)"\\\\", (CharSequence)"\\");
                 script = script.replace((CharSequence)"\\'", (CharSequence)"'");
-                java.util.regex.Pattern p = java.util.regex.Pattern.compile("\\\\u[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]");
-                java.util.regex.Matcher m = p.matcher(script);
+                Matcher m = unicodePattern.matcher(script);
                 while (m.find()) {
                     script = script.replace((CharSequence)m.group(), (CharSequence)Character.toString((char)Integer.valueOf(m.group().substring(2), 16).intValue()));
                 }
@@ -223,7 +230,7 @@ public class Value implements Cloneable {
         _isCommand = true;
         Value v = null;
         boolean varMode = false;
-        if (scriptCommand == null) {
+        if (scriptCommand == null || !scriptCommand.getScript().equals(script)) {
             script = script.trim();
             script = script.replace((CharSequence)" ", (CharSequence)"");
             script = script.replace((CharSequence)"\t", (CharSequence)"");
@@ -304,7 +311,7 @@ public class Value implements Cloneable {
                 }
             }
         }
-        if (scriptCommand != null) {
+        if (scriptCommand != null && scriptCommand.getScript().equals(script)) {
             switch (scriptCommand.getType()) {
                 case VARIABLE_ROOT:
                     varMode = true;
@@ -459,7 +466,6 @@ public class Value implements Cloneable {
             } else {
                 valueBoolean = false;
                 valueString = "false";
-                typeNumber = TypeNumber.INTEGER;
             }
             return;
         } else if (value instanceof Integer) {

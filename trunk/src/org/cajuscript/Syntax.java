@@ -124,7 +124,6 @@ public class Syntax {
     private Pattern arrayCallParametersSeparator = Pattern.compile("\\,");
     private Pattern arrayCallParametersEnd = Pattern.compile("\\]");
 
-
     /**
      * Create new Syntax.
      */
@@ -931,9 +930,10 @@ public class Syntax {
      * @return Position.
      */
     public SyntaxPosition matcherPosition(String line, Pattern pattern) {
+        SyntaxPosition position = null;
         Matcher matcher = pattern.matcher(line);
         if (matcher.find()) {
-            SyntaxPosition position = new SyntaxPosition(this, pattern);
+            position = new SyntaxPosition(this, pattern);
             position.setAllContent(matcher.group());
             if (matcher.groupCount() > 0) {
                 position.setGroup(matcher.group(1));
@@ -944,7 +944,7 @@ public class Syntax {
             position.setEnd(matcher.end());
             return position;
         } else {
-            SyntaxPosition position = new SyntaxPosition(this, pattern);
+            position = new SyntaxPosition(this, pattern);
             position.setStart(-1);
             position.setEnd(-1);
             return position;
@@ -957,9 +957,10 @@ public class Syntax {
      * @return Position.
      */
     public SyntaxPosition matcherLastPosition(String script, Pattern pattern) {
+        SyntaxPosition syntaxPosition = null;
         SyntaxPosition syntaxPositionFinal = new SyntaxPosition(this, Pattern.compile(""));
         while (true) {
-            SyntaxPosition syntaxPosition = matcherPosition(script, pattern);
+            syntaxPosition = matcherPosition(script, pattern);
             if (syntaxPosition.getStart() != -1) {
                 script = script.substring(syntaxPosition.getEnd());
                 syntaxPositionFinal = syntaxPosition;
@@ -976,8 +977,10 @@ public class Syntax {
      * @return Is equals.
      */
     public boolean matcherEquals(String line, Pattern pattern) {
+        Boolean b = null;
         Matcher matcher = pattern.matcher(line);
-        return matcher.matches();
+        b = Boolean.valueOf(matcher.matches());
+        return b;
     }
 
     /**
@@ -1044,11 +1047,12 @@ public class Syntax {
      * @return Position.
      */
     public SyntaxPosition firstOperator(String script, Pattern... patterns) {
+        SyntaxPosition first = null;
         SyntaxPosition[] syntaxPositions = new SyntaxPosition[patterns.length];
         for (int i = 0; i < patterns.length; i++) {
             syntaxPositions[i] = matcherPosition(script, patterns[i]);
         }
-        SyntaxPosition first = new SyntaxPosition(this, Pattern.compile(""));
+        first = new SyntaxPosition(this, Pattern.compile(""));
         for (int i = 0; i < syntaxPositions.length; i++) {
             if ((syntaxPositions[i].getStart() > -1 && (first.getStart() == -1 || syntaxPositions[i].getStart() < first.getStart()))
                     || (syntaxPositions[i].getStart() == first.getStart() && syntaxPositions[i].getEnd() > first.getEnd())) {
@@ -1064,7 +1068,8 @@ public class Syntax {
      * @return Position.
      */
     public SyntaxPosition lastOperator(String script, Pattern... patterns) {
-        SyntaxPosition syntaxPositionFinal = new SyntaxPosition(this, Pattern.compile(""));
+        SyntaxPosition syntaxPositionFinal = null;
+        syntaxPositionFinal = new SyntaxPosition(this, Pattern.compile(""));
         while (true) {
             SyntaxPosition syntaxPosition = firstOperator(script, patterns);
             String spaces = "";
