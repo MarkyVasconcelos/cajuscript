@@ -126,6 +126,7 @@ public class Value implements Cloneable {
                 }
                 return;
             }
+            _isCommand = false;
             script = s;
             script = script.trim();
             if (script.length() == 0) {
@@ -270,7 +271,7 @@ public class Value implements Cloneable {
                 }
                 if (func != null) {
                     scriptCommand = new ScriptCommand(script, ScriptCommand.Type.FUNCTION);
-                    script = script.substring(path.length());
+                    //script = script.substring(path.length());
                     Reflection.invokeFunctionValues(cajuScript, context, syntax, script, scriptCommand);
                     scriptCommand.setClassPath(path);
                 } else if (val != null) {
@@ -622,11 +623,25 @@ public class Value implements Cloneable {
      * @return Object cloned.
      */
     @Override
-    public Object clone() {
-        try {
-            return super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new Error("Cannot clone this object.");
-        }
+    public Value clone() {
+        Value v = new Value();
+        v.value = this.value;
+        v.valueNumberInteger = this.valueNumberInteger;
+        v.valueNumberLong = this.valueNumberLong;
+        v.valueNumberFloat = this.valueNumberFloat;
+        v.valueNumberDouble = this.valueNumberDouble;
+        v.valueString = this.valueString;
+        v.valueBoolean = this.valueBoolean;
+        v.typeNumber = this.typeNumber;
+        v.type = this.type;
+        v._isCommand = this._isCommand;
+        v.command = this.command;
+        v.cajuScript = this.cajuScript;
+        v.context = this.context;
+        v.syntax = this.syntax;
+        v.flag = this.flag;
+        v.scriptCommand = this.scriptCommand;
+        v.script = this.script;
+        return v;
     }
 }
