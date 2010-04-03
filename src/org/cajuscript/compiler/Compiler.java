@@ -292,7 +292,9 @@ public class Compiler {
                 if (keyValue == null || keyValue.equals("")) {
                     source.append("null");
                 } else {
+                    source.append("(Value)");
                     source.append(keyValue);
+                    source.append(".clone()");
                 }
                 source.append(");");
                 source.append("\n");
