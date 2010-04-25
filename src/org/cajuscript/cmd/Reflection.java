@@ -330,9 +330,9 @@ public class Reflection {
             Method[] mt = cls.getMethods();
             boolean allowAutoPrimitiveCast = true;
             for (int i = 0; i < mt.length; i++) {
-                if (i == 0)
+                if (i == 0) {
                    allowAutoPrimitiveCast = !allowAutoPrimitiveCast;
-                
+                }
                 int x = i;
                 if (i == mt.length -1 && !allowAutoPrimitiveCast) {
                     i = -1;
@@ -345,6 +345,8 @@ public class Reflection {
                     continue;
                 }
                 if (foundMethod(cajuScript, values, cx, allowAutoPrimitiveCast, scriptCommand)) {
+                    scriptCommand.setMethod(mt[x]);
+                    scriptCommand.setType(ScriptCommand.Type.NATIVE_OBJECT);
                     return mt[x].invoke(o, getParams(cajuScript, values, cx, scriptCommand));
                 }
             }
