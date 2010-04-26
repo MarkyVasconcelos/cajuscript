@@ -124,11 +124,14 @@ public class Reflection {
                                         }
                                     }
                                     if (c == null) {
-                                        throw new Exception();
+                                        throw e;
                                     }
                                 }
                             }
                         } catch (Throwable e) {
+                            if (!e.getMessage().equals(path)) {
+                                throw e;
+                            }
                             boolean isRootContext = false;
                             Value _value = context.getVar(path);
                             if (_value == null) {
@@ -244,7 +247,7 @@ public class Reflection {
             }
         } catch (CajuScriptException e) {
             throw e;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw CajuScriptException.create(cajuScript, context, e.getMessage(), e);
         }
     }
