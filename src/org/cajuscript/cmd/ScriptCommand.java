@@ -36,7 +36,7 @@ public class ScriptCommand {
     }
     private String script = "";
     private Type type = null;
-    private Value[] params = null;
+    private String[] params = null;
     private Object[] paramsValues = null;
     private Object[] paramsFinal = null;
     private String function = "";
@@ -96,7 +96,7 @@ public class ScriptCommand {
      * @param function Function name.
      * @param params Parameters names.
      */
-    public void setFunction(String function, Value[] params) {
+    public void setFunction(String function, String[] params) {
         this.function = function;
         this.params = params;
     }
@@ -107,7 +107,7 @@ public class ScriptCommand {
      * @param method Method.
      * @param params Parameters.
      */
-    public void setStatic(String classPath, Method method, Value[] params) {
+    public void setStatic(String classPath, Method method, String[] params) {
         this.classPath = classPath;
         this.method = method;
         this.params = params;
@@ -119,7 +119,7 @@ public class ScriptCommand {
      * @param method Method.
      * @param params Parameters.
      */
-    public void setMethod(Method method, Value[] params) {
+    public void setMethod(Method method, String[] params) {
         this.method = method;
         this.params = params;
     }
@@ -130,7 +130,7 @@ public class ScriptCommand {
      * @param constructor Constructor.
      * @param params Parameters.
      */
-    public void setNewInstance(String classPath, Constructor<?> constructor, Value[] params) {
+    public void setNewInstance(String classPath, Constructor<?> constructor, String[] params) {
         this.classPath = classPath;
         this.constructor = constructor;
         this.params = params;
@@ -204,7 +204,7 @@ public class ScriptCommand {
      * Get parameters.
      * @return Parameters.
      */
-    public Value[] getParams() {
+    public String[] getParams() {
         return params;
     }
 
@@ -212,7 +212,7 @@ public class ScriptCommand {
      * Set parameters.
      * @param params Parameters.
      */
-    public void setParams(Value[] params) {
+    public void setParams(String[] params) {
         this.params = params;
     }
 
