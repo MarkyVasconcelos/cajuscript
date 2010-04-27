@@ -400,10 +400,10 @@ public class Reflection {
      */
     public static Object[] invokeValues(CajuScript cajuScript, Context context, Syntax syntax, String script, ScriptCommand scriptCommand, Pattern parametersBegin, Pattern parametersSeparator, Pattern parametersEnd) throws CajuScriptException {
         if (scriptCommand.getParams() != null) {
-            Value[] paramsVal = scriptCommand.getParams();
+            String[] paramsVal = scriptCommand.getParams();
             Object[] values = new Object[paramsVal.length];
             for (int x = 0; x < paramsVal.length; x++) {
-                values[x] = paramsVal[x].getValue();
+                values[x] = context.getVar(paramsVal[x]).getValue();
             }
             return values;
         }
@@ -411,14 +411,14 @@ public class Reflection {
         int lenEnd = (syntax.matcherPosition(script, parametersEnd)).getStart();
         String params = script.substring(lenBegin, lenEnd);
         if (params.trim().length() == 0) {
-            scriptCommand.setParams(new Value[0]);
+            scriptCommand.setParams(new String[0]);
             return new Object[0];
         }
         String[] paramsKeys = parametersSeparator.split(params);
-        Value[] paramsVal = new Value[paramsKeys.length];
+        String[] paramsVal = new String[paramsKeys.length];
         Object[] values = new Object[paramsKeys.length];
         for (int x = 0; x < paramsKeys.length; x++) {
-            SyntaxPosition syntaxRootContext = syntax.matcherPosition(paramsKeys[x], syntax.getRootContext());
+            /*SyntaxPosition syntaxRootContext = syntax.matcherPosition(paramsKeys[x], syntax.getRootContext());
             if (syntaxRootContext.getStart() == 0) {
                 paramsKeys[x] = paramsKeys[x].substring(syntaxRootContext.getEnd());
                 values[x] = cajuScript.getVar(paramsKeys[x]);
@@ -427,9 +427,9 @@ public class Reflection {
                 if (values[x] == null) {
                     values[x] = cajuScript.getVar(paramsKeys[x]);
                 }
-            }
-            paramsVal[x] = (Value)values[x];
-            values[x] = paramsVal[x].getValue();
+            }*/
+            paramsVal[x] = paramsKeys[x];
+            values[x] = context.getVar(paramsKeys[x]).getValue();
         }
         scriptCommand.setParams(paramsVal);
         return values;

@@ -121,12 +121,12 @@ public class Function extends Base {
      * @return Value returned by execution
      * @throws org.cajuscript.CajuScriptException Errors ocurred on execution
      */
-    public Value invoke(CajuScript caju, Context context, Syntax syntax, Value... paramValue) throws CajuScriptException {
+    public Value invoke(CajuScript caju, Context context, Syntax syntax, String... paramValue) throws CajuScriptException {
         if (executable == null) {
             caju.setRunningLine(getLineDetail());
         }
         for (int i = 0; i < paramValue.length; i++) {
-            context.setVar(paramKey[i], paramValue[i]);
+            context.setVar(paramKey[i], caju.getVar(paramValue[i]));
         }
         if (executable == null) {
             for (Element element : elements) {
