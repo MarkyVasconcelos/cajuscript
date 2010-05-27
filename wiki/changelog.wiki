@@ -3,6 +3,12 @@
 
 = Changelog =
 
+*VERSION 0.3.7*
+
+  * Many bugs solved.
+  * Performance increased, much more in compiled mode.
+  * Suport to array syntax started but the development isn't finished.
+
 *VERSION 0.3.5*
 
   * [tutorialCompile Compiler].
