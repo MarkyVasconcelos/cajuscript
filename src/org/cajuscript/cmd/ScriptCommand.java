@@ -76,10 +76,18 @@ public class ScriptCommand {
         this.script = script;
     }
 
+    /**
+     * Get the final script, used like backup when script is changed.
+     * @return Script.
+     */
     public String getFinalScript() {
         return finalScript;
     }
 
+    /**
+     * Set the final script, used like backup when script is changed.
+     * @param finalScript Script.
+     */
     public void setFinalScript(String finalScript) {
         this.finalScript = finalScript;
     }
