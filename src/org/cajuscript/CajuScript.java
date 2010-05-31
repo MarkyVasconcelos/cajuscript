@@ -384,7 +384,6 @@ public class CajuScript {
      */
     public Value eval(String script, Syntax syntax, boolean execute)
             throws CajuScriptException {
-        long time = System.currentTimeMillis();
         Syntax syntaxBackup = getSyntax();
         try {
             String originalScript = script;
@@ -620,7 +619,6 @@ public class CajuScript {
                 Compiler compiler = new Compiler(this, compilePath);
                 compiler.compile(staticContexts, originalScript, parserBase);
             }
-            System.out.println(Long.toString(System.currentTimeMillis() - time).concat(" ms"));
             if (execute) {
                 Value finalValue = parserBase.execute(this, context, syntax);
                 if (!(cacheId.length() == 0)) {

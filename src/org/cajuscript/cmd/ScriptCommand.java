@@ -35,6 +35,7 @@ public class ScriptCommand {
         VARIABLE, VARIABLE_ROOT, FUNCTION, NATIVE_CLASS, NATIVE_OBJECT, NATIVE_OBJECT_ROOT, ARRAY, ARRAY_TYPE
     }
     private String script = "";
+    private String finalScript = "";
     private Type type = null;
     private Value[] params = null;
     private Object[] paramsValues = null;
@@ -73,6 +74,14 @@ public class ScriptCommand {
      */
     public void setScript(String script) {
         this.script = script;
+    }
+
+    public String getFinalScript() {
+        return finalScript;
+    }
+
+    public void setFinalScript(String finalScript) {
+        this.finalScript = finalScript;
     }
 
     /**

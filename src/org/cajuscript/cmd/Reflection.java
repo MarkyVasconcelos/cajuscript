@@ -234,10 +234,13 @@ public class Reflection {
                     Object[] values = invokeFunctionValues(cajuScript, context, syntax, null, scriptCommand);
                     return invokeConstructor(cajuScript, c, values, script, scriptCommand);
                 } else if (scriptCommand.getParamName().length() != 0) {
+                    String nextScript = scriptCommand.getNextScriptCommand() != null ? scriptCommand.getNextScriptCommand().getScript() : "";
                     if (scriptCommand.getValue() != null) {
-                        return invokeNative(cajuScript, context, syntax, c.getField(scriptCommand.getParamName()).get(scriptCommand.getValue().getValue()), scriptCommand.getScript().substring(scriptCommand.getScript().indexOf(".".concat(script)) + script.length() + 1), scriptCommand.getNextScriptCommand());
+                        return invokeNative(cajuScript, context, syntax, c.getField(scriptCommand.getParamName()).get(scriptCommand.getValue().getValue()), nextScript, scriptCommand.getNextScriptCommand());
+                        //return invokeNative(cajuScript, context, syntax, c.getField(scriptCommand.getParamName()).get(scriptCommand.getValue().getValue()), scriptCommand.getScript().substring(scriptCommand.getScript().indexOf(".".concat(script)) + script.length() + 1), scriptCommand.getNextScriptCommand());
                     } else {
-                        return invokeNative(cajuScript, context, syntax, c.getField(scriptCommand.getParamName()).get(c), scriptCommand.getScript().substring(scriptCommand.getScript().indexOf(".".concat(script)) + script.length() + 1), scriptCommand.getNextScriptCommand());
+                        return invokeNative(cajuScript, context, syntax, c.getField(scriptCommand.getParamName()).get(c), nextScript, scriptCommand.getNextScriptCommand());
+                        //return invokeNative(cajuScript, context, syntax, c.getField(scriptCommand.getParamName()).get(c), scriptCommand.getScript().substring(scriptCommand.getScript().indexOf(".".concat(script)) + script.length() + 1), scriptCommand.getNextScriptCommand());
                     }
                 }
                 throw new Exception("Cannot invoke ".concat(scriptCommand.getScript()));
@@ -281,7 +284,9 @@ public class Reflection {
 
     private static Object invokeConstructor(CajuScript cajuScript, Class<?> c, Object[] values, String script, ScriptCommand scriptCommand) throws Exception {
         if (scriptCommand.getConstructor() != null) {
-            return scriptCommand.getConstructor().newInstance(getParams(cajuScript, values, scriptCommand.getConstructor().getParameterTypes(), scriptCommand));
+            try {
+                return scriptCommand.getConstructor().newInstance(getParams(cajuScript, values, scriptCommand.getConstructor().getParameterTypes(), scriptCommand));
+            } catch (ClassCastException e) { }
         }
         Constructor<?>[] cn = c.getDeclaredConstructors();
         boolean allowAutoPrimitiveCast = true;
@@ -312,8 +317,13 @@ public class Reflection {
 
     private static Object invokeMethod(CajuScript cajuScript, Class<?> c, Object o, String name, Object[] values, String script, ScriptCommand scriptCommand) throws Exception {
         if (scriptCommand.getMethod() != null) {
-            Object r = scriptCommand.getMethod().invoke(o, getParams(cajuScript, values, scriptCommand.getMethod().getParameterTypes(), scriptCommand));
-            return r;
+            try {
+                Object r = scriptCommand.getMethod().invoke(o, getParams(cajuScript, values, scriptCommand.getMethod().getParameterTypes(), scriptCommand));
+                return r;
+            } catch (ClassCastException e) { }
+        }
+        if (name == null) {
+            name = scriptCommand.getMethod().getName();
         }
         Class<?>[] classes = null;
         if (c.isMemberClass()) {
@@ -345,6 +355,7 @@ public class Reflection {
                     continue;
                 }
                 if (foundMethod(cajuScript, values, cx, allowAutoPrimitiveCast, scriptCommand)) {
+                    scriptCommand.setMethod(mt[x]);
                     return mt[x].invoke(o, getParams(cajuScript, values, cx, scriptCommand));
                 }
             }
