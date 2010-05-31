@@ -330,11 +330,16 @@ public class Value implements Cloneable {
                     value = Reflection.invokeNative(cajuScript, context, syntax, scriptCommand.getValue().getValue(), scriptCommand.getScript(), scriptCommand);
                     break;
                 case NATIVE_OBJECT:
-                    String _script = scriptCommand.getScript();
                     scriptCommand.setValue(context.getVar(scriptCommand.getVar()));
-                    if (scriptCommand.getValue() != null) {
-                        SyntaxPosition syntaxPathSeparator = syntax.matcherPosition(_script, syntax.getFunctionCallPathSeparator());
-                        _script = _script.substring(syntaxPathSeparator.getEnd());
+                    String _script = scriptCommand.getScript();
+                    if (scriptCommand.getFinalScript().length() == 0) {
+                        if (scriptCommand.getValue() != null) {
+                            SyntaxPosition syntaxPathSeparator = syntax.matcherPosition(_script, syntax.getFunctionCallPathSeparator());
+                            _script = _script.substring(syntaxPathSeparator.getEnd());
+                            scriptCommand.setFinalScript(_script);
+                        }
+                    } else {
+                        _script = scriptCommand.getFinalScript();
                     }
                     value = Reflection.invokeNative(cajuScript, context, syntax, scriptCommand.getValue() == null ? null : scriptCommand.getValue().getValue(), _script, scriptCommand);
                     break;
