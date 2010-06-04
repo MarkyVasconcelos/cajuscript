@@ -349,7 +349,8 @@ public class Value implements Cloneable {
                 case FUNCTION:
                     Context funcContext = new Context();
                     Function func = cajuScript.getFunc(scriptCommand.getClassPath());
-                    value = func.invoke(cajuScript, funcContext, syntax, scriptCommand.getParams()).getValue();
+                    Reflection.invokeValues(cajuScript, context, syntax, script, scriptCommand, null, null, null);
+                    value = func.invoke(cajuScript, funcContext, syntax, Reflection.invokeValues(cajuScript, context, syntax, null, scriptCommand, null, null, null)).getValue();
                     break;
                 case ARRAY:
                     type = Type.ARRAY;
@@ -440,7 +441,15 @@ public class Value implements Cloneable {
     public double getNumberDoubleValue() {
         return valueNumberDouble;
     }
-    
+
+    /**
+     * Get the Script Command.
+     * @return Script Command.
+     */
+    public ScriptCommand getScriptCommand() {
+        return scriptCommand;
+    }
+
     /**
      * Get the object of value.
      * @return Value.
