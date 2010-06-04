@@ -143,6 +143,16 @@ public class Function extends Base {
         }
         return new Value(caju, context, syntax);
     }
+
+    public Value invoke(CajuScript caju, Context context, Syntax syntax, Object... paramValue) throws CajuScriptException {
+        Value[] values = new Value[paramValue.length];
+        for (int i = 0; i < paramValue.length; i++) {
+            Value v = new Value(caju, context, syntax);
+            v.setValue(paramValue[i]);
+            values[i] = v;
+        }
+        return invoke(caju, context, syntax, values);
+    }
     
     /**
      * This method is never used for functions, method "invoke" can be used to

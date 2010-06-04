@@ -406,10 +406,10 @@ public class Reflection {
      */
     public static Object[] invokeValues(CajuScript cajuScript, Context context, Syntax syntax, String script, ScriptCommand scriptCommand, Pattern parametersBegin, Pattern parametersSeparator, Pattern parametersEnd) throws CajuScriptException {
         if (scriptCommand.getParams() != null) {
-            Value[] paramsVal = scriptCommand.getParams();
+            String[] paramsVal = scriptCommand.getParams();
             Object[] values = new Object[paramsVal.length];
             for (int x = 0; x < paramsVal.length; x++) {
-                values[x] = paramsVal[x].getValue();
+                values[x] = context.getVar(paramsVal[x]).getValue();
             }
             return values;
         }
@@ -417,7 +417,7 @@ public class Reflection {
         int lenEnd = (syntax.matcherPosition(script, parametersEnd)).getStart();
         String params = script.substring(lenBegin, lenEnd);
         if (params.trim().length() == 0) {
-            scriptCommand.setParams(new Value[0]);
+            scriptCommand.setParams(new String[0]);
             return new Object[0];
         }
         String[] paramsKeys = parametersSeparator.split(params);
@@ -437,7 +437,7 @@ public class Reflection {
             paramsVal[x] = (Value)values[x];
             values[x] = paramsVal[x].getValue();
         }
-        scriptCommand.setParams(paramsVal);
+        scriptCommand.setParams(paramsKeys);
         return values;
     }
 
