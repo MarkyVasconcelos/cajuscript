@@ -19,6 +19,7 @@
 
 package org.cajuscript.parser;
 
+import java.lang.reflect.Method;
 import org.cajuscript.CajuScript;
 import org.cajuscript.Context;
 import org.cajuscript.Value;
@@ -49,6 +50,16 @@ public class Function extends Base {
      */
     public Function(Executable executable, String[] parameters) {
         super(executable);
+        this.paramKey = parameters;
+    }
+
+    /**
+     * Create new Function.
+     * @param executable Executable
+     */
+    public Function(Executable executable, String name, String[] parameters) {
+        super(executable);
+        this.name = name;
         this.paramKey = parameters;
     }
     
@@ -136,9 +147,21 @@ public class Function extends Base {
                 }
             }
         } else {
-            Value v = executable.execute(caju, context, syntax);
-            if (v != null) {
-                return v;
+            if (name.length() == 0) {
+                Value v = executable.execute(caju, context, syntax);
+                if (v != null) {
+                    return v;
+                }
+            } else {
+                try {
+                    Method m = executable.getClass().getMethod(name, CajuScript.class, Context.class, Syntax.class);
+                    Value v = (Value)m.invoke(executable, caju, context, syntax);
+                    if (v != null) {
+                        return v;
+                    }
+                } catch (Exception e) {
+                    throw new CajuScriptException(e);
+                }
             }
         }
         return new Value(caju, context, syntax);

@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with CajuScript.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package org.cajuscript.compiler;
 
 import java.io.File;
@@ -31,6 +30,39 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.bcel.Constants;
+import org.apache.bcel.generic.AASTORE;
+import org.apache.bcel.generic.ACONST_NULL;
+import org.apache.bcel.generic.ALOAD;
+import org.apache.bcel.generic.ANEWARRAY;
+import org.apache.bcel.generic.ARETURN;
+import org.apache.bcel.generic.ClassGen;
+import org.apache.bcel.generic.ConstantPoolGen;
+import org.apache.bcel.generic.ASTORE;
+import org.apache.bcel.generic.ATHROW;
+import org.apache.bcel.generic.ArrayType;
+import org.apache.bcel.generic.BranchHandle;
+import org.apache.bcel.generic.DUP;
+import org.apache.bcel.generic.GOTO;
+import org.apache.bcel.generic.ICONST;
+import org.apache.bcel.generic.IFEQ;
+import org.apache.bcel.generic.IFNE;
+import org.apache.bcel.generic.IF_ICMPGE;
+import org.apache.bcel.generic.IINC;
+import org.apache.bcel.generic.ILOAD;
+import org.apache.bcel.generic.INVOKESPECIAL;
+import org.apache.bcel.generic.ISTORE;
+import org.apache.bcel.generic.InstructionConstants;
+import org.apache.bcel.generic.InstructionFactory;
+import org.apache.bcel.generic.InstructionHandle;
+import org.apache.bcel.generic.InstructionList;
+import org.apache.bcel.generic.LDC;
+import org.apache.bcel.generic.LocalVariableGen;
+import org.apache.bcel.generic.MethodGen;
+import org.apache.bcel.generic.NEW;
+import org.apache.bcel.generic.ObjectType;
+import org.apache.bcel.generic.PUSH;
+import org.apache.bcel.generic.Type;
 import org.cajuscript.CajuScript;
 import org.cajuscript.CajuScriptException;
 import org.cajuscript.Context;
@@ -57,6 +89,7 @@ import org.cajuscript.parser.Variable;
  * @author eduveks
  */
 public class Compiler {
+
     private File baseDir = null;
     private static Map<String, Class> classes = new HashMap<String, Class>();
     private StringBuilder source = new StringBuilder();
@@ -68,6 +101,7 @@ public class Compiler {
     private File classFile = null;
     private CajuScript caju = null;
     private long varCount = 1;
+    private Map<String, Integer> valuesIndexes = new HashMap<String, Integer>();
     private LineDetail lastLiteDetail = null;
 
     /**
@@ -105,7 +139,7 @@ public class Compiler {
             if (classes.get(path) == null) {
                 loadClass(context);
             }
-            return ((org.cajuscript.compiler.Executable)classes.get(path).newInstance()).execute(caju, context, syntax);
+            return ((org.cajuscript.compiler.Executable) classes.get(path).newInstance()).execute(caju, context, syntax);
         } catch (Exception e) {
             throw CajuScriptException.create(caju, context, e.getMessage(), e);
         }
@@ -114,8 +148,8 @@ public class Compiler {
     private void loadClass(Context context) throws CajuScriptException {
         try {
             String path = packagePath.equals("") ? className : packagePath.concat(".").concat(className);
-            URLClassLoader urlClassLoader = new URLClassLoader(new URL[] { baseDir.toURI().toURL() }, CajuScript.class.getClassLoader());
-            Executable parserExecute = (Executable)urlClassLoader.loadClass(path).newInstance();
+            URLClassLoader urlClassLoader = new URLClassLoader(new URL[]{baseDir.toURI().toURL()}, CajuScript.class.getClassLoader());
+            Executable parserExecute = (Executable) urlClassLoader.loadClass(path).newInstance();
             classes.put(path, parserExecute.getClass());
         } catch (Exception e) {
             throw CajuScriptException.create(caju, context, e.getMessage(), e);
@@ -145,7 +179,8 @@ public class Compiler {
             if (is != null) {
                 try {
                     is.close();
-                } catch (Exception e) { }
+                } catch (Exception e) {
+                }
             }
         }
         return scriptClass.equals(script);
@@ -161,12 +196,159 @@ public class Compiler {
     public void compile(Context staticContext, String script, Element base) throws CajuScriptException {
         List<String> valueKeys = new ArrayList<String>();
         for (String key : caju.getContext().getFuncs().keySet()) {
-            compileElement(valueKeys, caju.getContext().getFuncs().get(key), 0);
+            launchCompileElements(null, null, null, null, null, valueKeys, caju.getContext().getFuncs().get(key), 0, false);
         }
-        String __return = compileElement(valueKeys, base, 0);
+        String __return = launchCompileElements(null, null, null, null, null, valueKeys, base, 0, false);
         packageDir.mkdirs();
         PrintWriter out = null;
         try {
+            ClassGen cg = new ClassGen(packagePath.concat(".").concat(className), "java.lang.Object",
+                    "<generated>", Constants.ACC_PUBLIC | Constants.ACC_SUPER,
+                    new String[]{"org.cajuscript.compiler.Executable"});
+            ConstantPoolGen cp = cg.getConstantPool();
+            InstructionList il = new InstructionList();
+            MethodGen mg = new MethodGen(Constants.ACC_PUBLIC,
+                    new ObjectType("org.cajuscript.Value"),
+                    new Type[]{
+                        new ObjectType("org.cajuscript.CajuScript"),
+                        new ObjectType("org.cajuscript.Context"),
+                        new ObjectType("org.cajuscript.Syntax")
+                    },
+                    new String[]{"caju", "context", "syntax"},
+                    "execute", "className",
+                    il, cp);
+            mg.addException("org.cajuscript.CajuScriptException");
+            InstructionFactory factory = new InstructionFactory(cg);
+
+            for (String key : staticContext.getStaticStrings().keySet()) {
+                il.append(new ALOAD(1));
+                il.append(new PUSH(cp, key));
+                il.append(new PUSH(cp, staticContext.getStaticStrings().get(key)));
+                il.append(factory.createInvoke("org.cajuscript.CajuScript", "set", Type.VOID,
+                    new Type[]{Type.STRING, Type.OBJECT},
+                    Constants.INVOKEVIRTUAL));
+            }
+            for (String key : staticContext.getAllKeys(true)) {
+                il.append(new ALOAD(1));
+                il.append(new PUSH(cp, key));
+                il.append(new PUSH(cp, staticContext.getVar(key).toString()));
+                il.append(factory.createInvoke("org.cajuscript.CajuScript", "set", Type.VOID,
+                    new Type[]{Type.STRING, Type.OBJECT},
+                    Constants.INVOKEVIRTUAL));
+            }
+
+            List<String> valuesKeys = new ArrayList<String>();
+
+            launchCompileElements(cg, cp, il, mg, factory, valuesKeys, base, 0, true);
+
+            for (String key : valuesKeys) {
+                il.append(factory.createNew(new ObjectType("org.cajuscript.Value")));
+                il.append(new DUP());
+                LocalVariableGen lg = mg.addLocalVariable(key, new ObjectType("org.cajuscript.Value"), null, null);
+                int i = lg.getIndex();
+                il.append(new ALOAD(1));
+                il.append(new ALOAD(2));
+                il.append(new ALOAD(3));
+                il.append(factory.createInvoke("org.cajuscript.Value", "<init>",
+                    Type.VOID, new Type[] {
+                        new ObjectType("org.cajuscript.CajuScript"),
+                        new ObjectType("org.cajuscript.Context"),
+                        new ObjectType("org.cajuscript.Syntax")
+                    },
+                    Constants.INVOKESPECIAL));
+                il.append(new ASTORE(i));
+                valuesIndexes.put(key, i);
+            }
+            int iFunc = 0;
+            for (String key : caju.getContext().getFuncs().keySet()) {
+                Function function = (Function)caju.getContext().getFuncs().get(key);
+                String funcName = "f".concat(Integer.toString(iFunc)).concat("_").concat(function.getName());
+                InstructionList ilFunc = new InstructionList();
+                MethodGen mgFunc = new MethodGen(Constants.ACC_PUBLIC,
+                        new ObjectType("org.cajuscript.Value"),
+                        new Type[]{
+                            new ObjectType("org.cajuscript.CajuScript"),
+                            new ObjectType("org.cajuscript.Context"),
+                            new ObjectType("org.cajuscript.Syntax")
+                        },
+                        new String[]{"caju", "context", "syntax"},
+                        funcName, "className",
+                        ilFunc, cp);
+                mgFunc.addException("org.cajuscript.CajuScriptException");
+                InstructionFactory factoryFunc = new InstructionFactory(cg);
+                List<String> funcValueKeys = new ArrayList<String>();
+                launchCompileElements(cg, cp, ilFunc, mgFunc, factoryFunc, funcValueKeys, function, 0, true);
+                for (String valueKey : funcValueKeys) {
+                    ilFunc.append(factoryFunc.createNew(new ObjectType("org.cajuscript.Value")));
+                    ilFunc.append(new DUP());
+                    LocalVariableGen lg = mgFunc.addLocalVariable(valueKey, new ObjectType("org.cajuscript.Value"), null, null);
+                    int i = lg.getIndex();
+                    ilFunc.append(new ALOAD(1));
+                    ilFunc.append(new ALOAD(2));
+                    ilFunc.append(new ALOAD(3));
+                    ilFunc.append(factoryFunc.createInvoke("org.cajuscript.Value", "<init>",
+                        Type.VOID, new Type[] {
+                            new ObjectType("org.cajuscript.CajuScript"),
+                            new ObjectType("org.cajuscript.Context"),
+                            new ObjectType("org.cajuscript.Syntax")
+                        },
+                        Constants.INVOKESPECIAL));
+                    ilFunc.append(new ASTORE(i));
+                    valuesIndexes.put(valueKey, i);
+                }
+                String returnFunc = launchCompileElements(cg, cp, ilFunc, mgFunc, factoryFunc, funcValueKeys, function, 0, false);
+                if (!returnFunc.equals("__return")) {
+                    ilFunc.append(new ACONST_NULL());
+                    ilFunc.append(new ARETURN());
+                }
+                mgFunc.setMaxStack();
+                cg.addMethod(mgFunc.getMethod());
+                ilFunc.dispose();
+
+                il.append(new ALOAD(2));
+                il.append(new PUSH(cp, function.getName()));
+                il.append(factoryFunc.createNew(new ObjectType("org.cajuscript.parser.Function")));
+                il.append(new DUP());
+                il.append(new ALOAD(0));
+                il.append(new PUSH(cp, funcName));
+                il.append(new ICONST(function.getParameters().length));
+                il.append(new ANEWARRAY(cp.addClass(Type.STRING)));
+                for (int i = 0; i < function.getParameters().length; i++) {
+                    il.append(new DUP());
+                    il.append(new ICONST(i));
+                    il.append(new PUSH(cp, function.getParameters()[i]));
+                    il.append(new AASTORE());
+                }
+                il.append(factory.createInvoke("org.cajuscript.parser.Function", "<init>",
+                        Type.VOID, new Type[] {
+                            new ObjectType("org.cajuscript.compiler.Executable"),
+                            Type.STRING,
+                            new ArrayType(Type.STRING, 1)
+                        },
+                        Constants.INVOKESPECIAL));
+                il.append(factory.createInvoke("org.cajuscript.Context", "setFunc",
+                    Type.VOID, new Type[] { Type.STRING, new ObjectType("org.cajuscript.parser.Function") },
+                    Constants.INVOKEVIRTUAL));
+                iFunc++;
+            }
+
+            LocalVariableGen lg = mg.addLocalVariable("i", Type.INT, null, null);
+            valuesIndexes.put("i", lg.getIndex());
+            
+            valuesKeys = new ArrayList<String>();
+
+            launchCompileElements(cg, cp, il, mg, factory, valuesKeys, base, 0, false);
+
+            il.append(new ACONST_NULL());
+            il.append(new ARETURN());
+            
+            mg.setMaxStack();
+            cg.addMethod(mg.getMethod());
+            il.dispose();
+            cg.addEmptyConstructor(Constants.ACC_PUBLIC);
+            cg.getJavaClass().dump(new File(classFile.getAbsolutePath().replace(".class", ".class")));
+
+
             out = new PrintWriter(new FileWriter(javaFile));
             if (!packagePath.equals("")) {
                 out.print("package ");
@@ -240,19 +422,18 @@ public class Compiler {
                 }
             }
         }
-        Writer swJavaC = new StringWriter();
-        com.sun.tools.javac.Main.compile(!caju.getCompileClassPath().equals("") ? new String[] {
-            "-classpath", caju.getCompileClassPath(), javaFile.getAbsolutePath() }
-            : new String[] { javaFile.getAbsolutePath() }
-        , new PrintWriter(swJavaC));
+        /*Writer swJavaC = new StringWriter();
+        com.sun.tools.javac.Main.compile(!caju.getCompileClassPath().equals("") ? new String[]{
+                    "-classpath", caju.getCompileClassPath(), javaFile.getAbsolutePath()}
+                : new String[]{javaFile.getAbsolutePath()}, new PrintWriter(swJavaC));
         String outputJavaC = swJavaC.toString();
         if (!outputJavaC.trim().equals("")) {
             throw new CajuScriptException(outputJavaC);
-        }
+        }*/
         loadClass(staticContext);
     }
 
-    private String compileElement(List<String> valueKeys, Element element, int level) {
+    private String compileElement(ClassGen cg, ConstantPoolGen cp, InstructionList il, MethodGen mg, InstructionFactory factory, List<String> valueKeys, Element element, int level, boolean onlyValues, Map<String, GOTO> gotosContinue, Map<String, GOTO> gotosBreak) {
         String key = "";
         if (element == null) {
             return null;
@@ -263,24 +444,55 @@ public class Compiler {
         boolean isContinue = false;
         int nextLevel = level + 1;
         if (element instanceof Command) {
-            source.append(lineDetail(element.getLineDetail()));
-            compileElements(valueKeys, element, nextLevel);
-            Command command = (Command)element;
+            lineDetail(cp, il, mg, factory, element.getLineDetail(), onlyValues);
+            compileElements(cg, cp, il, mg, factory, valueKeys, element, nextLevel, onlyValues, gotosContinue, gotosBreak);
             key = "c".concat(Integer.toString(level)).concat("_").concat(Long.toString(varCount++));
-            source.append(key);
-            source.append(".setScript(");
-            source.append(toString(command.getCommand()));
-            source.append(");");
-            source.append("\n");
+            if (!onlyValues) {
+                Command command = (Command) element;
+                if (il != null && mg != null) {
+                    il.append(new ALOAD(valuesIndexes.get(key)));
+                    il.append(new PUSH(cp, command.getCommand()));
+                    il.append(factory.createInvoke("org.cajuscript.Value", "setScript",
+                            Type.VOID, new Type[] { Type.STRING },
+                            Constants.INVOKEVIRTUAL));
+                }
+                source.append(key);
+                source.append(".setScript(");
+                source.append(toString(command.getCommand()));
+                source.append(");");
+                source.append("\n");
+            }
         } else if (element instanceof Variable) {
-            compileElements(valueKeys, element, nextLevel);
-            Variable variable = (Variable)element;
-            String keyValue = compileElement(valueKeys, variable.getValue(), nextLevel);
+            lineDetail(cp, il, mg, factory, element.getLineDetail(), onlyValues);
+            compileElements(cg, cp, il, mg, factory, valueKeys, element, nextLevel, onlyValues, gotosContinue, gotosBreak);
+            Variable variable = (Variable) element;
+            String keyValue = compileElement(cg, cp, il, mg, factory, valueKeys, variable.getValue(), nextLevel, onlyValues, gotosContinue, gotosBreak);
             if (variable.getKey().equals("")) {
                 addKey = false;
                 key = keyValue;
-            } else {
-                source.append(lineDetail(element.getLineDetail()));
+            } else if (!onlyValues) {
+
+                if (il != null && mg != null) {
+                    if (variable.isKeyRootContext(caju.getSyntax())) {
+                        il.append(new ALOAD(1));
+                        il.append(new PUSH(cp, variable.getKeyRootContext(caju.getSyntax())));
+                    } else {
+                        il.append(new ALOAD(2));
+                        il.append(new PUSH(cp, variable.getKey()));
+                    }
+                    if (keyValue == null || keyValue.equals("")) {
+                        il.append(InstructionConstants.ACONST_NULL);
+                    }  else {
+                        il.append(new ALOAD(valuesIndexes.get(keyValue)));
+                        il.append(factory.createInvoke("org.cajuscript.Value", "clone",
+                                new ObjectType("org.cajuscript.Value"), new Type[] { },
+                                Constants.INVOKEVIRTUAL));
+                    }
+                    il.append(factory.createInvoke(
+                            variable.isKeyRootContext(caju.getSyntax()) ? "org.cajuscript.CajuScript" : "org.cajuscript.Context",
+                            "setVar", Type.VOID, new Type[] { Type.STRING, new ObjectType("org.cajuscript.Value") },
+                            Constants.INVOKEVIRTUAL));
+                }
                 if (variable.isKeyRootContext(caju.getSyntax())) {
                     source.append("caju.setVar(");
                     source.append(toString(variable.getKeyRootContext(caju.getSyntax())));
@@ -300,191 +512,399 @@ public class Compiler {
                 source.append("\n");
             }
         } else if (element instanceof Operation) {
-            source.append(lineDetail(element.getLineDetail()));
-            compileElements(valueKeys, element, nextLevel);
-            Operation operation = (Operation)element;
+            lineDetail(cp, il, mg, factory, element.getLineDetail(), onlyValues);
+            compileElements(cg, cp, il, mg, factory, valueKeys, element, nextLevel, onlyValues, gotosContinue, gotosBreak);
             key = "o".concat(Integer.toString(level)).concat("_").concat(Long.toString(varCount++));
-            String firstCommand = compileElement(valueKeys, operation.getFirstCommand(), nextLevel);
-            String secondCommand = compileElement(valueKeys, operation.getSecondCommand(), nextLevel);
-            source.append("Operation.Operator.");
-            source.append(operation.getOperator().name());
-            source.append(".compare(");
-            source.append(key);
-            source.append(",");
-            source.append(firstCommand);
-            source.append(",");
-            source.append(secondCommand);
-            source.append(");");
-            source.append("\n");
+            Operation operation = (Operation) element;
+            String firstCommand = compileElement(cg, cp, il, mg, factory, valueKeys, operation.getFirstCommand(), nextLevel, onlyValues, gotosContinue, gotosBreak);
+            String secondCommand = compileElement(cg, cp, il, mg, factory, valueKeys, operation.getSecondCommand(), nextLevel, onlyValues, gotosContinue, gotosBreak);
+            if (!onlyValues) {
+                if (il != null && mg != null) {
+                    il.append(factory.createFieldAccess("org.cajuscript.parser.Operation$Operator",
+                            operation.getOperator().name(), new ObjectType("org.cajuscript.parser.Operation$Operator"),
+                            Constants.GETSTATIC));
+                    il.append(new ALOAD(valuesIndexes.get(key)));
+                    il.append(new ALOAD(valuesIndexes.get(firstCommand)));
+                    il.append(new ALOAD(valuesIndexes.get(secondCommand)));
+                    il.append(factory.createInvoke("org.cajuscript.parser.Operation$Operator", "compare",
+                            Type.VOID, new Type[] { new ObjectType("org.cajuscript.Value")
+                                , new ObjectType("org.cajuscript.Value")
+                                , new ObjectType("org.cajuscript.Value")},
+                            Constants.INVOKEVIRTUAL));
+                }
+                source.append("Operation.Operator.");
+                source.append(operation.getOperator().name());
+                source.append(".compare(");
+                source.append(key);
+                source.append(",");
+                source.append(firstCommand);
+                source.append(",");
+                source.append(secondCommand);
+                source.append(");");
+                source.append("\n");
+            }
         } else if (element instanceof Return) {
-            compileElements(valueKeys, element, nextLevel);
-            Return _return = (Return)element;
-            String valueKey = compileElement(valueKeys, _return.getValue(), nextLevel);
-            source.append(lineDetail(element.getLineDetail()));
-            source.append("return ");
-            source.append(valueKey);
-            source.append(";");
-            source.append("\n");
+            compileElements(cg, cp, il, mg, factory, valueKeys, element, nextLevel, onlyValues, gotosContinue, gotosBreak);
+            Return _return = (Return) element;
+            String valueKey = compileElement(cg, cp, il, mg, factory, valueKeys, _return.getValue(), nextLevel, onlyValues, gotosContinue, gotosBreak);
+            lineDetail(cp, il, mg, factory, element.getLineDetail(), onlyValues);
+            if (!onlyValues) {
+                if (il != null && mg != null) {
+                    il.append(new ALOAD(valuesIndexes.get(valueKey)));
+                    il.append(new ARETURN());
+                }
+                source.append("return ");
+                source.append(valueKey);
+                source.append(";");
+                source.append("\n");
+            }
             isReturn = true;
         } else if (element instanceof Break) {
-            compileElements(valueKeys, element, nextLevel);
-            Break _break = (Break)element;
-            source.append(lineDetail(element.getLineDetail()));
-            source.append("break ");
-            source.append(_break.getLabel());
-            source.append(";");
-            source.append("\n");
+            compileElements(cg, cp, il, mg, factory, valueKeys, element, nextLevel, onlyValues, gotosContinue, gotosBreak);
+            lineDetail(cp, il, mg, factory, element.getLineDetail(), onlyValues);
+            if (!onlyValues) {
+                Break _break = (Break) element;
+                if (il != null && mg != null) {
+                    GOTO gt = new GOTO(null);
+                    il.append(gt);
+                    gotosBreak.put("loop_".concat(_break.getLabel()), gt);
+                }
+                source.append("break ");
+                source.append(_break.getLabel());
+                source.append(";");
+                source.append("\n");
+            }
             isBreak = true;
         } else if (element instanceof Continue) {
-            compileElements(valueKeys, element, nextLevel);
-            Continue _continue = (Continue)element;
-            source.append(lineDetail(element.getLineDetail()));
-            source.append("continue ");
-            source.append(_continue.getLabel());
-            source.append(";");
-            source.append("\n");
+            compileElements(cg, cp, il, mg, factory, valueKeys, element, nextLevel, onlyValues, gotosContinue, gotosBreak);
+            lineDetail(cp, il, mg, factory, element.getLineDetail(), onlyValues);
+            if (!onlyValues) {
+                Continue _continue = (Continue) element;
+                if (il != null && mg != null) {
+                    GOTO gt = new GOTO(null);
+                    il.append(gt);
+                    gotosContinue.put("loop_".concat(_continue.getLabel()), gt);
+                }
+                source.append("continue ");
+                source.append(_continue.getLabel());
+                source.append(";");
+                source.append("\n");
+            }
             isContinue = true;
         } else if (element instanceof Import) {
-            compileElements(valueKeys, element, nextLevel);
-            Import _import = (Import)element;
-            source.append(lineDetail(element.getLineDetail()));
-            if (_import.getPath().startsWith(CajuScript.CAJU_VARS)) {
-                source.append("caju.evalFile(context.getVar(");
-                source.append(toString(_import.getPath()));
-                source.append(").toString());");
-            } else {
-                source.append("context.addImport(");
-                source.append(toString(_import.getPath()));
-                source.append(");");
+            compileElements(cg, cp, il, mg, factory, valueKeys, element, nextLevel, onlyValues, gotosContinue, gotosBreak);
+            lineDetail(cp, il, mg, factory, element.getLineDetail(), onlyValues);
+            if (!onlyValues) {
+                Import _import = (Import) element;
+                if (_import.getPath().startsWith(CajuScript.CAJU_VARS)) {
+                    if (il != null && mg != null) {
+                        il.append(new ALOAD(1));
+                        il.append(new ALOAD(2));
+                        il.append(new PUSH(cp, _import.getPath()));
+                        il.append(factory.createInvoke("org.cajuscript.Context", "getVar",
+                            new ObjectType("org.cajuscript.Value"), new Type[] { Type.STRING },
+                            Constants.INVOKEVIRTUAL));
+                        il.append(factory.createInvoke("org.cajuscript.Value", "toString",
+                            Type.STRING, new Type[] { },
+                            Constants.INVOKEVIRTUAL));
+                        il.append(factory.createInvoke("org.cajuscript.CajuScript", "evalFile",
+                            new ObjectType("org.cajuscript.Value"), new Type[] { Type.STRING },
+                            Constants.INVOKEVIRTUAL));
+                    }
+                    source.append("caju.evalFile(context.getVar(");
+                    source.append(toString(_import.getPath()));
+                    source.append(").toString());");
+                    source.append("\n");
+                } else {
+                    if (il != null && mg != null) {
+                        il.append(new ALOAD(2));
+                        il.append(new PUSH(cp, _import.getPath()));
+                        il.append(factory.createInvoke("org.cajuscript.Context", "addImport",
+                            Type.VOID, new Type[] { Type.STRING },
+                            Constants.INVOKEVIRTUAL));
+                    }
+                    source.append("context.addImport(");
+                    source.append(toString(_import.getPath()));
+                    source.append(");");
+                    source.append("\n");
+                }
             }
-            source.append("\n");
         } else if (element instanceof IfGroup) {
-            source.append(lineDetail(element.getLineDetail()));
-            String keyCode = Integer.toString(element.hashCode());
-            source.append("for(int ");
-            source.append("i".concat(keyCode));
-            source.append("=0;");
-            source.append("i".concat(keyCode));
-            source.append("<1;");
-            source.append("i".concat(keyCode));
-            source.append("++){");
-            source.append("\n");
-            compileElements(valueKeys, element, nextLevel);
-            source.append("}");
-            source.append("\n");
+            lineDetail(cp, il, mg, factory, element.getLineDetail(), onlyValues);
+            BranchHandle ifBlock = null;
+            InstructionHandle ifStart = null;
+            int i = 0;
+            if (!onlyValues) {
+                String keyCode = Integer.toString(element.hashCode());
+                if (il != null && mg != null) {
+                    LocalVariableGen lg = mg.addLocalVariable("i".concat(keyCode), Type.INT, null, null);
+                    i = lg.getIndex();
+                    il.append(new ICONST(0));
+                    il.append(new ISTORE(i));
+                    ifStart = il.append(new ILOAD(i));
+                    il.append(new ICONST(1));
+                    ifBlock = il.append(new IF_ICMPGE(null));
+                }
+                source.append("for(int ");
+                source.append("i".concat(keyCode));
+                source.append("=0;");
+                source.append("i".concat(keyCode));
+                source.append("<1;");
+                source.append("i".concat(keyCode));
+                source.append("++){");
+                source.append("\n");
+            }
+            compileElements(cg, cp, il, mg, factory, valueKeys, element, nextLevel, onlyValues, gotosContinue, gotosBreak);
+            if (!onlyValues) {
+                if (il != null && mg != null) {
+                    il.append(new IINC(i, 1));
+                    il.append(new GOTO(ifStart));
+                    InstructionHandle ifGroupEnd = il.append(new PUSH(cp, 1));
+                    il.append(new ISTORE(valuesIndexes.get("i")));
+                    ifBlock.setTarget(ifGroupEnd);
+                    for (Element e : element.getElements()) {
+                        String k = Integer.toString(e.hashCode());
+                        if (gotosBreak.containsKey(k)) {
+                            gotosBreak.get(k).setTarget(ifGroupEnd);
+                            gotosBreak.remove(k);
+                        }
+                    }
+                }
+                source.append("}");
+                source.append("\n");
+            }
         } else if (element instanceof If) {
-            If _if = (If)element;
-            String conditionKey = compileElement(valueKeys, _if.getCondition(), nextLevel);
-            source.append(lineDetail(element.getLineDetail()));
-            source.append("if(");
-            source.append(conditionKey);
-            source.append(".getBooleanValue()){");
-            source.append("\n");
-            String __key = compileElements(valueKeys, element, nextLevel);
-            if (!__key.equals("__return")
-                && !__key.equals("__break")
-                && !__key.equals("__continue")) {
+            If _if = (If) element;
+            String conditionKey = compileElement(cg, cp, il, mg, factory, valueKeys, _if.getCondition(), nextLevel, onlyValues, gotosContinue, gotosBreak);
+            lineDetail(cp, il, mg, factory, element.getLineDetail(), onlyValues);
+            BranchHandle ifBlock = null;
+            if (!onlyValues) {
+                if (il != null && mg != null) {
+                    il.append(new ALOAD(valuesIndexes.get(conditionKey)));
+                    il.append(factory.createInvoke("org.cajuscript.Value", "getBooleanValue",
+                            Type.BOOLEAN, new Type[] { },
+                            Constants.INVOKEVIRTUAL));
+                    ifBlock = il.append(new IFEQ(null));
+                }
+                source.append("if(");
+                source.append(conditionKey);
+                source.append(".getBooleanValue()){");
+                source.append("\n");
+            }
+            String __key = compileElements(cg, cp, il, mg, factory, valueKeys, element, nextLevel, onlyValues, gotosContinue, gotosBreak);
+            if (!onlyValues) {
+                if (!__key.equals("__return")
+                        && !__key.equals("__break")
+                        && !__key.equals("__continue")) {
+                    if (il != null && mg != null) {
+                        GOTO gt = new GOTO(null);
+                        il.append(gt);
+                        gotosBreak.put(Integer.toString(_if.hashCode()), gt);
+                    }
+                    source.append("break;");
+                    source.append("\n");
+                }
+                if (il != null && mg != null) {
+                    InstructionHandle ifEnd = il.append(InstructionConstants.NOP);
+                    //InstructionHandle ifEnd = il.append(new PUSH(cp, 1));
+                    //il.append(new ISTORE(valuesIndexes.get("i")));
+                    ifBlock.setTarget(ifEnd);
+                }
+                source.append("}");
+                source.append("\n");
+            }
+        } else if (element instanceof Loop) {
+            Loop loop = (Loop) element;
+            InstructionHandle loopStart = null;
+            if (!onlyValues) {
+                if (il != null && mg != null) {
+                    loopStart = il.append(new PUSH(cp, 1));
+                    il.append(new ISTORE(valuesIndexes.get("i")));
+                }
+            }
+            lineDetail(cp, il, mg, factory, element.getLineDetail(), onlyValues);
+            if (!onlyValues) {
+                if (!loop.getLabel().equals("")) {
+                    source.append(loop.getLabel());
+                    source.append(" : ");
+                }
+                source.append("while(true){");
+                source.append("\n");
+            }
+            GOTO gotoLoopEnd = null;
+            String conditionKey = compileElement(cg, cp, il, mg, factory, valueKeys, loop.getCondition(), nextLevel, onlyValues, gotosContinue, gotosBreak);
+            if (!onlyValues) {
+                if (il != null && mg != null) {
+                    il.append(new ALOAD(valuesIndexes.get(conditionKey)));
+                    il.append(factory.createInvoke("org.cajuscript.Value", "getBooleanValue",
+                        Type.BOOLEAN, new Type[] { },
+                        Constants.INVOKEVIRTUAL));
+                    BranchHandle ifBlock = il.append(new IFNE(null));
+                    gotoLoopEnd = new GOTO(null);
+                    il.append(gotoLoopEnd);
+                    InstructionHandle ifEnd = il.append(InstructionConstants.NOP);
+                    //InstructionHandle ifEnd = il.append(new PUSH(cp, 1));
+                    //il.append(new ISTORE(valuesIndexes.get("i")));
+                    ifBlock.setTarget(ifEnd);
+                }
+                source.append("if(!");
+                source.append(conditionKey);
+                source.append(".getBooleanValue()){");
+                source.append("\n");
                 source.append("break;");
                 source.append("\n");
-            }
-            source.append("}");
-            source.append("\n");
-        } else if (element instanceof Loop) {
-            Loop loop = (Loop)element;
-            source.append(lineDetail(element.getLineDetail()));
-            if (!loop.getLabel().equals("")) {
-                source.append(loop.getLabel());
-                source.append(" : ");
-            }
-            source.append("while(true){");
-            source.append("\n");
-            String conditionKey = compileElement(valueKeys, loop.getCondition(), nextLevel);
-            source.append("if(!");
-            source.append(conditionKey);
-            source.append(".getBooleanValue()){");
-            source.append("\n");
-            source.append("break;");
-            source.append("\n");
-            source.append("}");
-            source.append("\n");
-            compileElements(valueKeys, element, nextLevel);
-            source.append("\n");
-            source.append("}");
-            source.append("\n");
-        } else if (element instanceof Function) {
-            source.append(lineDetail(element.getLineDetail()));
-            addKey = false;
-            Function function = (Function)element;
-            key = "f".concat(Integer.toString(level)).concat("_").concat(Long.toString(varCount++));
-            source.append("context.setFunc(");
-            source.append(toString(function.getName()));
-            source.append(",new Function(new DefaultExecutable(){");
-            source.append("\n");
-            source.append("@Override");
-            source.append("\n");
-            source.append("public Value execute(CajuScript caju,Context context,Syntax syntax)throws CajuScriptException{");
-            source.append("\n");
-            source.append("<<[".concat(key).concat("]>>"));
-            List<String> funcValueKeys = new ArrayList<String>();
-            String __return = compileElements(funcValueKeys, function, nextLevel);
-            String _source = source.toString();
-            source.delete(0, source.length());
-            for (String valueKey : funcValueKeys) {
-                source.append("Value ");
-                source.append(valueKey);
-                source.append("=new Value(caju,context,syntax);");
+                source.append("}");
                 source.append("\n");
             }
-            String funcKeys = source.toString();
-            source.delete(0, source.length());
-            source.append(_source.replace("<<[".concat(key).concat("]>>"), funcKeys));
-            if (!__return.equals("__return")) {
-                source.append("return null;");
-                source.append("\n");
-            }
-            source.append("}");
-            source.append("\n");
-            source.append("},new String[]{");
-            for (int i = 0; i < function.getParameters().length; i++) {
-                if (i > 0) {
-                    source.append(",");
+            compileElements(cg, cp, il, mg, factory, valueKeys, element, nextLevel, onlyValues, gotosContinue, gotosBreak);
+            if (!onlyValues) {
+                if (il != null && mg != null) {
+                    GOTO gotoLoopStart = new GOTO(null);
+                    gotoLoopStart.setTarget(loopStart);
+                    il.append(gotoLoopStart);
+                    InstructionHandle loopEnd = il.append(new PUSH(cp, 1));
+                    il.append(new ISTORE(valuesIndexes.get("i")));
+                    gotoLoopEnd.setTarget(loopEnd);
+                    for (String keyContinue : gotosContinue.keySet()) {
+                        if (keyContinue.equals("loop_") || keyContinue.equals("loop_".concat(loop.getLabel()))) {
+                            gotosContinue.get(keyContinue).setTarget(loopStart);
+                            gotosContinue.remove(keyContinue);
+                        }
+                    }
+                    for (String keyBreak : gotosBreak.keySet()) {
+                        if (keyBreak.equals("loop_") || keyBreak.equals("loop_".concat(loop.getLabel()))) {
+                            gotosBreak.get(keyBreak).setTarget(loopEnd);
+                            gotosBreak.remove(keyBreak);
+                        }
+                    }
                 }
-                source.append(toString(function.getParameters()[i]));
+                source.append("\n");
+                source.append("}");
+                source.append("\n");
             }
-            source.append("}");
-            source.append("));");
-            source.append("\n");
         } else if (element instanceof TryCatch) {
-            source.append(lineDetail(element.getLineDetail()));
-            TryCatch tryCatch = (TryCatch)element;
+            lineDetail(cp, il, mg, factory, element.getLineDetail(), onlyValues);
+            TryCatch tryCatch = (TryCatch) element;
             key = "t".concat(Integer.toString(level)).concat("_").concat(Long.toString(varCount++));
-            compileElement(valueKeys, tryCatch.getError(), nextLevel);
-            source.append("try{");
-            source.append("\n");
-            compileElement(valueKeys, tryCatch.getTry(), nextLevel);
-            source.append("}catch(Throwable ");
-            source.append(key);
-            source.append("t){");
-            source.append("\n");
-            source.append(key);
-            source.append(".setValue(");
-            source.append(key);
-            source.append("t);");
-            source.append("\n");
-            source.append("context.setVar(");
-            source.append(toString(tryCatch.getError().getKey()));
-            source.append(", ");
-            source.append(key);
-            source.append(");");
-            source.append("\n");
-            compileElement(valueKeys, tryCatch.getCatch(), nextLevel);
-            source.append("}finally{");
-            source.append("\n");
-            compileElement(valueKeys, tryCatch.getFinally(), nextLevel);
-            source.append("}");
-            source.append("\n");
+            compileElement(cg, cp, il, mg, factory, valueKeys, tryCatch.getError(), nextLevel, onlyValues, gotosContinue, gotosBreak);
+            int throwIndex = 0;
+            if (!onlyValues) {
+                if (il != null && mg != null) {
+                    LocalVariableGen lg = mg.addLocalVariable("throw_".concat(key),
+                        new ObjectType("java.lang.Throwable"), null, null);
+                    throwIndex = lg.getIndex();
+                }
+            }
+            if (!onlyValues) {
+                source.append("try{");
+                source.append("\n");
+            }
+
+            InstructionList ilFinally = null;
+            if (il != null && mg != null) {
+                    ilFinally = new InstructionList();
+                    compileElement(cg, cp, ilFinally, mg, factory, valueKeys, tryCatch.getFinally(), nextLevel, onlyValues, gotosContinue, gotosBreak);
+            }
+
+            InstructionHandle tryStart = null;
+            InstructionHandle tryEnd = null;
+            InstructionHandle tryHandlerStart = null;
+            InstructionHandle tryHandlerEnd = null;
+            InstructionHandle tryFinallyStart = null;
+            InstructionHandle tryFinallyEnd = null;
+            GOTO gotoTry = new GOTO(null);
+            GOTO gotoTryHandler = new GOTO(null);
+
+            if (!onlyValues) {
+                if (il != null && mg != null) {
+                    tryStart = il.append(new PUSH(cp, 1));
+                    il.append(new ISTORE(valuesIndexes.get("i")));
+                }
+            }
+            compileElement(cg, cp, il, mg, factory, valueKeys, tryCatch.getTry(), nextLevel, onlyValues, gotosContinue, gotosBreak);
+            if (!onlyValues) {
+                if (il != null && mg != null) {
+                    il.append(new PUSH(cp, 1));
+                    tryEnd = il.append(new ISTORE(valuesIndexes.get("i")));
+                    il.append(ilFinally.copy());
+                    il.append(gotoTry);
+                }
+            }
+            if (!onlyValues) {
+                if (il != null && mg != null) {
+                    tryHandlerStart = il.append(new ASTORE(throwIndex));
+                }
+            }
+            if (!onlyValues) {
+                source.append("}catch(Throwable throw_");
+                source.append(key);
+                source.append("){");
+                source.append("\n");
+                source.append(key);
+                source.append(".setValue(throw_");
+                source.append(key);
+                source.append(");");
+                source.append("\n");
+                source.append("context.setVar(");
+                source.append(toString(tryCatch.getError().getKey()));
+                source.append(", ");
+                source.append(key);
+                source.append(");");
+                source.append("\n");
+            }
+            if (!onlyValues) {
+                if (il != null && mg != null) {
+                    il.append(new ALOAD(valuesIndexes.get(key)));
+                    il.append(new ALOAD(throwIndex));
+                    il.append(factory.createInvoke("org.cajuscript.Value", "setValue",
+                        Type.VOID, new Type[] { Type.OBJECT },
+                        Constants.INVOKEVIRTUAL));
+                    il.append(new ALOAD(2));
+                    il.append(new PUSH(cp, tryCatch.getError().getKey()));
+                    il.append(new ALOAD(valuesIndexes.get(key)));
+                    il.append(factory.createInvoke("org.cajuscript.Context", "setVar",
+                        Type.VOID, new Type[] { Type.STRING, new ObjectType("org.cajuscript.Value") },
+                        Constants.INVOKEVIRTUAL));
+                }
+            }
+            compileElement(cg, cp, il, mg, factory, valueKeys, tryCatch.getCatch(), nextLevel, onlyValues, gotosContinue, gotosBreak);
+            if (!onlyValues) {
+                if (il != null && mg != null) {
+                    il.append(new PUSH(cp, 1));
+                    tryHandlerEnd = il.append(new ISTORE(valuesIndexes.get("i")));
+                    il.append(ilFinally.copy());
+                    il.append(gotoTryHandler);
+                }
+            }
+            if (!onlyValues) {
+                source.append("}finally{");
+                source.append("\n");
+            }
+            if (!onlyValues) {
+                if (il != null && mg != null) {
+                    tryFinallyStart = il.append(new PUSH(cp, 1));
+                    il.append(new ISTORE(valuesIndexes.get("i")));
+                    il.append(ilFinally.copy());
+                    il.append(new ATHROW());
+                    tryFinallyEnd = il.append(new PUSH(cp, 1));
+                    il.append(new ISTORE(valuesIndexes.get("i")));
+                    gotoTry.setTarget(tryFinallyEnd);
+                    gotoTryHandler.setTarget(tryFinallyEnd);
+
+                    mg.addExceptionHandler(tryStart, tryEnd, tryHandlerStart, new ObjectType("java.lang.Throwable"));
+                    mg.addExceptionHandler(tryStart, tryEnd, tryFinallyStart, null);
+                    mg.addExceptionHandler(tryHandlerStart, tryHandlerEnd, tryFinallyStart, null);
+                }
+            }
+            if (il == null && mg == null) {
+                compileElement(cg, cp, il, mg, factory, valueKeys, tryCatch.getFinally(), nextLevel, onlyValues, gotosContinue, gotosBreak);
+            }
+            if (!onlyValues) {
+                source.append("}");
+                source.append("\n");
+            }
         } else if (element instanceof Base) {
-            compileElements(valueKeys, element, nextLevel);
+            compileElements(cg, cp, il, mg, factory, valueKeys, element, nextLevel, onlyValues, gotosContinue, gotosBreak);
         }
         if (!key.equals("") && addKey && !valueKeys.contains(key)) {
             valueKeys.add(key);
@@ -501,35 +921,52 @@ public class Compiler {
         return key;
     }
 
-    private String compileElements(List<String> valueKeys, Element elements, int level) {
+    private String compileElements(ClassGen cg, ConstantPoolGen cp, InstructionList il, MethodGen mg, InstructionFactory factory, List<String> valueKeys, Element elements, int level, boolean onlyValues, Map<String, GOTO> gotosContinue, Map<String, GOTO> gotosBreak) {
         String key = "";
         int nextLevel = level + 1;
         for (Element element : elements.getElements()) {
-            key = compileElement(valueKeys, element, nextLevel);
+            key = compileElement(cg, cp, il, mg, factory, valueKeys, element, nextLevel, onlyValues, gotosContinue, gotosBreak);
             if (key.equals("__return")
-                || key.equals("__break")
-                || key.equals("__continue")) {
+                    || key.equals("__break")
+                    || key.equals("__continue")) {
                 break;
             }
         }
         return key;
     }
 
-    private String lineDetail(LineDetail lineDetail) {
+    private String launchCompileElements(ClassGen cg, ConstantPoolGen cp, InstructionList il, MethodGen mg, InstructionFactory factory, List<String> valueKeys, Element elements, int level, boolean onlyValues) {
+        varCount = 1;
+        return compileElements(cg, cp, il, mg, factory, valueKeys, elements, level, onlyValues, new HashMap<String, GOTO>(), new HashMap<String, GOTO>());
+    }
+
+    private void lineDetail(ConstantPoolGen cp, InstructionList il, MethodGen mg, InstructionFactory factory, LineDetail lineDetail, boolean onlyValues) {
         if (lastLiteDetail != null
                 && lastLiteDetail.getNumber() == lineDetail.getNumber()
                 && lastLiteDetail.getContent().equals(lineDetail.getContent())) {
-            return "";
+            return;
         }
         lastLiteDetail = lineDetail;
-        String cmd = "caju.getRunningLine().set(";
-        cmd = cmd.concat(Integer.toString(lineDetail.getNumber()));
-        cmd = cmd.concat(",");
-        cmd = cmd.concat(toString(lineDetail.getContent()));
-        cmd = cmd.concat(");");
-        cmd = cmd.concat("\n");
         varCount = 1;
-        return cmd;
+        if (!onlyValues) {
+            if (il != null && mg != null) {
+                il.append(new ALOAD(1));
+                il.append(factory.createInvoke("org.cajuscript.CajuScript", "getRunningLine",
+                        new ObjectType("org.cajuscript.parser.LineDetail"), new Type[] {},
+                        Constants.INVOKEVIRTUAL));
+                il.append(new PUSH(cp, lineDetail.getNumber()));
+                il.append(new PUSH(cp, lineDetail.getContent()));
+                il.append(factory.createInvoke("org.cajuscript.parser.LineDetail", "set",
+                        Type.VOID, new Type[]{ Type.INT, Type.STRING },
+                        Constants.INVOKEVIRTUAL));
+            }
+            source.append("caju.getRunningLine().set(");
+            source.append(Integer.toString(lineDetail.getNumber()));
+            source.append(",");
+            source.append(toString(lineDetail.getContent()));
+            source.append(");");
+            source.append("\n");
+        }
     }
 
     private String toString(String str) {
