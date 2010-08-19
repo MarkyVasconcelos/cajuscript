@@ -435,7 +435,11 @@ public class Compiler {
             String valueKey = compileElement(cg, cp, il, mg, factory, valueKeys, _return.getValue(), nextLevel, onlyValues, gotosContinue, gotosBreak);
             lineDetail(cp, il, mg, factory, element.getLineDetail(), onlyValues);
             if (!onlyValues) {
-                il.append(new ALOAD(valuesIndexes.get(valueKey)));
+                if (valueKey == null) {
+                    il.append(new ACONST_NULL());
+                } else {
+                    il.append(new ALOAD(valuesIndexes.get(valueKey)));
+                }
                 il.append(new ARETURN());
             }
             isReturn = true;

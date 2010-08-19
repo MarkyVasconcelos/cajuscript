@@ -132,7 +132,6 @@ public class ScriptCommand {
 
     /**
      * Set method configuration.
-     * @param object Name of object.
      * @param method Method.
      * @param params Parameters.
      */

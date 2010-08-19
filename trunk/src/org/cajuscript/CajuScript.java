@@ -1190,34 +1190,24 @@ public class CajuScript {
 
     /**
      * To do loops like "for each":
-     * <p>
-     * <blockquote>
-     *
-     * <pre>
+     * <p><blockquote><pre>
      * caju.each('myValue', myArray) @
      *     System.out.println('Value = '+ myValue);
      *     System.out.println('Index = '+ caju.index('myValue'));
-     * System.out.println('-------------------');
-     *
-     * @;
-     * </pre></blockquote></p> <p>
-     *                                    <blockquote>
-     *
-     *                                    <pre>
-     *
-     *                                    caju.each('myValue', myMap) @
-     *                                    System.out.println('Key = '+
-     *                                    caju.key('myValue'));
-     *                                    System.out.println('Value = '+
-     *                                    myValue); System.out.println('Index =
-     *                                    '+ caju.index('myValue'));
-     *                                    System.out.println('-------------------
-     *                                    ' ) ;
-     * @;
-     * </pre></blockquote></p> <p>
-     *                                    Suports only Array, Collection,
-     *                                    Enumeration and Map.
-     *                                    </p>
+     *     System.out.println('-------------------');
+     * &#64;;
+     * </pre></blockquote></p>
+     * <p><blockquote><pre>
+     * caju.each('myValue', myMap) @
+     *     System.out.println('Key = '+ caju.key('myValue'));
+     *     System.out.println('Value = '+ myValue); System.out.println('Index = '+ caju.index('myValue'));
+     *     System.out.println('-------------------' ) ;
+     * &#64;;
+     * </pre></blockquote></p>
+     * <p>
+     * Suports only Array, Collection,
+     * Enumeration and Map.
+     * </p>
      * @param var
      *            Variable to be created for saved the data from the position of
      *            array.
@@ -1365,8 +1355,7 @@ public class CajuScript {
 
     /**
      * Entry point to running.
-     *
-     * @param argsArguments.
+     * @param args Arguments.
      */
     public static void main(String[] args) throws CajuScriptException {
         if (args.length > 0) {
