@@ -29,7 +29,7 @@ For compile is necessary the *bcel.jar* you can find here [http://jakarta.apache
 }}}
 
 
-=== ~~Version 0.3.5~~ ===
+=== Version 0.3.5 ===
 
 For compile is necessary the tools.jar that come inside the JDK. Wherefore for compile and run do like that:
 
@@ -49,11 +49,11 @@ Will be created an folder *./cajuscript-classes/mypackage/* with this files:
 
   * MyClass.cj
   * MyClass.class
-  * ~~MyClass.java~~ (Version 0.3.5 only!)
+  * MyClass.java _(Version 0.3.5 only!)_
 
 The MyClass*.cj* is for comparing with the script in executing for know if is need rebuild or not. The MyClass*.class* is the result from Java compiler.
 
-~~The MyClass*.java* is the source Java generated and compiled.~~ (Version 0.3.5 only!)
+The MyClass*.java* is the source Java generated and compiled. __(Version 0.3.5 only!)__
 
 === Directory ===
 
@@ -72,7 +72,7 @@ To define another folder have two ways (the folders are created automatically):
     System.out.println("Compile ok!");
 }}}
 
-=== ~~Class Path~~ === (Version 0.3.5 only!)
+=== Class Path _(Version 0.3.5 only!)_ ===
 
 Running CajuScript into an web container (GlassFish, Jetty, Tomcat) because of the ClassLoader the com.sun.tools.javac.Main.compile can't found the cajuscript.jar and can't compile. Wherefore to solve this problem is necessary set the cajuscript.jar into of class path this ways:
 
