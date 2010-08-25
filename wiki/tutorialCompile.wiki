@@ -14,7 +14,7 @@ To work with compiled scripts is very easy. Just start the script with *caju.com
     System.out.println("Hello world!");
 }}}
 
-===Version 0.4===
+=== Version 0.4 ===
 
 For compile is necessary the *bcel.jar* you can find here [http://jakarta.apache.org/bcel/ jakarta.apache.org/bcel]. Wherefore for compile and run do like that:
 
@@ -29,7 +29,7 @@ For compile is necessary the *bcel.jar* you can find here [http://jakarta.apache
 }}}
 
 
-~~===Version 0.3.5===~~
+=== ~~Version 0.3.5~~ ===
 
 For compile is necessary the tools.jar that come inside the JDK. Wherefore for compile and run do like that:
 
@@ -70,7 +70,7 @@ To define another folder have two ways (the folders are created automatically):
     System.out.println("Compile ok!");
 }}}
 
-~~=== Class Path ===~~ (Version 0.3.5 only!)
+=== ~~Class Path~~ === (Version 0.3.5 only!)
 
 Running CajuScript into an web container (GlassFish, Jetty, Tomcat) because of the ClassLoader the com.sun.tools.javac.Main.compile can't found the cajuscript.jar and can't compile. Wherefore to solve this problem is necessary set the cajuscript.jar into of class path this ways:
 
