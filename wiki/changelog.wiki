@@ -7,7 +7,7 @@
 
   * Many bugs solved.
   * Performance increased, much more in compiled mode.
-  * Compiled mode uses now BCEL to build directly the bytecode.
+  * [tutorialCompile Compiled mode uses now BCEL to build directly the bytecode.]
   * Suport to array syntax started but the development isn't finished.
 
 *VERSION 0.3.5*
