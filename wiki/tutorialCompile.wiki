@@ -3,9 +3,9 @@
 
 = Compile =
 
-Is possible compile an script to Java Class.
+Is possible compile a script to Java Class.
 
-Actually is a code generator, building the code Java from the Parser. Final result is an Java Class that can load the Parser faster to be executed.
+Actually is a code generator, building the code Java from the Parser. Final result is a Java Class that can load the Parser faster to be executed.
 
 To work with compiled scripts is very easy. Just start the script with *caju.compile* like that sample:
 
@@ -45,7 +45,7 @@ For compile is necessary the tools.jar that come inside the JDK. Wherefore for c
 
 === New files been created... ===
 
-Will be created an folder *./cajuscript-classes/mypackage/* with this files:
+Will be created a folder *./cajuscript-classes/mypackage/* with this files:
 
   * MyClass.cj
   * MyClass.class
@@ -74,7 +74,7 @@ To define another folder have two ways (the folders are created automatically):
 
 === Class Path _(Version 0.3.5 only!)_ ===
 
-Running CajuScript into an web container (GlassFish, Jetty, Tomcat) because of the ClassLoader the com.sun.tools.javac.Main.compile can't found the cajuscript.jar and can't compile. Wherefore to solve this problem is necessary set the cajuscript.jar into of class path this ways:
+Running CajuScript into a web container (GlassFish, Jetty, Tomcat) because of the ClassLoader the com.sun.tools.javac.Main.compile can't found the cajuscript.jar and can't compile. Wherefore to solve this problem is necessary set the cajuscript.jar into of class path this ways:
 
   * Defining the class path into of CajuScript instance:
 {{{
