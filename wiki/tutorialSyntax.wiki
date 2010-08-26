@@ -3,6 +3,11 @@
 
 =Syntax=
 
+See too about [sampleSyntax custom syntax] and these proposals:
+  * [sampleSyntaxBasic Basic]
+  * [sampleSyntaxJava Java]
+  * [sampleSyntaxPortuguese Portuguese]
+
 ===[tutorialImportAndInclude Imports and include file]:===
 {{{
      // Import
