@@ -21,6 +21,10 @@ Supports all basics resources of programing like:
   * [tutorialCast Cast]
   * [tutorialTryCatch Try/Catch]
 
+About [sampleSyntax custom syntax] and these proposals:
+  * [sampleSyntaxBasic Basic]
+  * [sampleSyntaxJava Java]
+  * [sampleSyntaxPortuguese Portuguese]
 
 Easy to use Java. Sample:
 {{{
