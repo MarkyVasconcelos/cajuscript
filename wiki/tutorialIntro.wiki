@@ -10,7 +10,7 @@ CajuScript:
 
 In CajuScript was implemented many ways to make easy to programme in Java.
 
-It supports all basics resources of programing like:
+Supports all basics resources of programing like:
 
   * Variables
   * [tutorialArray Arrays]
