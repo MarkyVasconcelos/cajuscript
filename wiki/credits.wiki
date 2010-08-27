@@ -4,21 +4,21 @@
 
 Especial thanks to:
 
-  * mark.vscs
+  * *mark.vscs*
     * [tutorialOperable Operable]
     * Instant Recognition Code
     * Some performance optimization improvements
 
-  * carlosfilipetorres
+  * *carlosfilipetorres*
     * [tutorialCajuNet CajuScript .Net]
 
-  * jfbarro
+  * *jfbarro*
     * Some orthographic corrections
 
-  * ruivaldo
+  * *ruivaldo*
     * [Compile Apache Ant compile]
 
-  * adelarsq
+  * *adelarsq*
     * New logo
 
   * And thank you all who use CajuScript!
