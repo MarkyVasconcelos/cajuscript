@@ -1,0 +1,29 @@
+#summary Especial thanks
+
+= Credits =
+
+Especial thanks to:
+
+  * mark.vscs
+
+    * [tutorialOperable Operable]
+    * Instant Recognition Code
+    * Some performance optimization improvements
+
+  * carlosfilipetorres
+
+    * [tutorialCajuNet CajuScript .Net]
+
+  * jfbarro
+
+    * Some orthographic corrections
+
+  * ruivaldo
+
+    * [Compile Apache Ant compile]
+
+  * adelarsq
+
+    * New logo
+
+  * And thank you all who use CajuScript!
