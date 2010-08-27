@@ -1,8 +1,8 @@
-#summary Especial thanks
+#summary Special thanks
 
 = Credits =
 
-Especial thanks to:
+Special thanks to:
 
   * *mark.vscs*
     * [tutorialOperable Operable]
