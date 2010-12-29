@@ -137,7 +137,7 @@ public class CajuScript {
     public static final String CAJU_VARS_PARAMETER = CAJU_VARS.concat("_param_");
     public static final String LINE_DETAIL_START = "#caju_line$";
     public static final String LINE_DETAIL_END = ":";
-    private static Map<String, Syntax> globalSyntaxs = new HashMap<String, Syntax>();
+    private static final Map<String, Syntax> globalSyntaxs = new HashMap<String, Syntax>();
     private Context context = new Context();
     private LineDetail runningLine = new LineDetail(0, "");
     private Syntax syntax = new Syntax();
@@ -397,7 +397,7 @@ public class CajuScript {
             script = script.replace((CharSequence) "\r", LINE_LIMITER);
             String[] lines = script.split(LINE_LIMITER);
             script = "";
-            StringBuffer scriptBuffer = new StringBuffer();
+            StringBuilder scriptFinal = new StringBuilder();
             String staticStringKey = "";
             String staticStringValue = "";
             String previousLine = "";
@@ -523,12 +523,13 @@ public class CajuScript {
                             if (cO != '\\' && !isString2) {
                                 if (isString1) {
                                     isString1 = false;
-                                    context.setVar(staticStringKey, new Value(
-                                            null, null, null, "'".concat(
-                                            staticStringValue).concat("'")));
+                                    Value valueString = new Value(null, null, null);
+                                    valueString.setScript("'".concat(staticStringValue).concat("'"));
+                                    context.setVar(staticStringKey, valueString);
                                     if (staticContexts != null) {
-                                        staticContexts.setVar(staticStringKey,
-                                                new Value(null, null, null, "'".concat(staticStringValue).concat("'")));
+                                        Value valueStringStatic = new Value(null, null, null);
+                                        valueStringStatic.setScript("'".concat(staticStringValue).concat("'"));
+                                        staticContexts.setVar(staticStringKey, valueStringStatic);
                                     }
                                     line = line.replace(
                                             (CharSequence) ("'".concat(staticStringValue).concat("'")), staticStringKey);
@@ -551,11 +552,13 @@ public class CajuScript {
                             if (cO != '\\' && !isString1) {
                                 if (isString2) {
                                     isString2 = false;
-                                    context.setVar(staticStringKey,
-                                            new Value(null, null, null, "\"".concat(staticStringValue).concat("\"")));
+                                    Value valueString = new Value(null, null, null);
+                                    valueString.setScript("\"".concat(staticStringValue).concat("\""));
+                                    context.setVar(staticStringKey, valueString);
                                     if (staticContexts != null) {
-                                        staticContexts.setVar(staticStringKey,
-                                                new Value(null, null, null, "\"".concat(staticStringValue).concat("\"")));
+                                        Value valueStringStatic = new Value(null, null, null);
+                                        valueStringStatic.setScript("\"".concat(staticStringValue).concat("\""));
+                                        staticContexts.setVar(staticStringKey, valueStringStatic);
                                     }
                                     line = line.replace((CharSequence) ("\"".concat(staticStringValue).concat("\"")), staticStringKey);
                                     staticStringKey = "";
@@ -581,14 +584,14 @@ public class CajuScript {
                     }
                     cO = c;
                 }
-                scriptBuffer.append(LINE_DETAIL_START);
-                scriptBuffer.append(Integer.toString(lineNumber));
-                scriptBuffer.append(LINE_DETAIL_END);
-                scriptBuffer.append(line);
-                scriptBuffer.append(SUBLINE_LIMITER);
+                scriptFinal.append(LINE_DETAIL_START);
+                scriptFinal.append(Integer.toString(lineNumber));
+                scriptFinal.append(LINE_DETAIL_END);
+                scriptFinal.append(line);
+                scriptFinal.append(SUBLINE_LIMITER);
             }
-            lines = scriptBuffer.toString().split(SUBLINE_LIMITER);
-            scriptBuffer = new StringBuffer();
+            lines = scriptFinal.toString().split(SUBLINE_LIMITER);
+            scriptFinal = new StringBuilder();
             for (String line : lines) {
                 String lineN = "";
                 if (line.startsWith(LINE_DETAIL_START)) {
@@ -599,15 +602,19 @@ public class CajuScript {
                     line = line.trim();
                     int p = endLineIndex(line, syntax);
                     if (p > -1) {
-                        scriptBuffer.append(lineN + line.substring(0, p) + SUBLINE_LIMITER);
+                        scriptFinal.append(lineN);
+                        scriptFinal.append(line.substring(0, p));
+                        scriptFinal.append(SUBLINE_LIMITER);
                         line = line.substring(p);
                     } else {
-                        scriptBuffer.append(lineN + line + SUBLINE_LIMITER);
+                        scriptFinal.append(lineN);
+                        scriptFinal.append(line);
+                        scriptFinal.append(SUBLINE_LIMITER);
                         break;
                     }
                 }
             }
-            script = scriptBuffer.toString();
+            script = scriptFinal.toString();
             parserBase = new org.cajuscript.parser.Base(new LineDetail(-1, ""));
             parserBase.parse(this, script, syntax);
             if (!(cacheId.length() == 0)) {
@@ -884,7 +891,7 @@ public class CajuScript {
      * @throws org.cajuscript.CajuScriptException
      *             Errors.
      */
-    public Value toValue(Object obj) throws CajuScriptException {
+    public final Value toValue(Object obj) throws CajuScriptException {
         return toValue(obj, getContext(), getSyntax());
     }
 

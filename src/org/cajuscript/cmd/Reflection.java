@@ -99,36 +99,8 @@ public class Reflection {
                         realPath = realPath.concat(scriptPart);
                     }
                     if (value == null) {
-                        try {
-                            if (context.getClassCache(path) != null) {
-                                c = context.getClassCache(path);
-                            } else {
-                                try {
-                                    c = Class.forName(path);
-                                    context.setClassCache(path, c);
-                                } catch (Throwable e) {
-                                    for(String i : cajuScript.getImports()) {
-                                        if (i.endsWith(path)) {
-                                            try {
-                                                c = Class.forName(i);
-                                                context.setClassCache(path, c);
-                                            } catch (Throwable ex) { }
-                                        } else {
-                                            try {
-                                                c = Class.forName(i.concat(".").concat(path));
-                                                context.setClassCache(path, c);
-                                            } catch (Throwable ex) { }
-                                        }
-                                        if (c != null) {
-                                            break;
-                                        }
-                                    }
-                                    if (c == null) {
-                                        throw new Exception();
-                                    }
-                                }
-                            }
-                        } catch (Throwable e) {
+                        c = cajuScript.getContext().findClass(path);
+                        if (c == null) {
                             boolean isRootContext = false;
                             Value _value = context.getVar(path);
                             if (_value == null) {
@@ -329,9 +301,7 @@ public class Reflection {
         if (c.isMemberClass()) {
             Class<?>[] interfaces = c.getInterfaces();
             classes = new Class[interfaces.length + 1];
-            for (int i = 0; i < interfaces.length; i++) {
-                classes[i] = interfaces[i];
-            }
+            System.arraycopy(interfaces, 0, classes, 0, interfaces.length);
             classes[classes.length - 1] = c.getSuperclass();
         } else {
             classes = new Class[] {c};

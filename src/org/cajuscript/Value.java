@@ -64,6 +64,7 @@ public class Value implements Cloneable {
     private boolean valueBoolean = false;
     private TypeNumber typeNumber = null;
     private Type type = Type.NULL;
+    private Class classType = null;
     private boolean _isCommand = false;
     private String command = "";
     private CajuScript cajuScript = null;
@@ -90,20 +91,6 @@ public class Value implements Cloneable {
         this.context = context;
         this.syntax = syntax;
     }
-    
-    /**
-     * Create a new value using a script.
-     * @param caju Instance of the CajuScript.
-     * @param script Script refering the value.
-     * @param syntax Script syntax style.
-     * @throws org.cajuscript.CajuScriptException Errors loading value with the script.
-     */
-    public Value(CajuScript caju, Context context, Syntax syntax, String script) throws CajuScriptException {
-        cajuScript = caju;
-        this.context = context;
-        this.syntax = syntax;
-        setScript(script);
-    }
 
     /**
      * Get script.
@@ -118,7 +105,7 @@ public class Value implements Cloneable {
      * @param s Script.
      * @throws org.cajuscript.CajuScriptException Errors loading the script.
      */
-    public void setScript(String s) throws CajuScriptException {
+    public final void setScript(String s) throws CajuScriptException {
         try {
             if (script != null && script.equals(s)) {
                 if (isCommand()) {
@@ -153,12 +140,12 @@ public class Value implements Cloneable {
                     loadNumberValue(script, true);
                 } catch (Exception e) {
                     if (script.toLowerCase().equals("true")) {
-                        value = new Boolean(true);
+                        value = true;
                         valueBoolean = true;
                         valueString = "true";
                         type = Type.BOOLEAN;
                     } else if (script.toLowerCase().equals("false")) {
-                        value = new Boolean(false);
+                        value = false;
                         valueBoolean = false;
                         valueString = "false";
                         type = Type.BOOLEAN;
@@ -482,6 +469,7 @@ public class Value implements Cloneable {
                 valueBoolean = false;
                 valueString = "false";
             }
+            classType = Boolean.class;
             return;
         } else if (value instanceof Integer) {
             valueNumberInteger = ((Integer)value).intValue();
@@ -491,6 +479,7 @@ public class Value implements Cloneable {
             valueString = Integer.toString(valueNumberInteger);
             type = Type.NUMBER;
             typeNumber = TypeNumber.INTEGER;
+            classType = Integer.class;
             return;
         } else if (value instanceof Float) {
             valueNumberFloat = ((Float)value).floatValue();
@@ -498,6 +487,7 @@ public class Value implements Cloneable {
             valueString = Float.toString(valueNumberFloat);
             type = Type.NUMBER;
             typeNumber = TypeNumber.FLOAT;
+            classType = Float.class;
             return;
         } else if (value instanceof Long) {
             valueNumberLong = ((Long)value).longValue();
@@ -505,19 +495,23 @@ public class Value implements Cloneable {
             valueString = Long.toString(valueNumberLong);
             type = Type.NUMBER;
             typeNumber = TypeNumber.LONG;
+            classType = Long.class;
             return;
         } else if (value instanceof Double) {
             valueNumberDouble = (float)((Double)value).doubleValue();
             valueString = Double.toString(valueNumberDouble);
             type = Type.NUMBER;
             typeNumber = TypeNumber.DOUBLE;
+            classType = Double.class;
             return;
         }
         if (value instanceof CharSequence || value instanceof Character) {
             type = Type.STRING;
             valueString = value.toString();
+            classType = String.class;
         } else {
             type = Type.OBJECT;
+            classType = value.getClass();
         }
         valueNumberInteger = 0;
         valueNumberLong = 0;
@@ -542,7 +536,38 @@ public class Value implements Cloneable {
     public TypeNumber getTypeNumber() {
         return typeNumber;
     }
-    
+
+    /**
+     * Get the class type.
+     * @return Class type.
+     */
+    public Class getClassType() {
+        return classType;
+    }
+
+    /**
+     * Set the class type
+     * @param classType Class type.
+     */
+    public void setClassType(Class classType) {
+        this.classType = classType;
+    }
+
+    /**
+     * Set the class type from a class path.
+     * @param path Class path
+     * @throws CajuScriptException Exception if the class not found.
+     */
+    public void setClassType(String path) throws CajuScriptException {
+        if (path.length() != 0) {
+            Class c = cajuScript.getContext().findClass(path);
+            if (c == null) {
+                throw CajuScriptException.create(cajuScript, context, "Class \"".concat(path).concat("\" not found "));
+            }
+            setClassType(c);
+        }
+    }
+
     /**
      * Get flag definition.
      * @return Information.

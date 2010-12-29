@@ -110,7 +110,7 @@ public class Syntax {
     private Pattern _break = Pattern.compile("\\!\\s*\\!");
     private Pattern _continue = Pattern.compile("\\.\\s*\\.");
     private Pattern rootContext = Pattern.compile("\\.");
-    private Pattern label = Pattern.compile("\\:");
+    private Pattern label = Pattern.compile("\\s*([^\\s\\(\\:]+)\\s*\\:");
     private Pattern[] comments = new Pattern[]{Pattern.compile("\\\\"), Pattern.compile("\\-\\s*\\-"), Pattern.compile("\\/\\s*\\/")};
     private Pattern group = Pattern.compile("\\(([[^\\(\\)]|[.]]*)\\)");
     private Pattern functionCall = Pattern.compile("[\\w|\\.]+[\\w|\\.|\\s]*\\([[^\\(\\)]|[.]]*\\)");

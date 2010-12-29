@@ -30,6 +30,7 @@ import org.cajuscript.CajuScriptException;
  * @author eduveks
  */
 public class Command extends Base {
+    private String type = "";
     private String command = "";
     private String contextsKey;
     private String valueKey;
@@ -43,7 +44,23 @@ public class Command extends Base {
         contextsKey = org.cajuscript.CajuScript.CAJU_VARS.concat("_contexts_").concat(Integer.toString(this.hashCode()));
         valueKey = org.cajuscript.CajuScript.CAJU_VARS.concat("_value_").concat(Integer.toString(this.hashCode()));
     }
-    
+
+    /**
+     * Get Type.
+     * @return Type.
+     */
+    public String getType() {
+        return type;
+    }
+
+    /**
+     * Set variable Type.
+     * @param type Type.
+     */
+    public void setType(String type) {
+        this.type = type;
+    }
+
     /**
      * Get command.
      * @return Script of the command
@@ -69,7 +86,7 @@ public class Command extends Base {
      * @throws org.cajuscript.CajuScriptException Errors ocurred on execution
      */
     @SuppressWarnings("unchecked")
-	@Override
+    @Override
     public Value execute(CajuScript caju, Context context, Syntax syntax) throws CajuScriptException {
         caju.setRunningLine(getLineDetail());
         Value contextsValue = context.getVar(contextsKey);
@@ -81,9 +98,16 @@ public class Command extends Base {
         Value value = context.getVar(valueKey);
         if (value == null || !contexts.contains(context)) {
             contexts.add(context);
-            value = new Value(caju, context, syntax, command);
+            value = new Value(caju, context, syntax);
+            if (type.length() != 0) {
+                value.setClassType(type);
+            }
+            value.setScript(command);
             context.setVar(valueKey, value);
         } else if (value.isCommand()) {
+            if (type.length() != 0) {
+                value.setClassType(type);
+            }
             value.setContext(context);
             value.setCommand(command);
         }
