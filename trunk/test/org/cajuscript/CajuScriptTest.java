@@ -294,7 +294,6 @@ public class CajuScriptTest {
     
     @Test
     public void syntaxLoop() throws CajuScriptException {
-        try {
         System.out.println("syntaxLoop");
         CajuScript caju = new CajuScript();
         syntaxReload(caju);
@@ -371,9 +370,6 @@ public class CajuScriptTest {
         syntaxCheckLoop(caju);
         syntaxCheckLoopCache(caju, scriptLoop);
         syntaxCheckLoopCompile(caju, scriptLoop);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
     
     @Test
@@ -2115,10 +2111,10 @@ public class CajuScriptTest {
         assertEquals(new Character('A'), instance.cast(new Double((int)'A'), "java.lang.Character"));
         assertEquals(new Character('A'), instance.cast(new Long((int)'A'), "char"));
         assertEquals(new Character('A'), instance.cast(new Float((int)'A'), "c"));
-        assertEquals(new Boolean(true), instance.cast(new Integer(1), "b"));
-        assertEquals(new Boolean(true), instance.cast(new Double(1.1), "java.lang.Boolean"));
-        assertEquals(new Boolean(true), instance.cast(new Long(1), "boolean"));
-        assertEquals(new Boolean(true), instance.cast(new Float(1.3), "bool"));
+        assertEquals(true, instance.cast(new Integer(1), "b"));
+        assertEquals(true, instance.cast(new Double(1.1), "java.lang.Boolean"));
+        assertEquals(true, instance.cast(new Long(1), "boolean"));
+        assertEquals(true, instance.cast(new Float(1.3), "bool"));
         assertEquals(new Byte((byte)1), instance.cast(new Double(1), "bt"));
         assertEquals(new Byte((byte)1), instance.cast(new Integer(1), "java.lang.Byte"));
         assertEquals(new Byte((byte)1), instance.cast(new Long(1), "byte"));

@@ -165,6 +165,36 @@ public class Context {
         return classCache.get(path);
     }
 
+    public Class findClass(String path) {
+        Class c = null;
+        if (getClassCache(path) != null) {
+            c = getClassCache(path);
+        } else {
+            try {
+                c = Class.forName(path);
+                setClassCache(path, c);
+            } catch (Throwable e) {
+                for(String i : getImports()) {
+                    if (i.endsWith(path)) {
+                        try {
+                            c = Class.forName(i);
+                            setClassCache(path, c);
+                        } catch (Throwable ex) { }
+                    } else {
+                        try {
+                            c = Class.forName(i.concat(".").concat(path));
+                            setClassCache(path, c);
+                        } catch (Throwable ex) { }
+                    }
+                    if (c != null) {
+                        break;
+                    }
+                }
+            }
+        }
+        return c;
+    }
+
     public void setStaticString(String key, String value) {
         staticStrings.put(key, value);
     }

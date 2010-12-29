@@ -95,7 +95,7 @@ public class Base implements Element, java.io.Serializable, Cloneable {
      * @param element Element
      * @return If element can return.
      */
-    protected boolean canElementReturn(Element element) {
+    public boolean canElementReturn(Element element) {
         if (!(element instanceof Command) && !(element instanceof Operation) && !(element instanceof Variable)) {
             return true;
         }
@@ -143,8 +143,8 @@ public class Base implements Element, java.io.Serializable, Cloneable {
             line = lineDetail.getContent().trim();
             String label = "";
             SyntaxPosition syntaxPosition = null;
-            if ((syntaxPosition = syntax.matcherPosition(line, syntax.getLabel())).getStart() > -1) {
-                label = line.substring(0, syntaxPosition.getStart()).trim();
+            if ((syntaxPosition = syntax.matcherPosition(line, syntax.getLabel())).getStart() == 0) {
+                label = syntaxPosition.getGroup();
                 line = line.substring(syntaxPosition.getEnd()).trim();
             }
             if ((syntaxPosition = syntax.matcherPosition(line, syntax.getReturn())).getStart() == 0) {
@@ -158,7 +158,7 @@ public class Base implements Element, java.io.Serializable, Cloneable {
             } else if ((syntaxPosition = syntax.matcherPosition(line, syntax.getIf())).getStart() == 0) {
                 SyntaxPosition syntaxPositionIf = syntaxPosition;
                 String scriptIFCondition = syntaxPositionIf.getGroup();
-                StringBuffer scriptIF = new StringBuffer();
+                StringBuilder scriptIF = new StringBuilder();
                 List<String> ifsConditions = new ArrayList<String>();
                 List<String> ifsStatements = new ArrayList<String>();
                 int ifLevel = 0;
@@ -197,7 +197,8 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                         }
                         ifLevel--;
                     }
-                    scriptIF.append(originalIFline + CajuScript.SUBLINE_LIMITER);
+                    scriptIF.append(originalIFline);
+                    scriptIF.append(CajuScript.SUBLINE_LIMITER);
                 }
                 if (ifLevel != 0 || !ifClosed) {
                     throw CajuScriptException.create(caju, caju.getContext(), "\"If\" statement sintax error, maybe any \"if\" statement was not closed.");
@@ -218,7 +219,7 @@ public class Base implements Element, java.io.Serializable, Cloneable {
             } else if ((syntaxPosition = syntax.matcherPosition(line, syntax.getLoop())).getStart() == 0) {
                 SyntaxPosition syntaxPositionLoop = syntaxPosition;
                 String scriptLOOPCondition = syntaxPositionLoop.getGroup();
-                StringBuffer scriptLOOP = new StringBuffer();
+                StringBuilder scriptLOOP = new StringBuilder();
                 int loopLevel = 0;
                 boolean loopClosed = false;
                 for (int z = y + 1; z < lines.length; z++) {
@@ -236,7 +237,8 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                         }
                         loopLevel--;
                     }
-                    scriptLOOP.append(originalLOOPline + CajuScript.SUBLINE_LIMITER);
+                    scriptLOOP.append(originalLOOPline);
+                    scriptLOOP.append(CajuScript.SUBLINE_LIMITER);
                 }
                 if (loopLevel != 0 || !loopClosed) {
                     throw CajuScriptException.create(caju, caju.getContext(), "\"Loop\" statement sintax error, maybe any \"loop\" statement was not closed.");
@@ -250,7 +252,7 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                 base.addElement(loop);
             } else if ((syntaxPosition = syntax.matcherPosition(line, syntax.getFunction())).getStart() == 0) {
                 String scriptFuncDef = syntaxPosition.getGroup();
-                StringBuffer scriptFUNC = new StringBuffer();
+                StringBuilder scriptFUNC = new StringBuilder();
                 int funcLevel = 0;
                 boolean funcClosed = false;
                 for (int z = y + 1; z < lines.length; z++) {
@@ -270,7 +272,8 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                         }
                         funcLevel--;
                     }
-                    scriptFUNC.append(originalFUNCline + CajuScript.SUBLINE_LIMITER);
+                    scriptFUNC.append(originalFUNCline);
+                    scriptFUNC.append(CajuScript.SUBLINE_LIMITER);
                 }
                 if (funcLevel != 0 || !funcClosed) {
                     throw CajuScriptException.create(caju, caju.getContext(), "\"Function\" statement sintax error, maybe any \"function\" statement was not closed.");
@@ -281,9 +284,9 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                 caju.setFunc(func.getName(), func);
             } else if ((syntaxPosition = syntax.matcherPosition(line, syntax.getTry())).getStart() == 0) {
                 String scriptTRYCATCHerrorVar = syntaxPosition.getGroup();
-                StringBuffer scriptTRY = new StringBuffer();
-                StringBuffer scriptCATCH = new StringBuffer();
-                StringBuffer scriptFINALLY = new StringBuffer();
+                StringBuilder scriptTRY = new StringBuilder();
+                StringBuilder scriptCATCH = new StringBuilder();
+                StringBuilder scriptFINALLY = new StringBuilder();
                 boolean isTry = true;
                 boolean isCatch = false;
                 boolean isFinally = false;
@@ -315,11 +318,14 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                         tryLevel--;
                     }
                     if (isTry) {
-                        scriptTRY.append(originalTRYCATCHline + CajuScript.SUBLINE_LIMITER);
+                        scriptTRY.append(originalTRYCATCHline);
+                        scriptTRY.append(CajuScript.SUBLINE_LIMITER);
                     } else if (isCatch) {
-                        scriptCATCH.append(originalTRYCATCHline + CajuScript.SUBLINE_LIMITER);
+                        scriptCATCH.append(originalTRYCATCHline);
+                        scriptCATCH.append(CajuScript.SUBLINE_LIMITER);
                     } else if (isFinally) {
-                        scriptFINALLY.append(originalTRYCATCHline + CajuScript.SUBLINE_LIMITER);
+                        scriptFINALLY.append(originalTRYCATCHline);
+                        scriptFINALLY.append(CajuScript.SUBLINE_LIMITER);
                     }
                 }
                 if (tryLevel != 0 || !tryClosed) {
@@ -352,6 +358,7 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                     String[] allKeys = keys.substring(0, p).replaceAll(" ", "").split(",");
                     for (String key : allKeys) {
                         Variable var = new Variable(lineDetail);
+                        var.setType(label);
                         var.setKey(key);
                         if (syntaxPositionOperator.getOperator() != null) {
                             Command v = new Command(lineDetail);
@@ -468,7 +475,7 @@ public class Base implements Element, java.io.Serializable, Cloneable {
     
     private Element evalValueSingle(Element base, CajuScript caju, LineDetail lineDetail, Syntax syntax, String script) throws CajuScriptException {
         try {
-            script = script.trim();            
+            script = script.trim();
             SyntaxPosition firstOperator = syntax.firstOperatorMathematic(script);
             if (firstOperator.getStart() > -1 && !syntax.matcherEquals(script, syntax.getNumber())) {
                 if (firstOperator.getStart() == 0) {
@@ -491,7 +498,7 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                     c2.setCommand(scriptValue2);
                     Operation o = new Operation(lineDetail);
                     o.setCommands(c1, operator, c2);
-                    if (operator1.equals("") && operator2.equals("")) {
+                    if (scriptValue1.length() == 0 && scriptValue2.length() == 0) {
                         return o;
                     }
                     Element e1 = o;
@@ -619,8 +626,13 @@ public class Base implements Element, java.io.Serializable, Cloneable {
                         String varParamKey = CajuScript.CAJU_VARS_GROUP.concat(caju.nextVarsCounter()).concat(Long.toString(varsGroupCounter));
                         varsGroupCounter++;
                         Variable varParam = new Variable(lineDetail);
+                        String paramCmdContent = params.substring(0, lenParamSeparatorStart);
+                        if ((syntaxPosition = syntax.matcherPosition(paramCmdContent, syntax.getLabel())).getStart() > -1) {
+                            varParam.setType(syntaxPosition.getGroup());
+                            paramCmdContent = paramCmdContent.substring(syntaxPosition.getEnd()).trim();
+                        }
                         varParam.setKey(varParamKey);
-                        varParam.setValue(evalValueGroup(base, caju, lineDetail, syntax, params.substring(0, lenParamSeparatorStart)));
+                        varParam.setValue(evalValueGroup(base, caju, lineDetail, syntax, paramCmdContent));
                         base.addElement(varParam);
                         if (syntaxPositionParam.getStart() == -1) {
                             cmd = cmd.concat(varParamKey);

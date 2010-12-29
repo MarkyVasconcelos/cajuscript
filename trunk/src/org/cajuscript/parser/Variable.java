@@ -31,6 +31,7 @@ import org.cajuscript.CajuScriptException;
  * @author eduveks
  */
 public class Variable extends Base {
+    private String type = "";
     private String key = "";
     private Element value = null;
     
@@ -40,6 +41,22 @@ public class Variable extends Base {
      */
     public Variable(LineDetail line) {
         super(line);
+    }
+
+    /**
+     * Get Type.
+     * @return Type.
+     */
+    public String getType() {
+        return type;
+    }
+
+    /**
+     * Set variable Type.
+     * @param type Type.
+     */
+    public void setType(String type) {
+        this.type = type;
     }
     
     /**
@@ -57,7 +74,7 @@ public class Variable extends Base {
     public void setKey(String key) {
         this.key = key.trim();
     }
-    
+
     /**
      * Get variable value.
      * @return Element of value
@@ -121,6 +138,9 @@ public class Variable extends Base {
             element.execute(caju, context, syntax);
         }
         Value v = value.execute(caju, context, syntax);
+        if (type.length() != 0) {
+            v.setClassType(type);
+        }
         if (key.length() != 0) {
             SyntaxPosition syntaxPosition = syntax.matcherPosition(key, syntax.getRootContext());
             if (syntaxPosition.getStart() == 0) {
