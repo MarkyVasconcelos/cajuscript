@@ -1,0 +1,69 @@
+# CajuScript 0.3.5 Execution Modes #
+
+![http://cajuscript.googlecode.com/svn/trunk/scriptstester/cajuscript035executionmodes.png](http://cajuscript.googlecode.com/svn/trunk/scriptstester/cajuscript035executionmodes.png)
+
+For biggest scripts is strongly recomended [Cache](tutorialCache.md) or [Compile](tutorialCompile.md). [Cache](tutorialCache.md) consumes extra memory.
+
+More information see [Cache](tutorialCache.md) and [Compile](tutorialCompile.md).
+
+### Output ###
+```
+================================
+CajuScript 0.3.5 Execution Modes
+================================
+Caju: 266ms - 100000
+Caju - Cache First: 297ms - 100000
+Caju - Cache Next: 249ms - 100000
+Caju - Compile First: 1216ms - 100000
+Caju - Compile Next: 110ms - 100000
+```
+
+### Source ###
+
+Requires JDK\_HOME/lib/tools.jar.
+
+```
+public class CajuScript035ExecutionModes {
+    public static void main(String[] args) {
+        try {
+            System.out.println("================================");
+            System.out.println("CajuScript 0.3.5 Execution Modes");
+            System.out.println("================================");
+            runTester(100000, "1");
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
+    public static void runTester(long times, String value) throws Exception {
+        long time = 0;
+        // Load classes
+        org.cajuscript.CajuScript caju = new org.cajuscript.CajuScript();
+        caju.eval("x = 0; x < "+ times +" @ x = x + "+ value +"; @");
+        // Caju
+        time = System.currentTimeMillis();
+        caju = new org.cajuscript.CajuScript();
+        caju.eval("x = 0; x < "+ times +" @ x = x + "+ value +"; @");
+        System.out.println("Caju: "+ (System.currentTimeMillis() - time) + "ms - "+ caju.get("x"));
+        // Caju - Cache 1
+        time = System.currentTimeMillis();
+        caju = new org.cajuscript.CajuScript();
+        caju.eval("caju.cache: test; x = 0; x < "+ times +" @ x = x + "+ value +"; @");
+        System.out.println("Caju - Cache First: "+ (System.currentTimeMillis() - time) + "ms - "+ caju.get("x"));
+        // Caju - Cache 2
+        time = System.currentTimeMillis();
+        caju = new org.cajuscript.CajuScript();
+        caju.eval("caju.cache: test; x = 0; x < "+ times +" @ x = x + "+ value +"; @");
+        System.out.println("Caju - Cache Next: "+ (System.currentTimeMillis() - time) + "ms - "+ caju.get("x"));
+        // Caju - Compile 1
+        time = System.currentTimeMillis();
+        caju = new org.cajuscript.CajuScript();
+        caju.eval("caju.compile: Test; x = 0; x < "+ times +" @ x = x + "+ value +"; @");
+        System.out.println("Caju - Compile First: "+ (System.currentTimeMillis() - time) + "ms - "+ caju.get("x"));
+        // Caju - Compile 2
+        time = System.currentTimeMillis();
+        caju = new org.cajuscript.CajuScript();
+        caju.eval("caju.compile: Test; x = 0; x < "+ times +" @ x = x + "+ value +"; @");
+        System.out.println("Caju - Compile Next: "+ (System.currentTimeMillis() - time) + "ms - "+ caju.get("x"));
+    }
+}
+```
