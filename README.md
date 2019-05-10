@@ -1,5 +1,7 @@
 http://cajuscript.googlecode.com/svn/trunk/cajuscript_final.png
 
+
+
 ===Goals===
   * CajuScript is designed to be used in short and simple scripts
     * Don't use too many lines of code when writing scripts, you'll end up harming yourself. If your script is getting too complex, then do it in pure Java;
