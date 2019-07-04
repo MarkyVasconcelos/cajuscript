@@ -15,9 +15,7 @@ http://cajuscript.googlecode.com/svn/trunk/cajuscript_final.png
 
 
 ===Contribute===
-You can contribute to the development of CajuScript by sending feedback and bug reports. Or click on the PayPal button below to donate money.
-
-[http://cajuscript.googlecode.com/svn/trunk/paypal.html https://www.paypal.com/en_US/i/btn/x-click-but21.gif]
+You can contribute to the development of CajuScript by sending feedback and bug reports.
 
 *VERSION 0.4* - [changelog Changelog]
 
